@@ -63,7 +63,7 @@ public class Currency extends BaseEntity {
 
     /** 為替レート最終更新日時 */
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "last_updated")
+    @Column(name = "rate_updated_at")
     private Date lastUpdated;
 
     /**

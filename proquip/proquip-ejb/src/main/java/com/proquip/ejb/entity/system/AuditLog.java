@@ -102,7 +102,7 @@ public class AuditLog extends BaseEntity {
     private String newValues;
 
     /** 追加情報（任意のメモ等） */
-    @Column(name = "additional_info", length = 1000)
+    @Column(name = "description", length = 1000)
     private String additionalInfo;
 
     /**

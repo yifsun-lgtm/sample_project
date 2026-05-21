@@ -30,18 +30,18 @@ public class StockTransferItem extends BaseEntity {
     /** 移動予定数量 */
     @NotNull
     @Min(1)
-    @Column(name = "quantity", nullable = false)
+    @Column(name = "quantity_requested", nullable = false)
     private Integer quantity;
 
     /** 実際の移動数量（移動完了後に設定） */
     @Min(0)
-    @Column(name = "transferred_quantity")
+    @Column(name = "quantity_shipped")
     private Integer transferredQuantity;
 
     /** 親の在庫移動への参照 */
     @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "stock_transfer_id", nullable = false)
+    @JoinColumn(name = "transfer_id", nullable = false)
     private StockTransfer stockTransfer;
 
     /** 対象製品への参照 */

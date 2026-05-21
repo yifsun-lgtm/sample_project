@@ -151,5 +151,18 @@ batch
 
 run-batch
 
+# -------------------------------------------------
+# デプロイメントスキャナー設定
+# auto-deploy-zipped を有効にして EAR の自動デプロイを許可
+# -------------------------------------------------
+batch
+
+/subsystem=deployment-scanner/scanner=default:write-attribute( \
+    name=auto-deploy-zipped, \
+    value=true \
+)
+
+run-batch
+
 # 設定を保存して終了
 stop-embedded-server

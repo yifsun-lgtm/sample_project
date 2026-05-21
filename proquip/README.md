@@ -67,27 +67,51 @@ proquip-frontend/   … Angular SPA
 ### 前提条件
 
 - Podman + Podman Compose（または Docker + Docker Compose）
-- Java 17 (JDK)
-- Maven 3.9+
-- Node.js 18+ / npm 9+
 
-### 1. インフラ起動
+Java, Maven, Node.js のローカルインストールは不要です（全てコンテナ内でビルドされます）。
+
+### 1. ビルド＆起動
 
 ```bash
 cd proquip
-podman compose up -d
+podman compose -f podman-compose.yml up -d --build
 ```
 
-4つのコンテナが起動します：
+初回はMavenとnpmの依存解決があるため、ビルドに数分かかります。
+以下のサービスが順番に起動します：
 
 | サービス | ポート | 用途 |
 |---------|--------|------|
 | proquip-postgres | 5432 | PostgreSQL データベース |
 | proquip-keycloak | 8180 | Keycloak 認証サーバー |
+| proquip-migration | - | Flyway DBマイグレーション（実行後に終了） |
 | proquip-wildfly | 8080 (API), 9990 (管理) | WildFly アプリケーションサーバー |
-| proquip-nginx | 4200 | nginx リバースプロキシ |
+| proquip-nginx | 4200 | nginx リバースプロキシ + Angular SPA 配信 |
 
-### 2. デフォルト認証情報
+起動順序は Compose が自動で制御します：
+
+1. PostgreSQL が起動しヘルスチェック通過
+2. Keycloak 起動 + Flyway マイグレーション実行
+3. マイグレーション完了後、WildFly が起動し EAR をデプロイ
+4. WildFly のヘルスチェック通過後、nginx が起動
+
+### 2. 動作確認
+
+全サービスが起動したら http://localhost:4200 にアクセスしてください。
+Keycloakのログイン画面が表示されます。
+
+```bash
+# サービスの状態確認
+podman compose -f podman-compose.yml ps
+
+# マイグレーションが成功したか確認（Exited (0) なら成功）
+podman logs proquip-migration
+
+# WildFlyでEARがデプロイされたか確認
+podman logs proquip-wildfly --tail 20
+```
+
+### 3. デフォルト認証情報
 
 | サービス | ユーザー | パスワード |
 |---------|---------|-----------|
@@ -105,47 +129,11 @@ podman compose up -d
 | warehouse | warehouse123 | WAREHOUSE_STAFF | 倉庫三郎 |
 | viewer | viewer123 | VIEWER | 閲覧四郎 |
 
-### 3. バックエンドビルド＆デプロイ
-
-```bash
-# 全モジュールビルド
-cd proquip-parent
-mvn clean install
-
-# DBマイグレーション実行
-cd ../proquip-db
-mvn flyway:migrate
-
-# WildFlyへデプロイ
-cd ../proquip-ear
-mvn wildfly:deploy
-```
-
-#### ビルドプロファイル
-
-```bash
-mvn clean package -P dev          # 開発環境（デフォルト）
-mvn clean package -P staging      # ステージング環境
-mvn clean package -P production   # 本番環境
-```
-
-### 4. フロントエンド起動
-
-```bash
-cd proquip-frontend
-npm install
-npm start
-```
-
-開発サーバーが起動し、プロキシ経由でバックエンドに接続します：
-- `/api/*` → `http://localhost:8080` (WildFly)
-- `/auth/*` → `http://localhost:8180` (Keycloak)
-
-### 5. アクセスURL
+### 4. アクセスURL
 
 | URL | 用途 |
 |-----|------|
-| http://localhost:4200 | フロントエンド（nginx経由 or ng serve） |
+| http://localhost:4200 | フロントエンド（nginx経由） |
 | http://localhost:4200/api/health | バックエンド ヘルスチェック（nginx経由） |
 | http://localhost:8180 | Keycloak 管理コンソール |
 | http://localhost:9990 | WildFly 管理コンソール |
@@ -153,9 +141,27 @@ npm start
 ### コンテナ停止
 
 ```bash
-podman compose down        # コンテナ停止
-podman compose down -v     # コンテナ停止 + データ削除
+podman compose -f podman-compose.yml down        # コンテナ停止
+podman compose -f podman-compose.yml down -v     # コンテナ停止 + データ削除
 ```
+
+### 開発モード（ホットリロード）
+
+フロントエンドをホットリロードで開発したい場合は、nginx コンテナの代わりに Angular 開発サーバーを使用します。
+
+```bash
+# バックエンド系のみ起動（nginx以外）
+podman compose -f podman-compose.yml up -d postgres keycloak migration wildfly
+
+# フロントエンド開発サーバー起動（要 Node.js 18+）
+cd proquip-frontend
+npm install
+npm start
+```
+
+開発サーバーのプロキシ設定により、APIとKeycloakへのリクエストが自動転送されます：
+- `/api/*` → `http://localhost:8080` (WildFly)
+- `/auth/*` → `http://localhost:8180` (Keycloak)
 
 ## ディレクトリ構造
 

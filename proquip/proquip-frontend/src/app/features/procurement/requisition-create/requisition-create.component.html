@@ -21,6 +21,22 @@
 
     <div class="form-grid">
       <app-form-field
+        label="件名"
+        [required]="true"
+        [hasError]="isFieldInvalid('title')">
+        <input
+          formControlName="title"
+          type="text"
+          class="form-control"
+          id="title"
+          placeholder="購買依頼の件名を入力してください"
+          maxlength="300" />
+        <span class="error-text" *ngIf="isFieldInvalid('title')">
+          件名を入力してください
+        </span>
+      </app-form-field>
+
+      <app-form-field
         label="部門"
         [required]="true"
         [hasError]="isFieldInvalid('department')">

@@ -58,6 +58,12 @@ public class PurchaseRequisition extends AuditableEntity {
     @Column(name = "requisition_number", unique = true, nullable = false, length = 30)
     private String reqNumber;
 
+    /** 購買依頼の件名 */
+    @NotNull
+    @Size(max = 300)
+    @Column(name = "title", nullable = false, length = 300)
+    private String title;
+
     /** 必要期日 */
     @Temporal(TemporalType.DATE)
     @Column(name = "required_date")
@@ -101,6 +107,9 @@ public class PurchaseRequisition extends AuditableEntity {
     @Column(name = "requester_id")
     private Long requesterId;
 
+    @Column(name = "department_id")
+    private Long departmentId;
+
     /** 購買依頼明細のリスト */
     @OneToMany(mappedBy = "requisition", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<PurchaseRequisitionItem> items = new ArrayList<PurchaseRequisitionItem>();
@@ -120,6 +129,14 @@ public class PurchaseRequisition extends AuditableEntity {
 
     public void setReqNumber(String reqNumber) {
         this.reqNumber = reqNumber;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public Date getRequiredDate() {
@@ -160,6 +177,14 @@ public class PurchaseRequisition extends AuditableEntity {
 
     public void setRequesterId(Long requesterId) {
         this.requesterId = requesterId;
+    }
+
+    public Long getDepartmentId() {
+        return departmentId;
+    }
+
+    public void setDepartmentId(Long departmentId) {
+        this.departmentId = departmentId;
     }
 
     public List<PurchaseRequisitionItem> getItems() {

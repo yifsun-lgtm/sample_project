@@ -5,6 +5,7 @@ import { ProQuipWorld } from '../support/world';
 When(
   'the user fills in the requisition form',
   async function (this: ProQuipWorld) {
+    await this.page.locator('#title').fill('E2Eテスト用購買依頼');
     await this.page.locator('#department').selectOption('技術部');
     await this.page.getByRole('combobox').nth(1).selectOption('通常');
     await this.page.locator('#requiredDate').fill('2026-06-01');

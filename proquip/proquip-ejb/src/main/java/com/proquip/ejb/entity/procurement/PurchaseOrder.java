@@ -131,7 +131,7 @@ public class PurchaseOrder extends AuditableEntity {
     /** 配送方法 */
     // 技術的負債: @Column の name 属性が未指定（他のフィールドとの一貫性がない）
     @Size(max = 50)
-    @Column(length = 50)
+    @Column(name = "shipping_method", length = 50)
     private String shippingMethod;
 
     /** 備考 */

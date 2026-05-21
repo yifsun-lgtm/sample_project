@@ -78,7 +78,7 @@ public class ImportJob extends AuditableEntity {
     private String filePath;
 
     /** ファイルサイズ（バイト） */
-    @Column(name = "file_size")
+    @Column(name = "file_size_bytes")
     private Long fileSize;
 
     /**
@@ -90,15 +90,15 @@ public class ImportJob extends AuditableEntity {
     private String status;
 
     /** 総レコード数 */
-    @Column(name = "total_records")
+    @Column(name = "total_rows")
     private Integer totalRecords;
 
     /** 処理済みレコード数 */
-    @Column(name = "processed_records")
+    @Column(name = "processed_rows")
     private Integer processedRecords;
 
     /** エラーレコード数 */
-    @Column(name = "error_records")
+    @Column(name = "error_rows")
     private Integer errorRecords;
 
     /**
@@ -106,7 +106,7 @@ public class ImportJob extends AuditableEntity {
      * 技術的負債: スタックトレース全体をプレーンテキストとして格納している。
      * 構造化されたエラー情報（JSON配列等）に移行すべき。
      */
-    @Column(name = "error_details", columnDefinition = "TEXT")
+    @Column(name = "error_log", columnDefinition = "TEXT")
     private String errorDetails;
 
     /** ジョブ開始日時 */

@@ -2,9 +2,9 @@
 Feature: 製品管理
   ProQuip製品一覧・検索・フィルタ・詳細・作成・カテゴリ・バンドル管理の動作検証
 
-  Scenario: 製品一覧が109件のアイテムとページネーション付きで表示される
+  Scenario: 製品一覧が100件のアイテムとページネーション付きで表示される
     Given the user navigates to "/products"
-    Then the page should contain "109件中"
+    Then the page should contain "100件中"
     And the table should have more than 0 rows
 
   Scenario: SKU・製品名で検索できる

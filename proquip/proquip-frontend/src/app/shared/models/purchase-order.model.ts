@@ -55,6 +55,7 @@ export interface ApprovalStep {
 export interface Requisition {
   id: number;
   requisitionNumber: string;
+  title: string;
   requestedBy: string;
   department: string;
   status: string;

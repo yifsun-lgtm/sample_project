@@ -60,12 +60,12 @@ public class TaxRate extends BaseEntity {
 
     /** 適用国コード */
     @Size(max = 3)
-    @Column(name = "country", length = 3)
+    @Column(name = "country_code", length = 3)
     private String country;
 
     /** 適用州・地域コード */
     @Size(max = 10)
-    @Column(name = "state", length = 10)
+    @Column(name = "state_province", length = 10)
     private String state;
 
     /** 有効開始日 */
@@ -76,7 +76,7 @@ public class TaxRate extends BaseEntity {
 
     /** 有効終了日（nullの場合は無期限） */
     @Temporal(TemporalType.DATE)
-    @Column(name = "effective_to")
+    @Column(name = "effective_until")
     private Date effectiveTo;
 
     /**

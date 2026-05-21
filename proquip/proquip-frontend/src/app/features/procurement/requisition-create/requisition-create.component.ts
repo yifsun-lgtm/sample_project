@@ -90,6 +90,7 @@ export class RequisitionCreateComponent implements OnInit, OnDestroy {
   /** フォーム初期化 */
   private initForm(): void {
     this.requisitionForm = this.fb.group({
+      title: ['', [Validators.required, Validators.maxLength(300)]],
       department: ['', [Validators.required]],
       justification: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(500)]],
       urgency: ['NORMAL', [Validators.required]],
@@ -284,6 +285,7 @@ export class RequisitionCreateComponent implements OnInit, OnDestroy {
 
     const formValue = this.requisitionForm.value;
     const requisitionData: Partial<Requisition> = {
+      title: formValue.title,
       department: formValue.department,
       justification: formValue.justification,
       priority: formValue.urgency,
@@ -315,6 +317,7 @@ export class RequisitionCreateComponent implements OnInit, OnDestroy {
   saveDraft(): void {
     const formValue = this.requisitionForm.value;
     const draftData: Partial<Requisition> = {
+      title: formValue.title,
       department: formValue.department,
       justification: formValue.justification,
       priority: formValue.urgency,

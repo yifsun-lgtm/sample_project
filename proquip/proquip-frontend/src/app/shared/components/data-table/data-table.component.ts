@@ -71,6 +71,9 @@ export class DataTableComponent implements OnChanges {
   /** 行クリックイベント */
   @Output() rowClick = new EventEmitter<any>();
 
+  /** セルカスタムテンプレート */
+  @ContentChild('cellTemplate', { static: false }) cellTemplate?: TemplateRef<any>;
+
   /** 行アクション用テンプレート */
   @ContentChild('rowActions', { static: false }) rowActionsTemplate?: TemplateRef<any>;
 

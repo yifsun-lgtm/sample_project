@@ -11,6 +11,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.stream.Collectors;
 
+import com.proquip.ejb.entity.organization.Department;
 import com.proquip.ejb.entity.organization.UserProfile;
 import com.proquip.ejb.entity.procurement.PurchaseRequisitionItem;
 import com.proquip.ejb.entity.product.Product;
@@ -184,6 +185,7 @@ public class RequisitionResource {
         logger.info("購買依頼作成。ユーザー=" + secCtx.getUserPrincipal().getName());
 
         PurchaseRequisition entity = new PurchaseRequisition();
+        entity.setTitle(body.get("title") != null ? body.get("title").toString() : "購買依頼");
         entity.setJustification(body.get("justification") != null ? body.get("justification").toString() : null);
         Object priorityVal = body.get("priority") != null ? body.get("priority") : body.get("urgency");
         entity.setPriority(priorityVal != null ? priorityVal.toString() : "NORMAL");
@@ -208,6 +210,16 @@ public class RequisitionResource {
                     .setMaxResults(1)
                     .getResultList();
             entity.setRequesterId(fallback.isEmpty() ? 1L : fallback.get(0).getId());
+        }
+
+        if (body.get("department") != null) {
+            List<Department> depts = em.createQuery(
+                    "SELECT d FROM Department d WHERE d.name = :name", Department.class)
+                    .setParameter("name", body.get("department").toString())
+                    .getResultList();
+            entity.setDepartmentId(depts.isEmpty() ? 1L : depts.get(0).getId());
+        } else {
+            entity.setDepartmentId(1L);
         }
 
         Object itemsObj = body.get("items");

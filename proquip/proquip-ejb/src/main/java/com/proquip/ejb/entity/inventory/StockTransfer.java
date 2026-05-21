@@ -74,12 +74,12 @@ public class StockTransfer extends AuditableEntity {
     /** 移動依頼日 */
     @NotNull
     @Temporal(TemporalType.DATE)
-    @Column(name = "request_date", nullable = false)
+    @Column(name = "requested_date", nullable = false)
     private Date requestDate;
 
     /** 移動完了日 */
     @Temporal(TemporalType.DATE)
-    @Column(name = "completed_date")
+    @Column(name = "received_date")
     private Date completedDate;
 
     /**
@@ -90,7 +90,7 @@ public class StockTransfer extends AuditableEntity {
      * </p>
      */
     @NotNull
-    @Column(name = "source_warehouse_id", nullable = false)
+    @Column(name = "from_warehouse_id", nullable = false)
     private Long sourceWarehouseId;
 
     /**
@@ -101,7 +101,7 @@ public class StockTransfer extends AuditableEntity {
      * </p>
      */
     @NotNull
-    @Column(name = "destination_warehouse_id", nullable = false)
+    @Column(name = "to_warehouse_id", nullable = false)
     private Long destinationWarehouseId;
 
     /** 移動品目のリスト */

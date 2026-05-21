@@ -60,7 +60,7 @@ public class InventoryCount extends AuditableEntity {
     /** 棚卸実施日 */
     @NotNull
     @Temporal(TemporalType.DATE)
-    @Column(name = "count_date", nullable = false)
+    @Column(name = "planned_date", nullable = false)
     private Date countDate;
 
     /**
@@ -84,7 +84,7 @@ public class InventoryCount extends AuditableEntity {
      */
     @NotNull
     @Size(max = 10)
-    @Column(name = "type", nullable = false, length = 10)
+    @Column(name = "count_type", nullable = false, length = 10)
     private String type;
 
     /**

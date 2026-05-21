@@ -77,7 +77,7 @@ public class Notification extends AuditableEntity {
      * 技術的負債: 文字列で管理している。Enum型に移行すべき。
      * 想定値: "INFO", "WARNING", "ERROR", "APPROVAL_REQUEST"
      */
-    @Column(name = "type", nullable = false, length = 30)
+    @Column(name = "channel", nullable = false, length = 30)
     private String type;
 
     /**
@@ -93,11 +93,11 @@ public class Notification extends AuditableEntity {
     private Integer priority;
 
     /** 参照先エンティティの種別（例: "PurchaseOrder", "ApprovalRequest"） */
-    @Column(name = "reference_type", length = 100)
+    @Column(name = "entity_type", length = 100)
     private String referenceType;
 
     /** 参照先エンティティのID */
-    @Column(name = "reference_id")
+    @Column(name = "entity_id")
     private Long referenceId;
 
     /** 既読日時 */

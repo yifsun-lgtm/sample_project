@@ -24,6 +24,9 @@ public class PurchaseRequisitionDto implements Serializable {
     /** 購買依頼番号 */
     private String requisitionNumber;
 
+    /** 件名 */
+    private String title;
+
     /** 依頼者名 */
     private String requestedBy;
 
@@ -85,6 +88,14 @@ public class PurchaseRequisitionDto implements Serializable {
 
     public void setRequisitionNumber(String requisitionNumber) {
         this.requisitionNumber = requisitionNumber;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public void setTitle(String title) {
+        this.title = title;
     }
 
     public String getRequestedBy() {

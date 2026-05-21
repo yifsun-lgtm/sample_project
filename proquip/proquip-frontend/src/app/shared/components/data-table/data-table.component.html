@@ -21,14 +21,19 @@
         class="data-row"
       >
         <td *ngFor="let col of columns">
-          <ng-container [ngSwitch]="col.type">
-            <span *ngSwitchCase="'currency'">{{ row[col.key] | currencyJp }}</span>
-            <span *ngSwitchCase="'date'">{{ row[col.key] | japaneseDate }}</span>
-            <span *ngSwitchCase="'status'">
-              <app-status-badge [status]="row[col.key]"></app-status-badge>
-            </span>
-            <span *ngSwitchDefault>{{ row[col.key] }}</span>
+          <ng-container *ngIf="cellTemplate; else defaultCell">
+            <ng-container *ngTemplateOutlet="cellTemplate; context: { $implicit: row, column: col }"></ng-container>
           </ng-container>
+          <ng-template #defaultCell>
+            <ng-container [ngSwitch]="col.type">
+              <span *ngSwitchCase="'currency'">{{ row[col.key] | currencyJp }}</span>
+              <span *ngSwitchCase="'date'">{{ row[col.key] | japaneseDate }}</span>
+              <span *ngSwitchCase="'status'">
+                <app-status-badge [status]="row[col.key]"></app-status-badge>
+              </span>
+              <span *ngSwitchDefault>{{ row[col.key] }}</span>
+            </ng-container>
+          </ng-template>
         </td>
         <td *ngIf="rowActionsTemplate" class="actions-cell" (click)="$event.stopPropagation()">
           <ng-container *ngTemplateOutlet="rowActionsTemplate; context: { $implicit: row }"></ng-container>

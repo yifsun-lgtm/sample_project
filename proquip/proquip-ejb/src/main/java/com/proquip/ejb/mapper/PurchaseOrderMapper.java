@@ -63,7 +63,10 @@ public class PurchaseOrderMapper {
         response.setOrderNumber(entity.getPoNumber());
         response.setStatus(entity.getStatus());
         response.setOrderDate(toUtilDate(entity.getOrderDate() != null ? entity.getOrderDate() : entity.getCreatedAt()));
-        response.setExpectedDeliveryDate(toUtilDate(entity.getExpectedDeliveryDate()));
+        response.setExpectedDeliveryDate(toUtilDate(
+                entity.getExpectedDeliveryDate() != null ? entity.getExpectedDeliveryDate()
+                        : entity.getOrderDate() != null ? entity.getOrderDate()
+                        : entity.getCreatedAt()));
         response.setTotalAmount(entity.getTotalAmount());
         response.setCurrency(entity.getCurrency());
 

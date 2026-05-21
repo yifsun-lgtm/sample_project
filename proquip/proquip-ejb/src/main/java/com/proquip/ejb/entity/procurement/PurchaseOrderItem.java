@@ -47,11 +47,11 @@ public class PurchaseOrderItem extends BaseEntity {
     private BigDecimal unitPrice;
 
     /** 税率（例: 0.10 = 10%） */
-    @Column(name = "tax_rate", precision = 5, scale = 4)
+    @Column(name = "tax_rate_pct", precision = 5, scale = 4)
     private BigDecimal taxRate;
 
     /** 割引率（例: 0.05 = 5%） */
-    @Column(name = "discount", precision = 5, scale = 4)
+    @Column(name = "discount_pct", precision = 5, scale = 4)
     private BigDecimal discount;
 
     /**
@@ -62,11 +62,11 @@ public class PurchaseOrderItem extends BaseEntity {
      * 手動で維持する必要がある。
      * </p>
      */
-    @Column(name = "subtotal", precision = 18, scale = 2)
+    @Column(name = "total_price", precision = 18, scale = 2)
     private BigDecimal subtotal;
 
     /** 受入済み数量 */
-    @Column(name = "received_quantity", precision = 15, scale = 3)
+    @Column(name = "quantity_received", precision = 15, scale = 3)
     private BigDecimal receivedQuantity;
 
     /**

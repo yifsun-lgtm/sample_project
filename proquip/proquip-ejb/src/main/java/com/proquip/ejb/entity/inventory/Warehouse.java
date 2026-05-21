@@ -93,7 +93,7 @@ public class Warehouse extends AuditableEntity {
     private String countryCode = "JPN";
 
     /** 最大収容量（パレット数など） */
-    @Column(name = "capacity")
+    @Column(name = "capacity_sqm")
     private Integer capacity;
 
     /** 有効フラグ */

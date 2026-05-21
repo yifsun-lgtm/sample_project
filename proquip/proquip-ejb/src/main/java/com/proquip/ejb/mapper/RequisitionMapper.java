@@ -69,6 +69,7 @@ public class RequisitionMapper {
         // 基本フィールドのマッピング
         dto.setId(entity.getId());
         dto.setRequisitionNumber(entity.getReqNumber());
+        dto.setTitle(entity.getTitle());
         dto.setStatus(entity.getStatus());
         // totalAmount, requestDate, urgency fields were removed from PurchaseRequisition (DDL alignment)
         // Use requiredDate and priority instead
@@ -142,6 +143,7 @@ public class RequisitionMapper {
 
         entity.setId(dto.getId());
         entity.setReqNumber(dto.getRequisitionNumber());
+        entity.setTitle(dto.getTitle());
         entity.setStatus(dto.getStatus());
         // totalAmount, requestDate, urgency fields were removed from PurchaseRequisition (DDL alignment)
         entity.setRequiredDate(dto.getRequiredDate());
