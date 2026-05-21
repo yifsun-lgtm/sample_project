@@ -1,0 +1,636 @@
+{
+  "id": "proquip",
+  "realm": "proquip",
+  "displayName": "ProQuip - 調達・在庫管理システム",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>ProQuip</span></div>",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 5,
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "ssoSessionIdleTimeoutRememberMe": 0,
+  "ssoSessionMaxLifespanRememberMe": 0,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespanEnabled": false,
+  "offlineSessionMaxLifespan": 5184000,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "passwordPolicy": "length(4)",
+  "smtpServer": {},
+  "eventsEnabled": true,
+  "eventsExpiration": 2592000,
+  "eventsListeners": [
+    "jboss-logging"
+  ],
+  "enabledEventTypes": [
+    "LOGIN",
+    "LOGIN_ERROR",
+    "LOGOUT",
+    "REGISTER",
+    "REGISTER_ERROR",
+    "CODE_TO_TOKEN",
+    "CODE_TO_TOKEN_ERROR",
+    "CLIENT_LOGIN",
+    "CLIENT_LOGIN_ERROR",
+    "FEDERATED_IDENTITY_LINK",
+    "REMOVE_FEDERATED_IDENTITY",
+    "UPDATE_EMAIL",
+    "UPDATE_PROFILE",
+    "RESET_PASSWORD",
+    "RESET_PASSWORD_ERROR",
+    "PERMISSION_TOKEN"
+  ],
+  "adminEventsEnabled": true,
+  "adminEventsDetailsEnabled": true,
+  "internationalizationEnabled": true,
+  "supportedLocales": [
+    "ja",
+    "en"
+  ],
+  "defaultLocale": "ja",
+  "roles": {
+    "realm": [
+      {
+        "id": "role-admin",
+        "name": "ADMIN",
+        "description": "システム管理者 - 全機能へのアクセス権限",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "MANAGER",
+            "BUYER",
+            "WAREHOUSE_STAFF",
+            "VIEWER"
+          ]
+        }
+      },
+      {
+        "id": "role-manager",
+        "name": "MANAGER",
+        "description": "マネージャー - 承認・レポート閲覧権限",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "VIEWER"
+          ]
+        }
+      },
+      {
+        "id": "role-buyer",
+        "name": "BUYER",
+        "description": "購買担当者 - 発注・仕入先管理権限",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "VIEWER"
+          ]
+        }
+      },
+      {
+        "id": "role-warehouse-staff",
+        "name": "WAREHOUSE_STAFF",
+        "description": "倉庫担当者 - 入出庫・在庫管理権限",
+        "composite": true,
+        "composites": {
+          "realm": [
+            "VIEWER"
+          ]
+        }
+      },
+      {
+        "id": "role-viewer",
+        "name": "VIEWER",
+        "description": "閲覧者 - 読み取り専用アクセス権限",
+        "composite": false
+      }
+    ],
+    "client": {
+      "proquip-web": [
+        {
+          "id": "client-role-web-user",
+          "name": "web-user",
+          "description": "Webアプリケーションユーザー"
+        }
+      ],
+      "proquip-api": [
+        {
+          "id": "client-role-api-access",
+          "name": "api-access",
+          "description": "APIアクセス権限"
+        }
+      ]
+    }
+  },
+  "defaultRoles": [
+    "VIEWER"
+  ],
+  "clients": [
+    {
+      "id": "client-proquip-web",
+      "clientId": "proquip-web",
+      "name": "ProQuip Webアプリケーション",
+      "description": "ProQuip Angular フロントエンドクライアント",
+      "rootUrl": "http://localhost:4200",
+      "adminUrl": "http://localhost:4200",
+      "baseUrl": "/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": true,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "http://localhost:4200/*",
+        "http://localhost:8080/*",
+        "http://127.0.0.1:4200/*"
+      ],
+      "webOrigins": [
+        "http://localhost:4200",
+        "http://localhost:8080",
+        "http://127.0.0.1:4200",
+        "+"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": true,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false",
+        "post.logout.redirect.uris": "http://localhost:4200/*",
+        "login_theme": "keycloak",
+        "pkce.code.challenge.method": "S256"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ],
+      "protocolMappers": [
+        {
+          "id": "mapper-realm-roles",
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "mapper-department",
+          "name": "department",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "department",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "department",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "mapper-employee-id",
+          "name": "employee_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "employee_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "employee_id",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "id": "client-proquip-api",
+      "clientId": "proquip-api",
+      "name": "ProQuip APIサーバー",
+      "description": "ProQuip バックエンドAPI (Bearer Only)",
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "proquip-api-secret-dev",
+      "redirectUris": [],
+      "webOrigins": [],
+      "notBefore": 0,
+      "bearerOnly": true,
+      "consentRequired": false,
+      "standardFlowEnabled": false,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "publicClient": false,
+      "frontchannelLogout": false,
+      "protocol": "openid-connect",
+      "attributes": {},
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "clientScopes": [
+    {
+      "id": "scope-roles",
+      "name": "roles",
+      "description": "OpenID Connect scope for add user roles to the access token",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${rolesScopeConsentText}"
+      },
+      "protocolMappers": [
+        {
+          "id": "mapper-audience-resolve",
+          "name": "audience resolve",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-resolve-mapper",
+          "consentRequired": false,
+          "config": {}
+        },
+        {
+          "id": "mapper-client-roles",
+          "name": "client roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-client-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "resource_access.${client_id}.roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "mapper-realm-roles-scope",
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "realm_access.roles",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "id": "scope-profile",
+      "name": "profile",
+      "description": "OpenID Connect built-in scope: profile",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${profileScopeConsentText}"
+      }
+    },
+    {
+      "id": "scope-email",
+      "name": "email",
+      "description": "OpenID Connect built-in scope: email",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "true",
+        "display.on.consent.screen": "true",
+        "consent.screen.text": "${emailScopeConsentText}"
+      }
+    },
+    {
+      "id": "scope-web-origins",
+      "name": "web-origins",
+      "description": "OpenID Connect scope for add allowed web origins to the access token",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "id": "mapper-allowed-web-origins",
+          "name": "allowed web origins",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-allowed-origins-mapper",
+          "consentRequired": false,
+          "config": {}
+        }
+      ]
+    },
+    {
+      "id": "scope-acr",
+      "name": "acr",
+      "description": "OpenID Connect scope for add acr (authentication context class reference) to the token",
+      "protocol": "openid-connect",
+      "attributes": {
+        "include.in.token.scope": "false",
+        "display.on.consent.screen": "false"
+      },
+      "protocolMappers": [
+        {
+          "id": "mapper-acr-loa-level",
+          "name": "acr loa level",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-acr-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "id": "user-admin",
+      "username": "admin",
+      "firstName": "管理",
+      "lastName": "太郎",
+      "email": "admin@proquip.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "department": ["情報システム部"],
+        "employee_id": ["EMP-0001"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN"
+      ],
+      "clientRoles": {
+        "proquip-web": ["web-user"],
+        "proquip-api": ["api-access"]
+      }
+    },
+    {
+      "id": "user-manager",
+      "username": "manager",
+      "firstName": "部長",
+      "lastName": "花子",
+      "email": "manager@proquip.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "department": ["調達部"],
+        "employee_id": ["EMP-0010"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "manager123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "MANAGER"
+      ],
+      "clientRoles": {
+        "proquip-web": ["web-user"],
+        "proquip-api": ["api-access"]
+      }
+    },
+    {
+      "id": "user-buyer",
+      "username": "buyer",
+      "firstName": "購買",
+      "lastName": "次郎",
+      "email": "buyer@proquip.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "department": ["調達部"],
+        "employee_id": ["EMP-0020"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "buyer123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "BUYER"
+      ],
+      "clientRoles": {
+        "proquip-web": ["web-user"],
+        "proquip-api": ["api-access"]
+      }
+    },
+    {
+      "id": "user-warehouse",
+      "username": "warehouse",
+      "firstName": "倉庫",
+      "lastName": "三郎",
+      "email": "warehouse@proquip.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "department": ["物流部"],
+        "employee_id": ["EMP-0030"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "warehouse123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "WAREHOUSE_STAFF"
+      ],
+      "clientRoles": {
+        "proquip-web": ["web-user"],
+        "proquip-api": ["api-access"]
+      }
+    },
+    {
+      "id": "user-viewer",
+      "username": "viewer",
+      "firstName": "閲覧",
+      "lastName": "四郎",
+      "email": "viewer@proquip.example.com",
+      "enabled": true,
+      "emailVerified": true,
+      "attributes": {
+        "department": ["経理部"],
+        "employee_id": ["EMP-0040"]
+      },
+      "credentials": [
+        {
+          "type": "password",
+          "value": "viewer123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "VIEWER"
+      ],
+      "clientRoles": {
+        "proquip-web": ["web-user"],
+        "proquip-api": ["api-access"]
+      }
+    }
+  ],
+  "groups": [
+    {
+      "id": "group-procurement",
+      "name": "調達部門",
+      "path": "/調達部門",
+      "subGroups": [
+        {
+          "id": "group-procurement-domestic",
+          "name": "国内調達課",
+          "path": "/調達部門/国内調達課"
+        },
+        {
+          "id": "group-procurement-overseas",
+          "name": "海外調達課",
+          "path": "/調達部門/海外調達課"
+        }
+      ]
+    },
+    {
+      "id": "group-warehouse",
+      "name": "物流部門",
+      "path": "/物流部門",
+      "subGroups": [
+        {
+          "id": "group-warehouse-main",
+          "name": "本社倉庫",
+          "path": "/物流部門/本社倉庫"
+        },
+        {
+          "id": "group-warehouse-branch",
+          "name": "支社倉庫",
+          "path": "/物流部門/支社倉庫"
+        }
+      ]
+    },
+    {
+      "id": "group-admin",
+      "name": "管理部門",
+      "path": "/管理部門"
+    }
+  ],
+  "requiredActions": [
+    {
+      "alias": "CONFIGURE_TOTP",
+      "name": "Configure OTP",
+      "providerId": "CONFIGURE_TOTP",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 10,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PASSWORD",
+      "name": "Update Password",
+      "providerId": "UPDATE_PASSWORD",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 30,
+      "config": {}
+    },
+    {
+      "alias": "UPDATE_PROFILE",
+      "name": "Update Profile",
+      "providerId": "UPDATE_PROFILE",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 40,
+      "config": {}
+    },
+    {
+      "alias": "VERIFY_EMAIL",
+      "name": "Verify Email",
+      "providerId": "VERIFY_EMAIL",
+      "enabled": true,
+      "defaultAction": false,
+      "priority": 50,
+      "config": {}
+    }
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicyReportOnly": "",
+    "xContentTypeOptions": "nosniff",
+    "referrerPolicy": "no-referrer",
+    "xRobotsTag": "none",
+    "xFrameOptions": "SAMEORIGIN",
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "xXSSProtection": "1; mode=block",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains"
+  }
+}

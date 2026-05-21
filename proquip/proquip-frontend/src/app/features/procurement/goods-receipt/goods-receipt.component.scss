@@ -1,0 +1,259 @@
+/* 入荷検収画面のスタイル */
+:host {
+  display: block;
+  padding: 24px;
+}
+
+.alert {
+  padding: 12px 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  &.alert-error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
+  &.alert-success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
+}
+
+.form-section {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #1976d2;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+
+  .section-title { margin: 0; padding-bottom: 0; border-bottom: none; }
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.order-search-wrapper {
+  max-width: 500px;
+}
+
+.autocomplete-wrapper {
+  position: relative;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.result-item {
+  padding: 10px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid #f5f5f5;
+
+  &:hover { background: #e3f2fd; }
+}
+
+.result-number { font-weight: 600; color: #1976d2; }
+.result-supplier { flex: 1; }
+.result-amount { font-weight: 500; }
+
+.order-info {
+  margin-top: 16px;
+  padding: 16px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 500;
+}
+
+.info-value {
+  font-size: 14px;
+  color: #333;
+  font-weight: 500;
+
+  &.link {
+    color: #1976d2;
+    cursor: pointer;
+    text-decoration: underline;
+  }
+}
+
+.receipt-header-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.receipt-date-label {
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.receipt-date-input {
+  width: 200px;
+}
+
+/* 入荷テーブル */
+.receipt-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  th {
+    background: #f5f5f5;
+    font-weight: 600;
+    font-size: 13px;
+    color: #555;
+  }
+
+  .text-right { text-align: right; }
+  .text-center { text-align: center; }
+}
+
+.sku-cell { font-size: 12px; color: #888; }
+
+.quantity-input {
+  width: 80px;
+  text-align: right;
+  padding: 6px 8px;
+
+  &.invalid {
+    border-color: #e53935;
+    background: #fff8f8;
+  }
+}
+
+.fully-received {
+  opacity: 0.5;
+  background: #f5f5f5;
+}
+
+/* プログレスバー */
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: #e0e0e0;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 10px;
+  transition: width 0.3s;
+
+  &.partial { background: #ff9800; }
+  &.complete { background: #43a047; }
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 11px;
+  font-weight: 600;
+  color: #333;
+}
+
+.receipt-notes {
+  margin-top: 20px;
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #555;
+    margin-bottom: 6px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.form-control {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: #1976d2;
+  }
+}
+
+.textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 60px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &.btn-sm { padding: 6px 12px; font-size: 13px; }
+  &.btn-primary { background: #1976d2; color: #fff; &:hover:not(:disabled) { background: #1565c0; } }
+  &.btn-outline { background: transparent; border: 1px solid #bdbdbd; color: #616161; &:hover:not(:disabled) { background: #f5f5f5; } }
+}

@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =========================================================== -->
+    <!-- ProQuip 親POM                                                -->
+    <!-- 企業向け調達・在庫管理システム                                    -->
+    <!-- 全サブモジュールの共通設定・依存関係・プラグインを一元管理する        -->
+    <!-- =========================================================== -->
+    <groupId>com.proquip</groupId>
+    <artifactId>proquip-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>ProQuip :: 親POM</name>
+    <description>ProQuip - 企業向け調達・在庫管理システム 親プロジェクト</description>
+
+    <!-- =========================================================== -->
+    <!-- モジュール定義                                                 -->
+    <!-- =========================================================== -->
+    <modules>
+        <module>../proquip-common</module>
+        <module>../proquip-ejb</module>
+        <module>../proquip-web</module>
+        <module>../proquip-ear</module>
+        <module>../proquip-db</module>
+    </modules>
+
+    <!-- =========================================================== -->
+    <!-- プロパティ定義                                                 -->
+    <!-- バージョン番号を一元管理し、各モジュールで参照する                  -->
+    <!-- =========================================================== -->
+    <properties>
+        <!-- ビルド設定 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <maven.compiler.source>17</maven.compiler.source>
+        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.release>17</maven.compiler.release>
+
+        <!-- Jakarta EE / WildFly -->
+        <jakarta.ee.version>10.0.0</jakarta.ee.version>
+        <wildfly.version>30.0.1.Final</wildfly.version>
+
+        <!-- データベース関連 -->
+        <postgresql.version>42.7.3</postgresql.version>
+        <flyway.version>10.15.0</flyway.version>
+        <hibernate.version>6.4.9.Final</hibernate.version>
+
+        <!-- シリアライズ / ユーティリティ -->
+        <jackson.version>2.17.1</jackson.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-io.version>2.16.1</commons-io.version>
+        <mapstruct.version>1.5.5.Final</mapstruct.version>
+        <slf4j.version>2.0.13</slf4j.version>
+
+        <!-- 認証・認可 -->
+        <keycloak.version>24.0.4</keycloak.version>
+
+        <!-- テスト関連 -->
+        <junit-jupiter.version>5.10.3</junit-jupiter.version>
+        <mockito.version>5.12.0</mockito.version>
+        <arquillian.version>1.8.0.Final</arquillian.version>
+        <arquillian-wildfly.version>5.0.1.Final</arquillian-wildfly.version>
+        <assertj.version>3.26.0</assertj.version>
+
+        <!-- Mavenプラグイン -->
+        <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+        <maven-war-plugin.version>3.4.0</maven-war-plugin.version>
+        <maven-ejb-plugin.version>3.2.1</maven-ejb-plugin.version>
+        <maven-ear-plugin.version>3.3.0</maven-ear-plugin.version>
+        <maven-surefire-plugin.version>3.3.0</maven-surefire-plugin.version>
+        <maven-failsafe-plugin.version>3.3.0</maven-failsafe-plugin.version>
+        <maven-jar-plugin.version>3.4.1</maven-jar-plugin.version>
+        <flyway-maven-plugin.version>10.15.0</flyway-maven-plugin.version>
+        <wildfly-maven-plugin.version>5.0.0.Final</wildfly-maven-plugin.version>
+
+        <!-- データベース接続情報（デフォルト: ローカル開発環境） -->
+        <db.url>jdbc:postgresql://localhost:5432/proquip</db.url>
+        <db.username>proquip</db.username>
+        <db.password>proquip_dev</db.password>
+        <db.schema>public</db.schema>
+    </properties>
+
+    <!-- =========================================================== -->
+    <!-- 依存関係管理                                                   -->
+    <!-- 各モジュールで使用するライブラリのバージョンを統一する              -->
+    <!-- =========================================================== -->
+    <dependencyManagement>
+        <dependencies>
+            <!-- Jakarta EE 10 BOM -->
+            <!-- WildFly 30が提供するJakarta EE 10準拠APIを一括インポート -->
+            <dependency>
+                <groupId>jakarta.platform</groupId>
+                <artifactId>jakarta.jakartaee-bom</artifactId>
+                <version>${jakarta.ee.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- プロジェクト内部モジュール         -->
+            <!-- =============================== -->
+            <dependency>
+                <groupId>com.proquip</groupId>
+                <artifactId>proquip-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.proquip</groupId>
+                <artifactId>proquip-ejb</artifactId>
+                <version>${project.version}</version>
+                <type>ejb</type>
+            </dependency>
+            <dependency>
+                <groupId>com.proquip</groupId>
+                <artifactId>proquip-web</artifactId>
+                <version>${project.version}</version>
+                <type>war</type>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- データベース関連                  -->
+            <!-- =============================== -->
+            <!-- Flyway: DBマイグレーション管理 -->
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-core</artifactId>
+                <version>${flyway.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-database-postgresql</artifactId>
+                <version>${flyway.version}</version>
+            </dependency>
+            <!-- PostgreSQL JDBCドライバ -->
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <version>${postgresql.version}</version>
+            </dependency>
+            <!-- Hibernate（WildFly提供だが、テスト時に必要） -->
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-core</artifactId>
+                <version>${hibernate.version}</version>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- JSON処理 (Jackson)               -->
+            <!-- =============================== -->
+            <dependency>
+                <groupId>com.fasterxml.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- Apache Commonsユーティリティ      -->
+            <!-- =============================== -->
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons-io.version}</version>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- マッピング                        -->
+            <!-- =============================== -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+                <version>${mapstruct.version}</version>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- 認証・認可 (Keycloak)             -->
+            <!-- =============================== -->
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-servlet-filter-adapter</artifactId>
+                <version>${keycloak.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.keycloak</groupId>
+                <artifactId>keycloak-admin-client</artifactId>
+                <version>${keycloak.version}</version>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- ロギング                          -->
+            <!-- =============================== -->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
+
+            <!-- =============================== -->
+            <!-- テスト関連                        -->
+            <!-- =============================== -->
+            <!-- JUnit 5 BOM -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit-jupiter.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <!-- Mockito -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- AssertJ: 流暢なアサーション -->
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <!-- Arquillian: Jakarta EE統合テストフレームワーク -->
+            <dependency>
+                <groupId>org.jboss.arquillian</groupId>
+                <artifactId>arquillian-bom</artifactId>
+                <version>${arquillian.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.wildfly.arquillian</groupId>
+                <artifactId>wildfly-arquillian-container-managed</artifactId>
+                <version>${arquillian-wildfly.version}</version>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =========================================================== -->
+    <!-- ビルドプラグイン管理                                           -->
+    <!-- 各モジュールで使用するプラグインのバージョン・設定を統一する       -->
+    <!-- =========================================================== -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <!-- Javaコンパイラ設定 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>${maven-compiler-plugin.version}</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                        <parameters>true</parameters>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.mapstruct</groupId>
+                                <artifactId>mapstruct-processor</artifactId>
+                                <version>${mapstruct.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
+                    </configuration>
+                </plugin>
+
+                <!-- WARパッケージング -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-war-plugin</artifactId>
+                    <version>${maven-war-plugin.version}</version>
+                    <configuration>
+                        <failOnMissingWebXml>false</failOnMissingWebXml>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+
+                <!-- EJBパッケージング -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-ejb-plugin</artifactId>
+                    <version>${maven-ejb-plugin.version}</version>
+                    <configuration>
+                        <!-- EJB 4.0仕様 (Jakarta EE 10) -->
+                        <ejbVersion>4.0</ejbVersion>
+                        <archive>
+                            <manifest>
+                                <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+
+                <!-- EARパッケージング -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-ear-plugin</artifactId>
+                    <version>${maven-ear-plugin.version}</version>
+                    <configuration>
+                        <version>10</version>
+                        <defaultLibBundleDir>lib</defaultLibBundleDir>
+                    </configuration>
+                </plugin>
+
+                <!-- JARパッケージング -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven-jar-plugin.version}</version>
+                </plugin>
+
+                <!-- 単体テスト実行 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven-surefire-plugin.version}</version>
+                    <configuration>
+                        <!-- テスト並列実行設定 -->
+                        <forkCount>1</forkCount>
+                        <reuseForks>true</reuseForks>
+                        <argLine>-Dfile.encoding=UTF-8</argLine>
+                    </configuration>
+                </plugin>
+
+                <!-- 統合テスト実行 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>${maven-failsafe-plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+
+                <!-- Flywayデータベースマイグレーション -->
+                <plugin>
+                    <groupId>org.flywaydb</groupId>
+                    <artifactId>flyway-maven-plugin</artifactId>
+                    <version>${flyway-maven-plugin.version}</version>
+                    <configuration>
+                        <url>${db.url}</url>
+                        <user>${db.username}</user>
+                        <password>${db.password}</password>
+                        <schemas>
+                            <schema>${db.schema}</schema>
+                        </schemas>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.postgresql</groupId>
+                            <artifactId>postgresql</artifactId>
+                            <version>${postgresql.version}</version>
+                        </dependency>
+                        <dependency>
+                            <groupId>org.flywaydb</groupId>
+                            <artifactId>flyway-database-postgresql</artifactId>
+                            <version>${flyway.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+
+                <!-- WildFlyデプロイ -->
+                <plugin>
+                    <groupId>org.wildfly.plugins</groupId>
+                    <artifactId>wildfly-maven-plugin</artifactId>
+                    <version>${wildfly-maven-plugin.version}</version>
+                    <configuration>
+                        <hostname>localhost</hostname>
+                        <port>9990</port>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+    </build>
+
+    <!-- =========================================================== -->
+    <!-- プロファイル定義                                               -->
+    <!-- 環境ごとの設定を切り替えるために使用する                         -->
+    <!-- =========================================================== -->
+    <profiles>
+        <!-- 開発環境プロファイル（デフォルト） -->
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <db.url>jdbc:postgresql://localhost:5432/proquip</db.url>
+                <db.username>proquip</db.username>
+                <db.password>proquip_dev</db.password>
+            </properties>
+        </profile>
+
+        <!-- ステージング環境プロファイル -->
+        <profile>
+            <id>staging</id>
+            <properties>
+                <db.url>jdbc:postgresql://stg-db.proquip.internal:5432/proquip</db.url>
+                <db.username>proquip_stg</db.username>
+                <db.password>${env.PROQUIP_STG_DB_PASSWORD}</db.password>
+            </properties>
+        </profile>
+
+        <!-- 本番環境プロファイル -->
+        <profile>
+            <id>production</id>
+            <properties>
+                <db.url>jdbc:postgresql://prd-db.proquip.internal:5432/proquip</db.url>
+                <db.username>proquip_prd</db.username>
+                <db.password>${env.PROQUIP_PRD_DB_PASSWORD}</db.password>
+            </properties>
+        </profile>
+    </profiles>
+
+</project>

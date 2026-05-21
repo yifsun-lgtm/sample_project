@@ -1,0 +1,157 @@
+<!-- 発注書一覧画面 -->
+<app-page-header
+  title="発注書一覧"
+  description="発注書の検索・管理を行います">
+  <div class="header-actions">
+    <button
+      class="btn btn-outline"
+      (click)="exportCsv()"
+      [disabled]="isExporting || isLoading">
+      <i class="icon-download"></i>
+      CSV出力
+    </button>
+    <button class="btn btn-primary" (click)="navigateToCreate()">
+      <i class="icon-plus"></i>
+      新規発注作成
+    </button>
+  </div>
+</app-page-header>
+
+<!-- フィルタセクション -->
+<div class="filter-section">
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="statusFilter">ステータス</label>
+      <select
+        id="statusFilter"
+        [(ngModel)]="filterStatus"
+        (ngModelChange)="onFilterChange()"
+        class="form-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-item">
+      <label for="supplierFilter">サプライヤー</label>
+      <select
+        id="supplierFilter"
+        [(ngModel)]="filterSupplierId"
+        (ngModelChange)="onFilterChange()"
+        class="form-select">
+        <option [ngValue]="null">すべて</option>
+        <option *ngFor="let supplier of suppliers" [ngValue]="supplier.id">
+          {{ supplier.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-item">
+      <label for="dateFromFilter">発注日（開始）</label>
+      <input
+        id="dateFromFilter"
+        type="date"
+        [(ngModel)]="filterDateFrom"
+        (ngModelChange)="onFilterChange()"
+        class="form-control" />
+    </div>
+
+    <div class="filter-item">
+      <label for="dateToFilter">発注日（終了）</label>
+      <input
+        id="dateToFilter"
+        type="date"
+        [(ngModel)]="filterDateTo"
+        (ngModelChange)="onFilterChange()"
+        class="form-control" />
+    </div>
+  </div>
+
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="amountMinFilter">金額下限</label>
+      <input
+        id="amountMinFilter"
+        type="number"
+        [(ngModel)]="filterAmountMin"
+        (ngModelChange)="onFilterChange()"
+        class="form-control"
+        placeholder="0"
+        min="0" />
+    </div>
+
+    <div class="filter-item">
+      <label for="amountMaxFilter">金額上限</label>
+      <input
+        id="amountMaxFilter"
+        type="number"
+        [(ngModel)]="filterAmountMax"
+        (ngModelChange)="onFilterChange()"
+        class="form-control"
+        placeholder="上限なし"
+        min="0" />
+    </div>
+
+    <div class="filter-actions">
+      <button
+        class="btn btn-outline"
+        (click)="clearFilters()"
+        [class.active]="hasActiveFilters()">
+        フィルタクリア
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- データテーブル -->
+<div class="table-container">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-data-table
+    *ngIf="!isLoading"
+    [columns]="columns"
+    [data]="orders"
+    [totalCount]="totalCount"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [sortColumn]="sortColumn"
+    [sortDirection]="sortDirection"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (rowClick)="onRowClick($event)">
+
+    <ng-template #cellTemplate let-row let-column="column">
+      <ng-container [ngSwitch]="column.key">
+        <span *ngSwitchCase="'status'">
+          <app-status-badge [status]="row.status"></app-status-badge>
+        </span>
+        <span *ngSwitchCase="'orderDate'">
+          {{ row.orderDate | japaneseDate }}
+        </span>
+        <span *ngSwitchCase="'expectedDeliveryDate'">
+          <span [class.overdue]="row.expectedDeliveryDate && isOverdue(row)">
+            {{ row.expectedDeliveryDate | japaneseDate }}
+          </span>
+        </span>
+        <span *ngSwitchCase="'totalAmount'" class="amount-cell">
+          {{ row.totalAmount | currencyJp }}
+        </span>
+        <span *ngSwitchDefault>{{ row[column.key] }}</span>
+      </ng-container>
+    </ng-template>
+  </app-data-table>
+
+  <app-empty-state
+    *ngIf="!isLoading && orders.length === 0"
+    message="発注書がありません"
+    actionLabel="新規発注を作成"
+    (action)="navigateToCreate()">
+  </app-empty-state>
+</div>
+
+<!-- エクスポート中のオーバーレイ -->
+<div class="export-overlay" *ngIf="isExporting">
+  <app-loading-spinner></app-loading-spinner>
+  <span>CSVを生成中...</span>
+</div>

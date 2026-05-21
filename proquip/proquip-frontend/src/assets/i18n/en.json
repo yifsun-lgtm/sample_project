@@ -1,0 +1,472 @@
+{
+  "_comment": "English translation - incomplete. TODO: complete all translations",
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create New",
+    "search": "Search",
+    "filter": "Filter",
+    "export": "Export",
+    "import": "Import",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "loading": "Loading...",
+    "noData": "No data available",
+    "required": "This field is required",
+    "success": "Operation completed successfully",
+    "error": "An error occurred",
+    "actions": "Actions",
+    "status": "Status",
+    "total": "Total",
+    "submit": "Submit",
+    "approve": "Approve",
+    "reject": "Reject",
+    "close": "Close",
+    "reset": "Reset",
+    "refresh": "Refresh",
+    "download": "Download",
+    "upload": "Upload",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "detail": "Detail",
+    "list": "List",
+    "all": "All",
+    "select": "Select",
+    "selectAll": "Select All",
+    "deselectAll": "Deselect All",
+    "sort": "Sort",
+    "ascending": "Ascending",
+    "descending": "Descending",
+    "date": "Date",
+    "dateRange": "Date Range",
+    "startDate": "Start Date",
+    "endDate": "End Date",
+    "createdAt": "Created At",
+    "updatedAt": "Updated At",
+    "createdBy": "Created By",
+    "updatedBy": "Updated By",
+    "name": "Name",
+    "description": "Description",
+    "notes": "Notes",
+    "category": "Category",
+    "code": "Code",
+    "quantity": "Quantity",
+    "unitPrice": "Unit Price",
+    "amount": "Amount",
+    "currency": "Currency",
+    "unit": "Unit",
+    "percentage": "Percentage",
+    "address": "Address",
+    "phone": "Phone",
+    "email": "Email",
+    "website": "Website",
+    "department": "Department",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "completed": "Completed",
+    "copyToClipboard": "Copy to clipboard",
+    "copied": "Copied",
+    "confirmDelete": "Are you sure you want to delete this item?",
+    "confirmAction": "Are you sure you want to perform this action?",
+    "unsavedChanges": "You have unsaved changes. Are you sure you want to discard them?",
+    "noResults": "No results found",
+    "itemsPerPage": "Items per page",
+    "pageOf": "Page {{current}} of {{total}}",
+    "totalItems": "{{count}} total items",
+    "showingItems": "Showing {{start}} - {{end}} of {{total}}",
+    "validation": {
+      "required": "This field is required",
+      "minLength": "Must be at least {{min}} characters",
+      "maxLength": "Must be no more than {{max}} characters",
+      "min": "Must be at least {{min}}",
+      "max": "Must be no more than {{max}}",
+      "email": "Please enter a valid email address",
+      "pattern": "Invalid format",
+      "duplicate": "This value is already in use",
+      "invalidDate": "Please enter a valid date",
+      "dateRange": "End date must be after start date"
+    }
+  },
+  "auth": {
+    "login": "Login",
+    "logout": "Logout",
+    "username": "Username",
+    "password": "Password",
+    "sessionExpired": "Your session has expired. Please log in again.",
+    "accessDenied": "Access denied. You do not have permission for this action.",
+    "unauthorized": "Authentication error"
+  },
+  "layout": {
+    "header": {
+      "title": "ProQuip",
+      "subtitle": "Procurement & Inventory Management",
+      "notifications": "Notifications",
+      "profile": "Profile",
+      "settings": "Settings",
+      "help": "Help"
+    },
+    "sidebar": {
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "suppliers": "Suppliers",
+      "procurement": "Procurement",
+      "inventory": "Inventory",
+      "warehouses": "Warehouses",
+      "pricing": "Pricing",
+      "reports": "Reports",
+      "admin": "Administration"
+    },
+    "footer": {
+      "copyright": "© 2026 ProQuip - Procurement & Inventory Management System",
+      "version": "Version"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "summary": {
+      "totalOrders": "Total Orders",
+      "pendingOrders": "Pending Orders",
+      "approvedOrders": "Approved Orders",
+      "lowStockAlerts": "Low Stock Alerts",
+      "pendingApprovals": "Pending Approvals",
+      "budgetUtilization": "Budget Utilization",
+      "budgetTotal": "Total Budget",
+      "budgetSpent": "Spent",
+      "budgetRemaining": "Remaining"
+    },
+    "charts": {
+      "monthlySpending": "Monthly Spending Trend",
+      "categorySpending": "Spending by Category",
+      "noChartData": "No chart data available"
+    },
+    "recentOrders": {
+      "title": "Recent Orders",
+      "orderNumber": "Order Number",
+      "supplier": "Supplier",
+      "amount": "Amount",
+      "status": "Status",
+      "date": "Order Date",
+      "viewAll": "View All"
+    },
+    "lowStock": {
+      "title": "Low Stock Alerts",
+      "product": "Product",
+      "warehouse": "Warehouse",
+      "current": "Current",
+      "minimum": "Minimum",
+      "reorderPoint": "Reorder Point",
+      "viewAll": "View All"
+    },
+    "myTasks": {
+      "title": "My Tasks",
+      "approvalRequired": "Approval Required",
+      "reviewRequired": "Review Required",
+      "overdueDelivery": "Overdue Delivery",
+      "noTasks": "No tasks"
+    },
+    "refresh": "Refresh Data",
+    "lastUpdated": "Last updated: {{time}}",
+    "errorLoading": "Failed to load data. Please try again."
+  },
+  "products": {
+    "title": "Product Management",
+    "list": {
+      "title": "Product List",
+      "createNew": "New Product",
+      "exportCsv": "Export CSV",
+      "categories": "Categories",
+      "bundles": "Bundles"
+    },
+    "detail": {
+      "title": "Product Detail",
+      "tabs": {
+        "basic": "Basic Info",
+        "specifications": "Specifications",
+        "images": "Images",
+        "alternatives": "Alternatives",
+        "suppliers": "Suppliers",
+        "documents": "Documents",
+        "history": "Change History"
+      },
+      "confirmDelete": "Are you sure you want to delete this product? Related inventory data will also be deleted."
+    },
+    "create": {
+      "title": "New Product Registration",
+      "steps": {
+        "basic": "Basic Info",
+        "basicDesc": "Product name, SKU, category",
+        "pricing": "Pricing & Stock",
+        "pricingDesc": "Price, unit, reorder point",
+        "specs": "Specifications",
+        "specsDesc": "Product specification details",
+        "confirm": "Confirmation",
+        "confirmDesc": "Review and confirm"
+      },
+      "success": "Product has been registered successfully.",
+      "error": "Failed to register product. Please check the input."
+    },
+    "edit": {
+      "title": "Edit Product",
+      "success": "Product has been updated.",
+      "error": "Failed to update product."
+    },
+    "fields": {
+      "sku": "SKU",
+      "skuPlaceholder": "e.g., AB-12345",
+      "skuHint": "2-4 uppercase letters + hyphen + 3-8 digits",
+      "name": "Product Name",
+      "description": "Description",
+      "category": "Category",
+      "manufacturer": "Manufacturer",
+      "unitPrice": "Unit Price",
+      "unit": "Unit",
+      "minimumOrderQuantity": "Min. Order Qty",
+      "leadTimeDays": "Lead Time (days)",
+      "weight": "Weight (kg)",
+      "dimensions": "Dimensions",
+      "status": "Status",
+      "specifications": "Specifications",
+      "notes": "Notes"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "DISCONTINUED": "Discontinued",
+      "PENDING": "Pending"
+    },
+    "validation": {
+      "skuRequired": "SKU is required",
+      "skuPattern": "Invalid SKU format (e.g., AB-12345)",
+      "skuDuplicate": "This SKU is already in use",
+      "nameRequired": "Product name is required",
+      "categoryRequired": "Please select a category",
+      "manufacturerRequired": "Please select a manufacturer",
+      "unitPriceRequired": "Unit price is required",
+      "unitPriceMin": "Unit price must be 0 or greater"
+    },
+    "categoryManagement": {
+      "title": "Category Management",
+      "createCategory": "New Category",
+      "parentCategory": "Parent Category",
+      "productCount": "Product Count"
+    },
+    "bundleManagement": {
+      "title": "Bundle Management",
+      "createBundle": "New Bundle",
+      "bundleItems": "Bundle Items",
+      "bundlePrice": "Bundle Price"
+    }
+  },
+  "suppliers": {
+    "title": "サプライヤー管理",
+    "list": {
+      "title": "サプライヤー一覧",
+      "createNew": "新規サプライヤー登録",
+      "compare": "サプライヤー比較"
+    },
+    "detail": {
+      "title": "サプライヤー詳細",
+      "tabs": {
+        "basic": "基本情報",
+        "contacts": "連絡先",
+        "contracts": "契約",
+        "products": "取扱製品",
+        "performance": "実績",
+        "history": "変更履歴"
+      }
+    },
+    "fields": {
+      "code": "サプライヤーコード",
+      "name": "会社名",
+      "nameKana": "会社名（カナ）",
+      "status": "ステータス",
+      "rating": "評価",
+      "address": "住所",
+      "phone": "電話番号",
+      "email": "メールアドレス",
+      "website": "ウェブサイト",
+      "paymentTerms": "支払条件",
+      "notes": "備考"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "PENDING": "Pending",
+      "BLOCKED": "Blocked"
+    }
+  },
+  "procurement": {
+    "title": "調達管理",
+    "orders": {
+      "title": "発注書一覧",
+      "createNew": "新規発注書作成",
+      "detail": "発注書詳細"
+    },
+    "orderCreate": {
+      "title": "新規発注書作成",
+      "selectSupplier": "サプライヤーを選択",
+      "searchSupplier": "サプライヤーを検索...",
+      "items": "明細行",
+      "addItem": "明細行を追加",
+      "subtotal": "小計",
+      "tax": "消費税",
+      "total": "合計金額",
+      "saveDraft": "下書き保存",
+      "submitOrder": "発注書を作成"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "SUBMITTED": "Submitted",
+      "PENDING_APPROVAL": "Pending Approval",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected",
+      "ORDERED": "Ordered",
+      "SHIPPED": "Shipped",
+      "PARTIALLY_RECEIVED": "Partially Received",
+      "RECEIVED": "Received",
+      "DELIVERED": "Delivered",
+      "CANCELLED": "Cancelled",
+      "CLOSED": "Closed"
+    },
+    "requisitions": {
+      "title": "購買依頼一覧",
+      "createNew": "新規購買依頼"
+    },
+    "approval": {
+      "title": "承認キュー",
+      "approveButton": "承認",
+      "rejectButton": "却下"
+    },
+    "goodsReceipt": {
+      "title": "入荷処理"
+    },
+    "returns": {
+      "title": "返品管理"
+    }
+  },
+  "inventory": {
+    "title": "在庫管理",
+    "overview": {
+      "title": "在庫一覧",
+      "summary": {
+        "totalItems": "Total Items",
+        "totalValue": "Total Value",
+        "lowStockItems": "Low Stock",
+        "outOfStockItems": "Out of Stock"
+      }
+    },
+    "status": {
+      "IN_STOCK": "In Stock",
+      "LOW_STOCK": "Low Stock",
+      "OUT_OF_STOCK": "Out of Stock",
+      "RESERVED": "Reserved",
+      "ON_ORDER": "On Order"
+    },
+    "transfer": {
+      "title": "在庫移動"
+    },
+    "alerts": {
+      "title": "在庫アラート"
+    }
+  },
+  "warehouses": {
+    "title": "倉庫管理",
+    "list": {
+      "title": "倉庫一覧"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "MAINTENANCE": "Maintenance"
+    }
+  },
+  "pricing": {
+    "title": "価格管理",
+    "priceList": {
+      "title": "価格表一覧"
+    },
+    "priceEdit": {
+      "title": "価格編集"
+    },
+    "priceCompare": {
+      "title": "価格比較"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "spendingAnalysis": {
+      "title": "Spending Analysis",
+      "totalSpending": "Total Spending",
+      "orderCount": "Order Count",
+      "averageOrderValue": "Avg. Order Value"
+    },
+    "inventoryValuation": {
+      "title": "Inventory Valuation",
+      "totalValue": "Total Value"
+    },
+    "supplierPerformance": {
+      "title": "Supplier Performance",
+      "deliveryRate": "Delivery Rate",
+      "qualityRate": "Quality Rate"
+    },
+    "budgetActual": {
+      "title": "Budget vs Actual",
+      "budget": "Budget",
+      "actual": "Actual",
+      "variance": "Variance"
+    },
+    "export": {
+      "csv": "Export CSV",
+      "excel": "Export Excel",
+      "pdf": "Export PDF"
+    }
+  },
+  "admin": {
+    "title": "Administration",
+    "userManagement": {
+      "title": "User Management",
+      "username": "Username",
+      "roles": "Roles",
+      "enabled": "Enabled"
+    },
+    "rolePermission": {
+      "title": "Role & Permission Management"
+    },
+    "systemConfig": {
+      "title": "System Configuration"
+    },
+    "auditLog": {
+      "title": "Audit Log",
+      "action": "Action",
+      "entityType": "Entity Type",
+      "username": "User",
+      "timestamp": "Timestamp",
+      "details": "Details"
+    }
+  },
+  "errors": {
+    "networkError": "A network error occurred. Please check your connection.",
+    "serverError": "A server error occurred. Please try again later.",
+    "notFound": "Resource not found.",
+    "conflict": "Data has been updated by another user. Please refresh.",
+    "validationError": "There are validation errors in your input.",
+    "unknownError": "An unexpected error occurred."
+  },
+  "notifications": {
+    "orderCreated": "Purchase order {{orderNumber}} has been created",
+    "orderApproved": "Purchase order {{orderNumber}} has been approved",
+    "orderRejected": "Purchase order {{orderNumber}} has been rejected",
+    "goodsReceived": "Goods receipt for {{orderNumber}} has been completed",
+    "lowStockAlert": "Stock for {{productName}} is below reorder point",
+    "productCreated": "Product {{productName}} has been registered",
+    "supplierCreated": "Supplier {{supplierName}} has been registered"
+  }
+}

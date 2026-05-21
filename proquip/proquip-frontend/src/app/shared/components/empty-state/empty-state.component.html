@@ -1,0 +1,6 @@
+<div class="empty-state">
+  <span class="empty-icon" [innerHTML]="icon"></span>
+  <p class="empty-message">{{ message }}</p>
+  <p class="empty-submessage" *ngIf="submessage">{{ submessage }}</p>
+  <ng-content></ng-content>
+</div>

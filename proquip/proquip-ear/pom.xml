@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =========================================================== -->
+    <!-- ProQuip EARモジュール                                         -->
+    <!-- 全サブモジュール（EJB、WAR、共通ライブラリ）を一つの               -->
+    <!-- エンタープライズアーカイブとしてパッケージングし、                  -->
+    <!-- WildFlyへデプロイ可能な単一成果物を生成する                      -->
+    <!-- =========================================================== -->
+    <parent>
+        <groupId>com.proquip</groupId>
+        <artifactId>proquip-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../proquip-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>proquip-ear</artifactId>
+    <packaging>ear</packaging>
+
+    <name>ProQuip :: EARモジュール</name>
+    <description>
+        WildFly 30にデプロイするためのエンタープライズアーカイブ。
+        EJBモジュール、Webモジュール、共有ライブラリを統合してパッケージングする。
+    </description>
+
+    <dependencies>
+        <!-- =============================== -->
+        <!-- EJBモジュール                    -->
+        <!-- ビジネスロジック層                -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>com.proquip</groupId>
+            <artifactId>proquip-ejb</artifactId>
+            <type>ejb</type>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- Webモジュール                    -->
+        <!-- REST API / プレゼンテーション層   -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>com.proquip</groupId>
+            <artifactId>proquip-web</artifactId>
+            <type>war</type>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- 共通モジュール                    -->
+        <!-- EAR内の共有ライブラリ (lib/) に   -->
+        <!-- 配置し、EJB・WARの両方から参照可能 -->
+        <!-- とする                           -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>com.proquip</groupId>
+            <artifactId>proquip-common</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- EARファイル名 -->
+        <finalName>proquip</finalName>
+
+        <plugins>
+            <!-- EARパッケージング設定 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ear-plugin</artifactId>
+                <configuration>
+                    <!-- Jakarta EE 10 アプリケーション記述子バージョン -->
+                    <version>10</version>
+
+                    <!-- サードパーティライブラリの格納先 -->
+                    <defaultLibBundleDir>lib</defaultLibBundleDir>
+
+                    <!-- application.xml を自動生成する -->
+                    <generateApplicationXml>true</generateApplicationXml>
+
+                    <!-- アプリケーション表示名 -->
+                    <displayName>ProQuip - 調達・在庫管理システム</displayName>
+
+                    <!-- =============================== -->
+                    <!-- モジュール定義                    -->
+                    <!-- EAR内の各モジュール配置を指定する  -->
+                    <!-- =============================== -->
+                    <modules>
+                        <!-- EJBモジュール -->
+                        <ejbModule>
+                            <groupId>com.proquip</groupId>
+                            <artifactId>proquip-ejb</artifactId>
+                            <bundleFileName>proquip-ejb.jar</bundleFileName>
+                        </ejbModule>
+
+                        <!-- Webモジュール -->
+                        <webModule>
+                            <groupId>com.proquip</groupId>
+                            <artifactId>proquip-web</artifactId>
+                            <bundleFileName>proquip-web.war</bundleFileName>
+                            <!-- コンテキストルート設定 -->
+                            <contextRoot>/proquip</contextRoot>
+                        </webModule>
+
+                        <!-- 共通モジュール（共有ライブラリとして配置） -->
+                        <jarModule>
+                            <groupId>com.proquip</groupId>
+                            <artifactId>proquip-common</artifactId>
+                            <bundleDir>lib</bundleDir>
+                            <bundleFileName>proquip-common.jar</bundleFileName>
+                        </jarModule>
+                    </modules>
+
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Built-By>ProQuip Build System</Built-By>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- WildFlyへの自動デプロイ設定 -->
+            <!-- mvn wildfly:deploy で EAR をデプロイ可能 -->
+            <plugin>
+                <groupId>org.wildfly.plugins</groupId>
+                <artifactId>wildfly-maven-plugin</artifactId>
+                <configuration>
+                    <filename>proquip.ear</filename>
+                    <name>proquip.ear</name>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

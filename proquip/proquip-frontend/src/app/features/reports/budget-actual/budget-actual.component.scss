@@ -1,0 +1,272 @@
+/* 予算対実績レポートスタイル */
+
+.budget-actual {
+  padding: 24px;
+}
+
+.filter-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.filter-select {
+  padding: 6px 12px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &__label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+
+  &__value {
+    font-size: 26px;
+    font-weight: 700;
+    color: #111827;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__bar {
+    margin-top: 12px;
+  }
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 4px;
+}
+
+.section-hint {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0 0 16px;
+}
+
+.table-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+  }
+
+  th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+  }
+}
+
+.col-expand {
+  width: 36px;
+  text-align: center;
+}
+
+.col-budget, .col-actual, .col-variance {
+  text-align: right;
+  min-width: 120px;
+}
+
+.col-utilization {
+  text-align: right;
+  min-width: 80px;
+}
+
+.col-bar {
+  min-width: 180px;
+}
+
+.department-row {
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+
+  &.row-expanded {
+    background-color: #f0f5ff;
+  }
+}
+
+.expand-icon {
+  font-size: 10px;
+  color: #6b7280;
+}
+
+.department-name {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.monthly-row {
+  background-color: #fafbfc;
+
+  td {
+    padding-left: 16px;
+    border-bottom-color: #f3f4f6;
+  }
+}
+
+.monthly-label {
+  color: #6b7280;
+  font-size: 13px;
+  padding-left: 20px;
+}
+
+/* 消化率バー */
+.utilization-bar {
+  background: #f3f4f6;
+  border-radius: 6px;
+  height: 20px;
+  overflow: hidden;
+  position: relative;
+
+  &--small {
+    height: 14px;
+  }
+}
+
+.utilization-bar__fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.3s ease;
+
+  &.status-safe {
+    background: linear-gradient(90deg, #34d399, #059669);
+  }
+
+  &.status-warning {
+    background: linear-gradient(90deg, #fbbf24, #d97706);
+  }
+
+  &.status-danger {
+    background: linear-gradient(90deg, #f87171, #dc2626);
+  }
+}
+
+/* ステータスカラー */
+.status-safe { color: #059669; font-weight: 600; }
+.status-warning { color: #d97706; font-weight: 600; }
+.status-danger { color: #dc2626; font-weight: 600; }
+.status-future { color: #d1d5db; }
+
+.text-safe { color: #059669; }
+.text-danger { color: #dc2626; }
+.text-future { color: #d1d5db; font-style: italic; }
+
+.total-row {
+  background: #f9fafb;
+
+  td {
+    border-top: 2px solid #d1d5db;
+  }
+}
+
+.empty-row {
+  text-align: center;
+  padding: 40px !important;
+  color: #9ca3af;
+}
+
+/* 凡例 */
+.legend {
+  display: flex;
+  gap: 24px;
+  padding: 12px 0;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color {
+  width: 20px;
+  height: 12px;
+  border-radius: 3px;
+
+  &--safe { background: linear-gradient(90deg, #34d399, #059669); }
+  &--warning { background: linear-gradient(90deg, #fbbf24, #d97706); }
+  &--danger { background: linear-gradient(90deg, #f87171, #dc2626); }
+}
+
+.legend-label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+/* アラート */
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.alert-icon { font-weight: 700; }

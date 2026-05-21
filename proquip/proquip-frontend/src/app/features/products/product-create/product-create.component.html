@@ -1,0 +1,377 @@
+<app-page-header
+  title="製品登録"
+  description="新しい製品をカタログに登録します">
+</app-page-header>
+
+<div class="wizard-container">
+
+  <!-- ステップインジケーター -->
+  <div class="step-indicator">
+    <div *ngFor="let step of steps; let i = index"
+         class="step-item"
+         [class.active]="currentStep === i"
+         [class.completed]="i < currentStep || isStepComplete(i)"
+         (click)="goToStep(i)">
+      <div class="step-number">
+        <span *ngIf="i >= currentStep && !isStepComplete(i)">{{ i + 1 }}</span>
+        <span *ngIf="i < currentStep || isStepComplete(i)">&#10003;</span>
+      </div>
+      <div class="step-label">
+        <span class="step-title">{{ step.title }}</span>
+        <span class="step-description">{{ step.description }}</span>
+      </div>
+      <div class="step-connector" *ngIf="i < steps.length - 1"></div>
+    </div>
+  </div>
+
+  <!-- 成功メッセージ -->
+  <div class="success-banner" *ngIf="successMessage">
+    {{ successMessage }}
+  </div>
+
+  <!-- エラーメッセージ -->
+  <div class="error-banner" *ngIf="errorMessage">
+    {{ errorMessage }}
+  </div>
+
+  <!-- ステップ1: 基本情報 -->
+  <div class="step-content" *ngIf="currentStep === 0">
+    <h3 class="step-content-title">基本情報</h3>
+    <form [formGroup]="basicForm" class="wizard-form">
+
+      <div class="form-row">
+        <app-form-field label="製品名" [required]="true"
+                        [errorMessage]="basicForm.get('name')?.touched && basicForm.get('name')?.errors ? '製品名は必須です' : ''">
+          <input type="text" formControlName="name" class="form-input"
+                 placeholder="例: 制御ユニット Type-A">
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="SKU（品番）" [required]="true"
+                        [errorMessage]="getSkuErrorMessage()">
+          <div class="input-with-check">
+            <input type="text" formControlName="sku" class="form-input"
+                   placeholder="例: AB-12345"
+                   (blur)="checkSkuDuplicate()">
+            <span class="sku-check" *ngIf="skuCheckLoading">確認中...</span>
+            <span class="sku-check sku-ok" *ngIf="!skuCheckLoading && basicForm.get('sku')?.valid && !skuExists">&#10003;</span>
+            <span class="sku-check sku-ng" *ngIf="!skuCheckLoading && skuExists">重複あり</span>
+          </div>
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="説明">
+          <textarea formControlName="description" class="form-textarea" rows="4"
+                    placeholder="製品の説明を入力してください"></textarea>
+        </app-form-field>
+      </div>
+
+      <div class="form-row two-columns">
+        <app-form-field label="カテゴリ" [required]="true"
+                        [errorMessage]="basicForm.get('categoryId')?.touched && basicForm.get('categoryId')?.errors ? 'カテゴリを選択してください' : ''">
+          <select formControlName="categoryId" class="form-select">
+            <option [ngValue]="null" disabled>選択してください</option>
+            <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.name }}</option>
+          </select>
+        </app-form-field>
+
+        <app-form-field label="メーカー" [required]="true"
+                        [errorMessage]="basicForm.get('manufacturerId')?.touched && basicForm.get('manufacturerId')?.errors ? 'メーカーを選択してください' : ''">
+          <select formControlName="manufacturerId" class="form-select" aria-label="メーカー">
+            <option [ngValue]="null" disabled>選択してください</option>
+            <option *ngFor="let mfr of manufacturers" [ngValue]="mfr.id">{{ mfr.name }}</option>
+          </select>
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="ステータス" [required]="true">
+          <select formControlName="status" class="form-select narrow">
+            <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </app-form-field>
+      </div>
+    </form>
+  </div>
+
+  <!-- ステップ2: 価格・在庫 -->
+  <div class="step-content" *ngIf="currentStep === 1">
+    <h3 class="step-content-title">価格・在庫</h3>
+    <form [formGroup]="pricingForm" class="wizard-form">
+
+      <div class="form-row two-columns">
+        <app-form-field label="単価（税抜）" [required]="true"
+                        [errorMessage]="pricingForm.get('unitPrice')?.touched && pricingForm.get('unitPrice')?.errors ? '単価を入力してください' : ''">
+          <div class="input-with-prefix">
+            <span class="input-prefix">¥</span>
+            <input type="number" formControlName="unitPrice" class="form-input"
+                   placeholder="0" min="0">
+          </div>
+        </app-form-field>
+
+        <app-form-field label="単位" [required]="true">
+          <select formControlName="unit" class="form-select narrow">
+            <option value="個">個</option>
+            <option value="本">本</option>
+            <option value="枚">枚</option>
+            <option value="セット">セット</option>
+            <option value="箱">箱</option>
+            <option value="kg">kg</option>
+            <option value="m">m</option>
+            <option value="L">L</option>
+          </select>
+        </app-form-field>
+      </div>
+
+      <div class="form-row two-columns">
+        <app-form-field label="最低発注数" [required]="true"
+                        [errorMessage]="pricingForm.get('minimumOrderQuantity')?.touched && pricingForm.get('minimumOrderQuantity')?.errors ? '1以上を入力してください' : ''">
+          <input type="number" formControlName="minimumOrderQuantity" class="form-input"
+                 min="1" placeholder="1">
+        </app-form-field>
+
+        <app-form-field label="リードタイム（日）" [required]="true"
+                        [errorMessage]="pricingForm.get('leadTimeDays')?.touched && pricingForm.get('leadTimeDays')?.errors ? '1以上を入力してください' : ''">
+          <input type="number" formControlName="leadTimeDays" class="form-input"
+                 min="1" placeholder="7">
+        </app-form-field>
+      </div>
+
+      <div class="form-row two-columns">
+        <app-form-field label="重量（kg）">
+          <input type="number" formControlName="weight" class="form-input"
+                 step="0.1" min="0" placeholder="0.0">
+        </app-form-field>
+
+        <app-form-field label="寸法">
+          <input type="text" formControlName="dimensions" class="form-input"
+                 placeholder="例: 100mm x 50mm x 30mm">
+        </app-form-field>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ステップ3: 仕様 -->
+  <div class="step-content" *ngIf="currentStep === 2">
+    <h3 class="step-content-title">仕様</h3>
+    <form [formGroup]="specForm" class="wizard-form">
+
+      <div class="spec-rows">
+        <div class="spec-header">
+          <span class="spec-header-key">項目名</span>
+          <span class="spec-header-value">値</span>
+          <span class="spec-header-action"></span>
+        </div>
+
+        <div formArrayName="specifications">
+          <div *ngFor="let row of specificationRows.controls; let i = index"
+               [formGroupName]="i" class="spec-row">
+            <input type="text" formControlName="key" class="form-input"
+                   placeholder="例: 電圧">
+            <input type="text" formControlName="value" class="form-input"
+                   placeholder="例: AC100V">
+            <button class="btn-remove" (click)="removeSpecificationRow(i)"
+                    [disabled]="specificationRows.length <= 1"
+                    title="行を削除">
+              ×
+            </button>
+          </div>
+        </div>
+
+        <button class="btn-add-row" (click)="addSpecificationRow()">
+          + 仕様行を追加
+        </button>
+      </div>
+
+      <div class="form-row" style="margin-top: 24px;">
+        <app-form-field label="備考">
+          <textarea formControlName="notes" class="form-textarea" rows="3"
+                    placeholder="補足情報や注意事項を入力してください"></textarea>
+        </app-form-field>
+      </div>
+
+    </form>
+  </div>
+
+  <!-- ステップ4: 画像・資料 -->
+  <div class="step-content" *ngIf="currentStep === 3">
+    <h3 class="step-content-title">画像・資料</h3>
+
+    <div class="wizard-form">
+      <!-- 画像セクション -->
+      <div class="upload-section">
+        <h4 class="upload-section-title">製品画像</h4>
+        <p class="upload-hint">PNG, JPG形式の画像をアップロードできます</p>
+
+        <div class="image-preview-list" *ngIf="pendingImages.length > 0">
+          <div *ngFor="let img of pendingImages; let i = index" class="image-preview-item">
+            <img [src]="img.preview" [alt]="img.file.name" class="preview-thumb">
+            <div class="image-info">
+              <span class="image-name">{{ img.file.name }}</span>
+              <span class="image-size">{{ formatFileSize(img.file.size) }}</span>
+              <span class="image-primary" *ngIf="img.isPrimary">メイン画像</span>
+              <button class="btn-link" *ngIf="!img.isPrimary" (click)="setPrimaryImage(i)">メインに設定</button>
+            </div>
+            <button class="btn-remove" (click)="removeImage(i)" title="削除">×</button>
+          </div>
+        </div>
+
+        <label class="upload-area">
+          <input type="file" accept="image/png,image/jpeg" multiple
+                 (change)="onImageSelected($event)" style="display:none">
+          <span class="upload-label">+ 画像を追加</span>
+        </label>
+      </div>
+
+      <!-- ドキュメントセクション -->
+      <div class="upload-section" style="margin-top: 32px;">
+        <h4 class="upload-section-title">ドキュメント</h4>
+        <p class="upload-hint">PDF形式のドキュメントをアップロードできます</p>
+
+        <div class="doc-list" *ngIf="pendingDocuments.length > 0">
+          <div *ngFor="let doc of pendingDocuments; let i = index" class="doc-item">
+            <span class="doc-icon">&#128196;</span>
+            <div class="doc-info">
+              <span class="doc-name">{{ doc.file.name }}</span>
+              <span class="doc-size">{{ formatFileSize(doc.file.size) }}</span>
+            </div>
+            <select [(ngModel)]="doc.docType" class="form-select narrow doc-type-select">
+              <option *ngFor="let opt of docTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+            </select>
+            <button class="btn-remove" (click)="removeDocument(i)" title="削除">×</button>
+          </div>
+        </div>
+
+        <label class="upload-area">
+          <input type="file" accept=".pdf,application/pdf" multiple
+                 (change)="onDocumentSelected($event)" style="display:none">
+          <span class="upload-label">+ ドキュメントを追加</span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- ステップ5: 確認 -->
+  <div class="step-content" *ngIf="currentStep === 4">
+    <h3 class="step-content-title">入力内容の確認</h3>
+
+    <div class="review-section">
+      <div class="review-group">
+        <h4 class="review-group-title">基本情報</h4>
+        <table class="review-table">
+          <tr>
+            <th>製品名</th>
+            <td>{{ basicForm.get('name')?.value }}</td>
+          </tr>
+          <tr>
+            <th>SKU</th>
+            <td class="mono">{{ basicForm.get('sku')?.value }}</td>
+          </tr>
+          <tr>
+            <th>説明</th>
+            <td>{{ basicForm.get('description')?.value || '-' }}</td>
+          </tr>
+          <tr>
+            <th>カテゴリ</th>
+            <td>{{ getCategoryName(basicForm.get('categoryId')?.value) }}</td>
+          </tr>
+          <tr>
+            <th>メーカー</th>
+            <td>{{ getManufacturerName(basicForm.get('manufacturerId')?.value) }}</td>
+          </tr>
+          <tr>
+            <th>ステータス</th>
+            <td>{{ getStatusLabel(basicForm.get('status')?.value) }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="review-group">
+        <h4 class="review-group-title">価格・在庫</h4>
+        <table class="review-table">
+          <tr>
+            <th>単価</th>
+            <td class="amount">{{ formatCurrency(pricingForm.get('unitPrice')?.value) }}</td>
+          </tr>
+          <tr>
+            <th>単位</th>
+            <td>{{ pricingForm.get('unit')?.value }}</td>
+          </tr>
+          <tr>
+            <th>最低発注数</th>
+            <td>{{ pricingForm.get('minimumOrderQuantity')?.value }}</td>
+          </tr>
+          <tr>
+            <th>リードタイム</th>
+            <td>{{ pricingForm.get('leadTimeDays')?.value }} 日</td>
+          </tr>
+          <tr>
+            <th>重量</th>
+            <td>{{ pricingForm.get('weight')?.value ? pricingForm.get('weight')?.value + ' kg' : '-' }}</td>
+          </tr>
+          <tr>
+            <th>寸法</th>
+            <td>{{ pricingForm.get('dimensions')?.value || '-' }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="review-group" *ngIf="getSpecificationsForReview().length > 0">
+        <h4 class="review-group-title">仕様</h4>
+        <table class="review-table">
+          <tr *ngFor="let spec of getSpecificationsForReview()">
+            <th>{{ spec.key }}</th>
+            <td>{{ spec.value }}</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="review-group" *ngIf="specForm.get('notes')?.value">
+        <h4 class="review-group-title">備考</h4>
+        <p class="review-notes">{{ specForm.get('notes')?.value }}</p>
+      </div>
+
+      <div class="review-group" *ngIf="pendingImages.length > 0">
+        <h4 class="review-group-title">画像（{{ pendingImages.length }}件）</h4>
+        <div class="review-images">
+          <div *ngFor="let img of pendingImages" class="review-image-item">
+            <img [src]="img.preview" [alt]="img.file.name" class="review-thumb">
+            <span>{{ img.file.name }}</span>
+            <span class="image-primary" *ngIf="img.isPrimary">メイン</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="review-group" *ngIf="pendingDocuments.length > 0">
+        <h4 class="review-group-title">ドキュメント（{{ pendingDocuments.length }}件）</h4>
+        <table class="review-table">
+          <tr *ngFor="let doc of pendingDocuments">
+            <th>{{ doc.file.name }}</th>
+            <td>{{ formatFileSize(doc.file.size) }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ナビゲーションボタン -->
+  <div class="wizard-navigation">
+    <button class="btn-cancel" (click)="cancel()">キャンセル</button>
+    <div class="nav-right">
+      <button class="btn-prev" *ngIf="currentStep > 0" (click)="prevStep()">
+        ← 前へ
+      </button>
+      <button class="btn-next" *ngIf="currentStep < steps.length - 1" (click)="nextStep()">
+        次へ →
+      </button>
+      <button class="btn-submit" *ngIf="currentStep === steps.length - 1"
+              (click)="submit()" [disabled]="isSubmitting">
+        {{ isSubmitting ? '登録中...' : '登録する' }}
+      </button>
+    </div>
+  </div>
+
+</div>

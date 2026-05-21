@@ -1,0 +1,15 @@
+{
+  "name": "proquip-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "cucumber-js",
+    "test:tags": "cucumber-js --tags"
+  },
+  "devDependencies": {
+    "@cucumber/cucumber": "10.3.1",
+    "@playwright/test": "1.42.1",
+    "ts-node": "10.9.2",
+    "typescript": "5.4.5"
+  }
+}

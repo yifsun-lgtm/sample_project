@@ -1,0 +1,155 @@
+# ============================================================
+# ProQuip .gitignore
+# Java/Maven/Node/Angular プロジェクト用
+# ============================================================
+
+# -------------------------------------------------
+# 環境変数・シークレット
+# -------------------------------------------------
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+credentials*.json
+
+# -------------------------------------------------
+# Java / Maven ビルド成果物
+# -------------------------------------------------
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+*.rar
+*.zip
+*.tar.gz
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/wrapper/MavenWrapperDownloader.java
+
+# Gradle
+.gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# -------------------------------------------------
+# Node.js / npm
+# -------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json.bak
+
+# -------------------------------------------------
+# Angular
+# -------------------------------------------------
+dist/
+tmp/
+out-tsc/
+.angular/
+.sass-cache/
+
+# Angular CLI キャッシュ
+.angular/cache/
+
+# -------------------------------------------------
+# IDE / エディタ
+# -------------------------------------------------
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.factorypath
+bin/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# NetBeans
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# -------------------------------------------------
+# OS 固有ファイル
+# -------------------------------------------------
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.directory
+
+# -------------------------------------------------
+# Docker / Podman
+# -------------------------------------------------
+docker/wildfly/deployments/
+docker/nginx/dist/
+
+# -------------------------------------------------
+# ログファイル
+# -------------------------------------------------
+*.log
+logs/
+
+# -------------------------------------------------
+# テスト関連
+# -------------------------------------------------
+coverage/
+test-results/
+*.lcov
+.nyc_output/
+
+# Surefire / Failsafe レポート
+**/surefire-reports/
+**/failsafe-reports/
+
+# -------------------------------------------------
+# その他
+# -------------------------------------------------
+*.swp
+*.swo
+*.bak
+*.tmp
+*.orig
+.cache/

@@ -1,0 +1,5 @@
+/* ルートコンポーネント固有のスタイルは styles.scss のグローバルレイアウトに委譲 */
+:host {
+  display: block;
+  height: 100%;
+}

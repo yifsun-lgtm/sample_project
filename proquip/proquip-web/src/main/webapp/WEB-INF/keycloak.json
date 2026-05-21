@@ -1,0 +1,22 @@
+{
+    "realm": "proquip",
+    "auth-server-url": "http://keycloak:8080/auth",
+    "ssl-required": "external",
+    "resource": "proquip-api",
+    "verify-token-audience": true,
+    "credentials": {
+        "secret": "proquip-api-secret"
+    },
+    "use-resource-role-mappings": true,
+    "confidential-port": 0,
+    "bearer-only": true,
+    "cors": false,
+    "policy-enforcer": {},
+    "connection-pool-size": 20,
+    "disable-trust-manager": false,
+    "allow-any-hostname": false,
+    "token-minimum-time-to-live": 10,
+    "min-time-between-jwks-requests": 10,
+    "public-key-cache-ttl": 86400,
+    "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA..."
+}

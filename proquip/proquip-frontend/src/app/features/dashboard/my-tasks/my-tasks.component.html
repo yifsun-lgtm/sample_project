@@ -1,0 +1,110 @@
+<app-page-header
+  title="マイタスク"
+  description="承認待ちのタスク一覧">
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<div class="tasks-container" *ngIf="!isLoading">
+
+  <!-- タブ切り替え -->
+  <div class="task-tabs">
+    <button
+      *ngFor="let tab of tabs"
+      class="tab-button"
+      [class.active]="activeTab === tab.key"
+      (click)="selectTab(tab.key)">
+      {{ tab.label }}
+      <span class="tab-count" *ngIf="tabCounts[tab.key] > 0">{{ tabCounts[tab.key] }}</span>
+    </button>
+  </div>
+
+  <!-- エラー表示 -->
+  <div class="error-message" *ngIf="errorMessage">
+    <p>{{ errorMessage }}</p>
+  </div>
+
+  <!-- タスク一覧 -->
+  <div class="task-list" *ngIf="filteredTasks.length > 0">
+    <div class="task-item" *ngFor="let task of filteredTasks"
+         [class.processing]="processingTaskId === task.id">
+
+      <!-- タスクメイン情報 -->
+      <div class="task-main">
+        <div class="task-type-badge" [ngClass]="task.type === 'requisition' ? 'type-requisition' : 'type-order'">
+          {{ task.typeLabel }}
+        </div>
+
+        <div class="task-info">
+          <div class="task-header-row">
+            <span class="task-reference">{{ task.referenceNumber }}</span>
+            <span class="task-priority" [ngClass]="getPriorityClass(task.priority)">
+              {{ getPriorityLabel(task.priority) }}
+            </span>
+          </div>
+          <div class="task-detail-row">
+            <span class="task-requester">申請者: {{ task.requester }}</span>
+            <span class="task-department" *ngIf="task.department !== '-'">{{ task.department }}</span>
+          </div>
+        </div>
+
+        <div class="task-amount">
+          {{ formatCurrency(task.amount) }}
+        </div>
+
+        <div class="task-date">
+          {{ formatDate(task.date) }}
+        </div>
+
+        <!-- アクションボタン -->
+        <div class="task-actions" *ngIf="!showCommentInput[task.id]">
+          <button class="btn-approve" (click)="showApproveInput(task)"
+                  [disabled]="processingTaskId !== null">
+            承認
+          </button>
+          <button class="btn-reject" (click)="showRejectInput(task)"
+                  [disabled]="processingTaskId !== null">
+            却下
+          </button>
+        </div>
+      </div>
+
+      <!-- コメント入力エリア（承認/却下時に表示） -->
+      <div class="task-comment-area" *ngIf="showCommentInput[task.id]">
+        <div class="comment-input-row">
+          <input type="text"
+                 class="comment-input"
+                 [(ngModel)]="commentText[task.id]"
+                 [placeholder]="showCommentInput[task.id] === 'reject' ? '却下理由を入力してください（必須）' : 'コメント（任意）'"
+                 (keyup.enter)="showCommentInput[task.id] === 'approve' ? approveTask(task) : rejectTask(task)">
+          <div class="comment-actions">
+            <button
+              *ngIf="showCommentInput[task.id] === 'approve'"
+              class="btn-confirm-approve"
+              (click)="approveTask(task)"
+              [disabled]="processingTaskId !== null">
+              承認する
+            </button>
+            <button
+              *ngIf="showCommentInput[task.id] === 'reject'"
+              class="btn-confirm-reject"
+              (click)="rejectTask(task)"
+              [disabled]="processingTaskId !== null || !commentText[task.id]">
+              却下する
+            </button>
+            <button class="btn-cancel" (click)="cancelAction(task)">
+              キャンセル
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- タスクなし -->
+  <app-empty-state
+    *ngIf="filteredTasks.length === 0 && !errorMessage"
+    message="承認待ちのタスクはありません">
+  </app-empty-state>
+
+</div>

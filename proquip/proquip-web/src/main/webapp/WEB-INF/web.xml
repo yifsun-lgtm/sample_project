@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    ProQuip Web アプリケーション デプロイメント記述子。
+
+    Jakarta EE 10 環境下ではアノテーションベースの設定で十分だが、
+    Keycloakセキュリティ制約やセッション設定など一部の宣言的な設定を
+    このファイルで管理している。
+-->
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee
+                             https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+
+    <display-name>ProQuip - 調達・在庫管理システム</display-name>
+
+    <!-- セッション設定 -->
+    <session-config>
+        <session-timeout>30</session-timeout>
+    </session-config>
+
+    <!-- 認証はJAX-RS AuthenticationFilterで処理するため、
+         コンテナレベルのセキュリティ制約は使用しない -->
+</web-app>

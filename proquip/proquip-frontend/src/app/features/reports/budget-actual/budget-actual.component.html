@@ -1,0 +1,189 @@
+<!-- 予算対実績レポート画面 -->
+<div class="budget-actual">
+  <app-page-header
+    title="予算対実績レポート"
+    subtitle="部門別の予算消化状況を確認します">
+  </app-page-header>
+
+  <!-- フィルター -->
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="filter-label" for="fiscalYear">年度</label>
+        <select id="fiscalYear" class="filter-select" [(ngModel)]="selectedFiscalYear" (ngModelChange)="onFiscalYearChange()">
+          <option *ngFor="let year of fiscalYearOptions" [ngValue]="year">{{ year }}年度</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="deptFilter">部門</label>
+        <select id="deptFilter" class="filter-select" [(ngModel)]="selectedDepartment" (ngModelChange)="onDepartmentChange()">
+          <option *ngFor="let opt of departmentOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- エラーメッセージ -->
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div *ngIf="!isLoading">
+    <!-- 全体サマリー -->
+    <div class="summary-cards">
+      <div class="summary-card">
+        <div class="summary-card__label">総予算額</div>
+        <div class="summary-card__value">{{ formatCurrency(totalBudget) }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__label">総実績額</div>
+        <div class="summary-card__value">{{ formatCurrency(totalActual) }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__label">差異</div>
+        <div class="summary-card__value" [ngClass]="totalVariance >= 0 ? 'text-safe' : 'text-danger'">
+          {{ formatCurrency(totalVariance) }}
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__label">消化率</div>
+        <div class="summary-card__value" [ngClass]="getUtilizationStatusClass(totalUtilizationRate)">
+          {{ totalUtilizationRate }}%
+        </div>
+        <div class="summary-card__bar">
+          <div class="utilization-bar">
+            <div class="utilization-bar__fill"
+                 [style.width.%]="totalUtilizationRate"
+                 [ngClass]="getUtilizationStatusClass(totalUtilizationRate)"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 部門別テーブル -->
+    <div class="table-section">
+      <h3 class="section-title">部門別予算対実績</h3>
+      <p class="section-hint">部門名をクリックすると月次内訳が表示されます</p>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-expand"></th>
+              <th class="col-department">部門</th>
+              <th class="col-budget">予算額</th>
+              <th class="col-actual">実績額</th>
+              <th class="col-variance">差異</th>
+              <th class="col-utilization">消化率(%)</th>
+              <th class="col-bar">消化率（グラフ）</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="filteredRows.length === 0">
+              <td colspan="7" class="empty-row">データがありません</td>
+            </tr>
+            <ng-container *ngFor="let row of filteredRows">
+              <!-- 部門行 -->
+              <tr class="department-row"
+                  [ngClass]="{'row-expanded': row.isExpanded}"
+                  (click)="toggleDrillDown(row)">
+                <td class="col-expand">
+                  <span class="expand-icon">{{ row.isExpanded ? '▼' : '▶' }}</span>
+                </td>
+                <td class="col-department">
+                  <span class="department-name">{{ row.department }}</span>
+                </td>
+                <td class="col-budget">{{ formatCurrency(row.budgetAmount) }}</td>
+                <td class="col-actual">{{ formatCurrency(row.actualAmount) }}</td>
+                <td class="col-variance" [ngClass]="row.variance >= 0 ? 'text-safe' : 'text-danger'">
+                  {{ formatCurrency(row.variance) }}
+                </td>
+                <td class="col-utilization">
+                  <span [ngClass]="row.statusClass">{{ row.utilizationRate }}%</span>
+                </td>
+                <td class="col-bar">
+                  <div class="utilization-bar">
+                    <div class="utilization-bar__fill"
+                         [style.width.%]="row.utilizationRate"
+                         [ngClass]="row.statusClass"></div>
+                  </div>
+                </td>
+              </tr>
+
+              <!--
+                月次内訳行（ドリルダウン）
+                技術的負債: ドリルダウン状態をコンポーネント変数で管理
+                ルーターのqueryParamsで管理すべき
+              -->
+              <ng-container *ngIf="row.isExpanded">
+                <tr *ngFor="let monthly of row.monthlyBreakdown" class="monthly-row">
+                  <td class="col-expand"></td>
+                  <td class="col-department">
+                    <span class="monthly-label">{{ monthly.monthLabel }}</span>
+                  </td>
+                  <td class="col-budget">{{ formatCurrency(monthly.budgetAmount) }}</td>
+                  <td class="col-actual">
+                    {{ monthly.actualAmount > 0 ? formatCurrency(monthly.actualAmount) : '—' }}
+                  </td>
+                  <td class="col-variance" [ngClass]="monthly.variance >= 0 ? 'text-safe' : 'text-danger'">
+                    {{ monthly.actualAmount > 0 ? formatCurrency(monthly.variance) : '—' }}
+                  </td>
+                  <td class="col-utilization">
+                    <span *ngIf="monthly.actualAmount > 0" [ngClass]="monthly.statusClass">
+                      {{ monthly.utilizationRate }}%
+                    </span>
+                    <span *ngIf="monthly.actualAmount === 0" class="text-future">未計上</span>
+                  </td>
+                  <td class="col-bar">
+                    <div class="utilization-bar utilization-bar--small" *ngIf="monthly.actualAmount > 0">
+                      <div class="utilization-bar__fill"
+                           [style.width.%]="monthly.utilizationRate"
+                           [ngClass]="monthly.statusClass"></div>
+                    </div>
+                  </td>
+                </tr>
+              </ng-container>
+            </ng-container>
+          </tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td></td>
+              <td><strong>合計</strong></td>
+              <td><strong>{{ formatCurrency(totalBudget) }}</strong></td>
+              <td><strong>{{ formatCurrency(totalActual) }}</strong></td>
+              <td [ngClass]="totalVariance >= 0 ? 'text-safe' : 'text-danger'">
+                <strong>{{ formatCurrency(totalVariance) }}</strong>
+              </td>
+              <td>
+                <strong [ngClass]="getUtilizationStatusClass(totalUtilizationRate)">
+                  {{ totalUtilizationRate }}%
+                </strong>
+              </td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- 凡例 -->
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-color legend-color--safe"></span>
+        <span class="legend-label">消化率 80% 未満</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color legend-color--warning"></span>
+        <span class="legend-label">消化率 80% 〜 95%</span>
+      </div>
+      <div class="legend-item">
+        <span class="legend-color legend-color--danger"></span>
+        <span class="legend-label">消化率 95% 超過</span>
+      </div>
+    </div>
+  </div>
+</div>

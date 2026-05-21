@@ -1,0 +1,102 @@
+<app-page-header
+  title="サプライヤー管理"
+  description="取引先サプライヤーの一覧と管理">
+</app-page-header>
+
+<div class="supplier-list-container">
+
+  <!-- アクションバー -->
+  <div class="action-bar">
+    <div class="action-bar-left">
+      <app-search-box
+        placeholder="会社名、コード、メールで検索..."
+        (searchChange)="onSearch($event)">
+      </app-search-box>
+    </div>
+    <div class="action-bar-right">
+      <button class="btn-compare"
+              (click)="navigateToCompare()"
+              [disabled]="selectedForCompare.length < 2">
+        比較 ({{ selectedForCompare.length }}/3)
+      </button>
+      <button class="btn-primary" (click)="navigateToCreate()">
+        + 新規登録
+      </button>
+    </div>
+  </div>
+
+  <!-- フィルターエリア -->
+  <div class="filter-area">
+    <div class="filter-group">
+      <label class="filter-label">ステータス</label>
+      <select class="filter-select" aria-label="ステータス" [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">最低評価</label>
+      <select class="filter-select" [(ngModel)]="minRating" (ngModelChange)="onFilterChange()">
+        <option *ngFor="let opt of ratingOptions" [ngValue]="opt.value">{{ opt.label }}</option>
+      </select>
+    </div>
+
+    <button class="btn-reset" (click)="resetFilters()"
+            *ngIf="searchKeyword || selectedStatus || minRating">
+      フィルターをリセット
+    </button>
+  </div>
+
+  <!-- データテーブル -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <table class="supplier-table" *ngIf="suppliers.length > 0">
+      <thead>
+        <tr>
+          <th class="col-check">比較</th>
+          <th>コード</th>
+          <th>会社名</th>
+          <th>ステータス</th>
+          <th>評価</th>
+          <th>メールアドレス</th>
+          <th>電話番号</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let supplier of suppliers"
+            class="clickable-row"
+            (click)="onRowClick(supplier)">
+          <td class="col-check" (click)="$event.stopPropagation()">
+            <input type="checkbox"
+                   [checked]="isSelectedForCompare(supplier.id)"
+                   (change)="toggleCompareSelection(supplier.id, $event)"
+                   [disabled]="!isSelectedForCompare(supplier.id) && selectedForCompare.length >= 3">
+          </td>
+          <td class="mono">{{ supplier.code }}</td>
+          <td class="supplier-name">{{ supplier.name }}</td>
+          <td>
+            <app-status-badge [status]="supplier.status"></app-status-badge>
+          </td>
+          <td class="rating-cell">
+            <span class="rating-stars">{{ getRatingStars(supplier.rating) }}</span>
+            <span class="rating-number">{{ supplier.rating.toFixed(1) }}</span>
+          </td>
+          <td>{{ supplier.email }}</td>
+          <td>{{ supplier.phone }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <app-empty-state
+      *ngIf="suppliers.length === 0"
+      message="サプライヤーが見つかりませんでした">
+    </app-empty-state>
+  </div>
+
+  <!-- 件数表示 -->
+  <div class="result-count" *ngIf="!isLoading && suppliers.length > 0">
+    全 {{ totalCount }} 件
+  </div>
+
+</div>

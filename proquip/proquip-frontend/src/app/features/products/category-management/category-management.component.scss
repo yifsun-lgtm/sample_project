@@ -1,0 +1,280 @@
+// カテゴリ管理画面のスタイル
+
+.category-container {
+  padding: 0 0 40px;
+}
+
+.success-banner {
+  padding: 10px 16px;
+  background-color: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 6px;
+  color: #065f46;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.error-banner {
+  padding: 10px 16px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #991b1b;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.category-layout {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 20px;
+  align-items: start;
+}
+
+// ツリーパネル
+.tree-panel {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.panel-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0;
+}
+
+.btn-add {
+  padding: 6px 14px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+// ツリーリスト
+.tree-list {
+  padding: 4px 0;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f9fafb;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #f9fafb;
+
+    .tree-item-actions {
+      opacity: 1;
+    }
+  }
+
+  &.editing {
+    background-color: #eff6ff;
+  }
+}
+
+.btn-toggle {
+  width: 20px;
+  height: 20px;
+  border: none;
+  background: none;
+  color: #9ca3af;
+  font-size: 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &:hover {
+    color: #374151;
+  }
+}
+
+.toggle-spacer {
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.tree-item-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.category-name {
+  font-size: 14px;
+  color: #1f2937;
+  font-weight: 500;
+}
+
+.product-count {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.tree-item-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.btn-icon {
+  width: 26px;
+  height: 26px;
+  border: 1px solid #e5e7eb;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #6b7280;
+  font-size: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #f3f4f6;
+    color: #374151;
+  }
+
+  &.btn-icon-danger {
+    &:hover {
+      background-color: #fef2f2;
+      color: #dc2626;
+      border-color: #fecaca;
+    }
+  }
+}
+
+// 編集パネル
+.edit-panel {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  position: sticky;
+  top: 20px;
+}
+
+.category-form {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.form-input,
+.form-textarea,
+.form-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  outline: none;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+}
+
+.form-textarea {
+  resize: vertical;
+}
+
+.form-select {
+  appearance: auto;
+  cursor: pointer;
+}
+
+.form-error {
+  font-size: 12px;
+  color: #ef4444;
+}
+
+.form-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding-top: 8px;
+}
+
+.btn-cancel {
+  padding: 8px 16px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.btn-save {
+  padding: 8px 20px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: #2563eb;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+@media (max-width: 1024px) {
+  .category-layout {
+    grid-template-columns: 1fr;
+  }
+}

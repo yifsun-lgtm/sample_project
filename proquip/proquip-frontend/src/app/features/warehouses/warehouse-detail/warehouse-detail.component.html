@@ -1,0 +1,365 @@
+<!-- 倉庫詳細画面 -->
+<app-page-header
+  title="倉庫詳細"
+  [description]="warehouse ? warehouse.name : ''">
+  <div class="header-actions">
+    <button class="btn btn-outline" (click)="navigateToLayout()" *ngIf="warehouse">
+      レイアウト表示
+    </button>
+    <button class="btn btn-outline" (click)="goBack()">
+      ← 一覧へ戻る
+    </button>
+    <button class="btn btn-primary" (click)="openEditModal()" *ngIf="warehouse">
+      編集
+    </button>
+    <button class="btn btn-danger" (click)="confirmDelete()" *ngIf="warehouse">
+      削除
+    </button>
+  </div>
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+<div class="detail-content" *ngIf="warehouse && !isLoading">
+
+  <!-- 倉庫情報 -->
+  <section class="detail-section">
+    <h3 class="section-title">倉庫情報</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">コード</span>
+        <span class="info-value">{{ warehouse.code }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">名称</span>
+        <span class="info-value">{{ warehouse.name }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">住所</span>
+        <span class="info-value">{{ warehouse.address }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">管理者</span>
+        <span class="info-value">{{ warehouse.manager }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">電話</span>
+        <span class="info-value">{{ warehouse.phone }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">ステータス</span>
+        <span class="info-value">{{ getStatusLabel(warehouse.status) }}</span>
+      </div>
+    </div>
+
+    <!-- 使用率 -->
+    <div class="utilization-section">
+      <h4>キャパシティ使用率</h4>
+      <div class="utilization-display">
+        <div class="utilization-bar-wrapper">
+          <div class="utilization-bar">
+            <div
+              class="utilization-fill"
+              [style.width.%]="utilizationPercent"
+              [style.background-color]="getUtilizationColor()">
+            </div>
+          </div>
+          <span class="utilization-text" [style.color]="getUtilizationColor()">
+            {{ utilizationPercent }}%
+          </span>
+        </div>
+        <span class="utilization-detail">
+          {{ warehouse.currentOccupancy }} / {{ warehouse.capacity }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 備考 -->
+    <div class="notes-block" *ngIf="warehouse.notes">
+      <span class="info-label">備考</span>
+      <p class="notes-text">{{ warehouse.notes }}</p>
+    </div>
+  </section>
+
+  <!-- 稼働率チャート（プレースホルダ） -->
+  <section class="detail-section">
+    <h3 class="section-title">稼働率推移</h3>
+    <div class="chart-placeholder">
+      <i class="icon-bar-chart"></i>
+      <span>稼働率推移グラフ（実装予定）</span>
+    </div>
+  </section>
+
+  <!-- ゾーン一覧 -->
+  <section class="detail-section">
+    <div class="section-header-row">
+      <h3 class="section-title">ゾーン一覧（{{ zones.length }}件）</h3>
+      <button class="btn btn-primary btn-sm" (click)="openZoneCreateModal()">+ ゾーン追加</button>
+    </div>
+    <div class="zones-grid" *ngIf="zones.length > 0">
+      <div *ngFor="let zone of zones" class="zone-card" [class.expanded]="expandedZoneId === zone.id">
+        <div class="zone-header">
+          <div class="zone-title-row">
+            <span class="zone-name">{{ zone.name }}</span>
+            <span class="zone-code">{{ zone.code }}</span>
+          </div>
+          <span class="zone-type">{{ getZoneTypeLabel(zone.type) }}</span>
+        </div>
+        <div class="zone-body">
+          <div class="zone-capacity">
+            <div class="zone-bar">
+              <div
+                class="zone-bar-fill"
+                [style.width.%]="getZoneUtilization(zone)"
+                [style.background-color]="getZoneColor(zone)">
+              </div>
+            </div>
+            <span class="zone-percent" [style.color]="getZoneColor(zone)">
+              {{ getZoneUtilization(zone) }}%
+            </span>
+          </div>
+          <div class="zone-stats">
+            <span>容量: {{ zone.capacity }}</span>
+            <span>使用: {{ zone.currentOccupancy }}</span>
+            <span>品目数: {{ zone.itemCount }}</span>
+          </div>
+        </div>
+        <div class="zone-actions">
+          <button class="btn btn-outline btn-xs" (click)="toggleZoneLocations(zone)">
+            {{ expandedZoneId === zone.id ? 'ロケーション閉じる' : 'ロケーション表示' }}
+          </button>
+          <button class="btn btn-outline btn-xs" (click)="openZoneEditModal(zone)">編集</button>
+          <button class="btn btn-danger btn-xs" (click)="confirmZoneDelete(zone.id)">削除</button>
+        </div>
+
+        <!-- ロケーション一覧（展開時） -->
+        <div class="location-panel" *ngIf="expandedZoneId === zone.id">
+          <div class="location-header">
+            <h5>ロケーション一覧</h5>
+            <button class="btn btn-primary btn-xs" (click)="openLocationCreateModal()">+ 追加</button>
+          </div>
+          <app-loading-spinner *ngIf="isLoadingLocations"></app-loading-spinner>
+          <table class="detail-table location-table" *ngIf="!isLoadingLocations && zoneLocations.length > 0">
+            <thead>
+              <tr>
+                <th>コード</th>
+                <th>通路</th>
+                <th>ラック</th>
+                <th>棚</th>
+                <th>ビン</th>
+                <th>タイプ</th>
+                <th>操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let loc of zoneLocations">
+                <td class="font-bold">{{ loc.code }}</td>
+                <td>{{ loc.aisle || '-' }}</td>
+                <td>{{ loc.rack || '-' }}</td>
+                <td>{{ loc.shelf || '-' }}</td>
+                <td>{{ loc.bin || '-' }}</td>
+                <td>{{ getLocationTypeLabel(loc.locationType) }}</td>
+                <td class="action-cell">
+                  <button class="btn btn-outline btn-xs" (click)="openLocationEditModal(loc)">編集</button>
+                  <button class="btn btn-danger btn-xs" (click)="confirmLocationDelete(loc.id)">削除</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <p class="no-items" *ngIf="!isLoadingLocations && zoneLocations.length === 0">
+            ロケーションがありません
+          </p>
+        </div>
+      </div>
+    </div>
+    <app-empty-state *ngIf="zones.length === 0" message="ゾーンがありません。「ゾーン追加」ボタンから作成してください。"></app-empty-state>
+  </section>
+
+  <!-- 在庫アイテム -->
+  <section class="detail-section">
+    <h3 class="section-title">在庫アイテム（{{ inventoryTotalCount }}件）</h3>
+    <table class="detail-table" *ngIf="inventoryItems.length > 0">
+      <thead>
+        <tr>
+          <th>製品名</th>
+          <th>SKU</th>
+          <th class="text-right">数量</th>
+          <th class="text-right">引当数</th>
+          <th class="text-right">有効在庫</th>
+          <th>ステータス</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of inventoryItems" [routerLink]="['/inventory', item.id]" class="clickable-row">
+          <td>{{ item.productName }}</td>
+          <td class="sku-cell">{{ item.productSku }}</td>
+          <td class="text-right">{{ item.quantity }}</td>
+          <td class="text-right">{{ item.reservedQuantity }}</td>
+          <td class="text-right font-bold">{{ item.availableQuantity }}</td>
+          <td>{{ item.status }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="pagination" *ngIf="inventoryTotalCount > 10">
+      <button
+        class="btn btn-outline btn-sm"
+        [disabled]="inventoryPage <= 1"
+        (click)="onInventoryPageChange({ page: inventoryPage - 1 })">
+        前へ
+      </button>
+      <span class="page-info">{{ inventoryPage }} / {{ (inventoryTotalCount / 10 | number:'1.0-0') }}</span>
+      <button
+        class="btn btn-outline btn-sm"
+        [disabled]="inventoryPage * 10 >= inventoryTotalCount"
+        (click)="onInventoryPageChange({ page: inventoryPage + 1 })">
+        次へ
+      </button>
+    </div>
+
+    <app-empty-state *ngIf="inventoryItems.length === 0" message="この倉庫には在庫がありません"></app-empty-state>
+  </section>
+</div>
+
+<div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+
+<!-- 編集モーダル -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>倉庫編集</h3>
+      <button class="modal-close" (click)="closeEditModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>倉庫名</label>
+        <input type="text" [(ngModel)]="editForm.name" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label>住所</label>
+        <input type="text" [(ngModel)]="editForm.address" class="form-input" />
+      </div>
+      <div class="form-group">
+        <label>キャパシティ</label>
+        <input type="number" [(ngModel)]="editForm.capacity" class="form-input" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeEditModal()">キャンセル</button>
+      <button class="btn btn-primary" (click)="submitEdit()" [disabled]="isSaving">
+        {{ isSaving ? '保存中...' : '更新' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="showDeleteConfirm"
+  title="倉庫の削除"
+  message="この倉庫を削除してもよろしいですか？関連するゾーン情報も削除されます。"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="deleteWarehouse()"
+  (cancel)="cancelDelete()">
+</app-confirm-dialog>
+
+<!-- ゾーン作成/編集モーダル -->
+<div class="modal-overlay" *ngIf="showZoneModal" (click)="closeZoneModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isZoneEdit ? 'ゾーン編集' : 'ゾーン追加' }}</h3>
+      <button class="modal-close" (click)="closeZoneModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>ゾーンコード <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="zoneForm.code" class="form-input" placeholder="例: Z-001" [disabled]="isZoneEdit" />
+      </div>
+      <div class="form-group">
+        <label>ゾーン名 <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="zoneForm.name" class="form-input" placeholder="例: 入荷エリアA" />
+      </div>
+      <div class="form-group">
+        <label>ゾーンタイプ</label>
+        <select [(ngModel)]="zoneForm.zoneType" class="form-input">
+          <option *ngFor="let opt of zoneTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeZoneModal()">キャンセル</button>
+      <button class="btn btn-primary" (click)="submitZone()" [disabled]="isSaving || !zoneForm.code || !zoneForm.name">
+        {{ isSaving ? '保存中...' : (isZoneEdit ? '更新' : '作成') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="showZoneDeleteConfirm"
+  title="ゾーンの削除"
+  message="このゾーンを削除してもよろしいですか？配下のロケーションも削除されます。"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="deleteZone()"
+  (cancel)="cancelZoneDelete()">
+</app-confirm-dialog>
+
+<!-- ロケーション作成/編集モーダル -->
+<div class="modal-overlay" *ngIf="showLocationModal" (click)="closeLocationModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ isLocationEdit ? 'ロケーション編集' : 'ロケーション追加' }}</h3>
+      <button class="modal-close" (click)="closeLocationModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>ロケーションコード <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="locationForm.code" class="form-input" placeholder="例: A-01-03-B" />
+      </div>
+      <div class="form-row">
+        <div class="form-group form-half">
+          <label>通路</label>
+          <input type="text" [(ngModel)]="locationForm.aisle" class="form-input" placeholder="A" />
+        </div>
+        <div class="form-group form-half">
+          <label>ラック</label>
+          <input type="text" [(ngModel)]="locationForm.rack" class="form-input" placeholder="01" />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group form-half">
+          <label>棚</label>
+          <input type="text" [(ngModel)]="locationForm.shelf" class="form-input" placeholder="03" />
+        </div>
+        <div class="form-group form-half">
+          <label>ビン</label>
+          <input type="text" [(ngModel)]="locationForm.bin" class="form-input" placeholder="B" />
+        </div>
+      </div>
+      <div class="form-group">
+        <label>ロケーションタイプ</label>
+        <select [(ngModel)]="locationForm.locationType" class="form-input">
+          <option *ngFor="let opt of locationTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeLocationModal()">キャンセル</button>
+      <button class="btn btn-primary" (click)="submitLocation()" [disabled]="isSaving || !locationForm.code">
+        {{ isSaving ? '保存中...' : (isLocationEdit ? '更新' : '作成') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="showLocationDeleteConfirm"
+  title="ロケーションの削除"
+  message="このロケーションを削除してもよろしいですか？"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="deleteLocation()"
+  (cancel)="cancelLocationDelete()">
+</app-confirm-dialog>

@@ -1,0 +1,373 @@
+// サプライヤー比較画面のスタイル
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  margin-bottom: 16px;
+}
+
+.btn-back {
+  padding: 4px 12px;
+  background: none;
+  border: 1px solid #991b1b;
+  border-radius: 4px;
+  color: #991b1b;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.compare-container {
+  padding: 0 0 40px;
+}
+
+// ヘッダー
+.compare-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.btn-secondary {
+  padding: 8px 16px;
+  background-color: #fff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+}
+
+// サプライヤー追加検索
+.add-supplier {
+  flex: 1;
+  max-width: 400px;
+}
+
+.search-wrapper {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+
+  &::placeholder {
+    color: #9ca3af;
+  }
+}
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid #d1d5db;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+}
+
+.search-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f3f4f6;
+  }
+}
+
+.search-code {
+  font-family: 'SFMono-Regular', 'Consolas', monospace;
+  font-size: 12px;
+  color: #6b7280;
+  min-width: 80px;
+}
+
+.search-name {
+  font-size: 14px;
+  color: #1f2937;
+}
+
+// 比較テーブル
+.compare-table-wrapper {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 200px repeat(auto-fit, minmax(200px, 1fr));
+  border-bottom: 1px solid #f3f4f6;
+  min-height: 48px;
+
+  &.header-row {
+    background-color: #f9fafb;
+    border-bottom: 2px solid #e5e7eb;
+    min-height: auto;
+  }
+
+  &.highlight-row {
+    background-color: #fefce8;
+    border-bottom: 2px solid #fde68a;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.compare-section-header {
+  padding: 10px 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  background-color: #f3f4f6;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.row-label {
+  padding: 12px 20px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+  border-right: 1px solid #f3f4f6;
+
+  &.header-label {
+    font-weight: 600;
+    color: #374151;
+  }
+}
+
+.row-value {
+  padding: 12px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border-right: 1px solid #f9fafb;
+  transition: background-color 0.15s;
+
+  &:last-child {
+    border-right: none;
+  }
+
+  &.best-value {
+    background-color: #f0fdf4;
+
+    .metric-number,
+    .metric-text {
+      color: #059669;
+      font-weight: 600;
+    }
+  }
+}
+
+// サプライヤーヘッダーカード
+.supplier-header {
+  padding: 16px 20px;
+}
+
+.supplier-card {
+  position: relative;
+}
+
+.btn-remove {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #e5e7eb;
+  border-radius: 50%;
+  background-color: #fff;
+  color: #9ca3af;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover {
+    background-color: #fef2f2;
+    color: #ef4444;
+    border-color: #fecaca;
+  }
+}
+
+.supplier-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 4px;
+  cursor: pointer;
+
+  &:hover {
+    color: #3b82f6;
+  }
+}
+
+.supplier-code {
+  font-size: 12px;
+  color: #6b7280;
+  font-family: 'SFMono-Regular', 'Consolas', monospace;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.supplier-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  background-color: #d1fae5;
+  color: #065f46;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+// 総合評価
+.overall-rating {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.rating-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1;
+}
+
+.rating-stars {
+  color: #f59e0b;
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+// メトリクス表示
+.rating-bar-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  min-width: 28px;
+}
+
+.metric-bar {
+  flex: 1;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+  max-width: 120px;
+
+  &.small {
+    height: 4px;
+    margin-top: 4px;
+    max-width: 100%;
+  }
+}
+
+.metric-bar-fill {
+  height: 100%;
+  background-color: #3b82f6;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+
+  &.bar-good {
+    background-color: #10b981;
+  }
+
+  &.bar-warning {
+    background-color: #f59e0b;
+  }
+
+  &.bar-danger {
+    background-color: #ef4444;
+  }
+}
+
+.metric-text {
+  font-size: 14px;
+  color: #374151;
+}
+
+.metric-currency {
+  font-family: 'SFMono-Regular', 'Consolas', monospace;
+  font-weight: 500;
+}
+
+.metric-percentage {
+  font-weight: 500;
+}
+
+// 連絡先情報
+.contact-info {
+  font-size: 13px;
+  color: #374151;
+  word-break: break-all;
+}
+
+// レスポンシブ
+@media (max-width: 1024px) {
+  .compare-row {
+    grid-template-columns: 160px repeat(auto-fit, minmax(160px, 1fr));
+  }
+
+  .row-label {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+
+  .row-value {
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .compare-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .add-supplier {
+    max-width: 100%;
+  }
+}

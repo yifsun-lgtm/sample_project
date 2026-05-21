@@ -1,0 +1,145 @@
+<!-- 購買依頼詳細画面 -->
+<app-page-header
+  title="購買依頼詳細"
+  [description]="requisition ? requisition.requisitionNumber : ''">
+  <button class="btn btn-outline" (click)="goBack()">
+    <i class="icon-arrow-left"></i>
+    一覧へ戻る
+  </button>
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<!-- エラーメッセージ -->
+<div class="alert alert-error" *ngIf="errorMessage">
+  <i class="icon-alert"></i>
+  {{ errorMessage }}
+</div>
+
+<!-- 成功メッセージ -->
+<div class="alert alert-success" *ngIf="successMessage">
+  <i class="icon-check"></i>
+  {{ successMessage }}
+</div>
+
+<div class="detail-content" *ngIf="requisition && !isLoading">
+
+  <!-- ヘッダー情報 -->
+  <section class="detail-section">
+    <h3 class="section-title">基本情報</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">依頼番号</span>
+        <span class="info-value">{{ requisition.requisitionNumber }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">依頼者</span>
+        <span class="info-value">{{ requisition.requestedBy }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">部門</span>
+        <span class="info-value">{{ requisition.department }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">ステータス</span>
+        <span
+          class="status-badge"
+          [style.background-color]="getStatusColor(requisition.status)"
+          [style.color]="'#ffffff'">
+          {{ getStatusLabel(requisition.status) }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">緊急度</span>
+        <span
+          class="priority-badge"
+          [style.color]="getPriorityColor(requisition.priority)">
+          {{ getPriorityLabel(requisition.priority) }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">希望納期</span>
+        <span class="info-value">{{ requisition.requiredDate | japaneseDate }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">作成日</span>
+        <span class="info-value">{{ requisition.createdAt | japaneseDate }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">更新日</span>
+        <span class="info-value">{{ requisition.updatedAt | japaneseDate }}</span>
+      </div>
+    </div>
+
+    <div class="justification-block" *ngIf="requisition.justification">
+      <span class="info-label">依頼理由</span>
+      <p class="justification-text">{{ requisition.justification }}</p>
+    </div>
+  </section>
+
+  <!-- 明細一覧 -->
+  <section class="detail-section">
+    <h3 class="section-title">依頼品目</h3>
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th>製品名</th>
+          <th class="col-quantity">数量</th>
+          <th class="col-price">見積単価</th>
+          <th class="col-subtotal">小計</th>
+          <th>備考</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of requisition.items; let i = index">
+          <td class="col-num">{{ i + 1 }}</td>
+          <td>{{ item.productName }}</td>
+          <td class="col-quantity text-right">{{ item.quantity }}</td>
+          <td class="col-price text-right">{{ item.estimatedUnitPrice | currencyJp }}</td>
+          <td class="col-subtotal text-right">{{ getItemSubtotal(item) | currencyJp }}</td>
+          <td>{{ item.notes }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td colspan="4" class="text-right total-label">合計金額</td>
+          <td class="text-right total-amount">{{ totalAmount | currencyJp }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <!-- アクションボタン -->
+  <section class="action-section">
+    <button
+      *ngIf="canSubmit()"
+      class="btn btn-primary"
+      (click)="submitForApproval()"
+      [disabled]="isProcessing">
+      承認申請
+    </button>
+    <button
+      *ngIf="canApprove()"
+      class="btn btn-success"
+      (click)="approveRequisition()"
+      [disabled]="isProcessing">
+      承認
+    </button>
+    <button
+      *ngIf="canReject()"
+      class="btn btn-danger"
+      (click)="rejectRequisition()"
+      [disabled]="isProcessing">
+      却下
+    </button>
+    <button
+      *ngIf="canConvert()"
+      class="btn btn-primary"
+      (click)="convertToOrder()"
+      [disabled]="isProcessing">
+      発注書に変換
+    </button>
+  </section>
+</div>

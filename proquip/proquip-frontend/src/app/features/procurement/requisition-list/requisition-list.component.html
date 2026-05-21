@@ -1,0 +1,112 @@
+<!-- 購買依頼一覧画面 -->
+<app-page-header
+  title="購買依頼一覧"
+  description="購買依頼の検索・管理を行います">
+  <button class="btn btn-primary" (click)="navigateToCreate()">
+    <i class="icon-plus"></i>
+    新規依頼作成
+  </button>
+</app-page-header>
+
+<!-- フィルタセクション -->
+<div class="filter-section">
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="statusFilter">ステータス</label>
+      <select
+        id="statusFilter"
+        [(ngModel)]="filterStatus"
+        (ngModelChange)="onFilterChange()"
+        class="form-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-item">
+      <label for="departmentFilter">部門</label>
+      <select
+        id="departmentFilter"
+        [(ngModel)]="filterDepartment"
+        (ngModelChange)="onFilterChange()"
+        class="form-select">
+        <option *ngFor="let opt of departmentOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-item">
+      <label for="dateFromFilter">作成日（開始）</label>
+      <input
+        id="dateFromFilter"
+        type="date"
+        [(ngModel)]="filterDateFrom"
+        (ngModelChange)="onFilterChange()"
+        class="form-control" />
+    </div>
+
+    <div class="filter-item">
+      <label for="dateToFilter">作成日（終了）</label>
+      <input
+        id="dateToFilter"
+        type="date"
+        [(ngModel)]="filterDateTo"
+        (ngModelChange)="onFilterChange()"
+        class="form-control" />
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn btn-outline" (click)="clearFilters()">
+        フィルタクリア
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- データテーブル -->
+<div class="table-container">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-data-table
+    *ngIf="!isLoading"
+    [columns]="columns"
+    [data]="requisitions"
+    [totalCount]="totalCount"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [sortColumn]="sortColumn"
+    [sortDirection]="sortDirection"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (rowClick)="onRowClick($event)">
+
+    <ng-template #rowActions let-row>
+      <div class="action-buttons">
+        <button
+          *ngIf="row.status === 'DRAFT'"
+          class="btn btn-sm btn-success"
+          (click)="submitRequisition(row, $event)"
+          title="申請提出">
+          申請
+        </button>
+        <button
+          *ngIf="row.status === 'DRAFT' || row.status === 'SUBMITTED'"
+          class="btn btn-sm btn-danger"
+          (click)="cancelRequisition(row, $event)"
+          title="キャンセル">
+          取消
+        </button>
+      </div>
+    </ng-template>
+  </app-data-table>
+
+  <!-- データなし -->
+  <app-empty-state
+    *ngIf="!isLoading && requisitions.length === 0"
+    message="購買依頼がありません"
+    actionLabel="新規依頼を作成"
+    (action)="navigateToCreate()">
+  </app-empty-state>
+</div>

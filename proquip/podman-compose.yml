@@ -1,0 +1,145 @@
+# ProQuip - エンタープライズ調達・在庫管理システム
+# Podman Compose 構成ファイル
+#
+# 注意: 本番環境ではパスワードを環境変数から注入すること
+# TODO: ヘルスチェックの設定が不十分。本来はより厳密なチェックが必要
+version: "3.8"
+
+services:
+  # -------------------------------------------------
+  # PostgreSQL データベース
+  # keycloak用とアプリケーション用の2つのデータベースを作成
+  # -------------------------------------------------
+  postgres:
+    image: postgres:15.7-alpine
+    container_name: proquip-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: proquip
+      POSTGRES_USER: proquip
+      POSTGRES_PASSWORD: proquip
+      # 初期化スクリプトで keycloak DB も作成される
+    volumes:
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d:ro
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - proquip-net
+    # TODO: ヘルスチェックのintervalが長すぎる可能性あり
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U proquip -d proquip"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # -------------------------------------------------
+  # Keycloak 認証サーバー
+  # 開発モードで起動し、レルム設定をインポートする
+  # -------------------------------------------------
+  keycloak:
+    build:
+      context: ./docker/keycloak
+      dockerfile: Dockerfile
+    container_name: proquip-keycloak
+    ports:
+      - "8180:8080"
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      # データベース接続設定
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: proquip
+      KC_DB_PASSWORD: proquip
+      KC_HOSTNAME_STRICT: "false"
+      KC_PROXY: edge
+      # TODO: 本番ではHTTPSを有効にすること
+      KC_HTTP_ENABLED: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - proquip-net
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  # -------------------------------------------------
+  # WildFly アプリケーションサーバー
+  # Java EE バックエンドをデプロイ
+  # -------------------------------------------------
+  wildfly:
+    build:
+      context: ./docker/wildfly
+      dockerfile: Dockerfile
+    container_name: proquip-wildfly
+    ports:
+      - "8080:8080"
+      - "9990:9990"
+    environment:
+      # データベース接続情報
+      DB_HOST: postgres
+      DB_PORT: "5432"
+      DB_NAME: proquip
+      DB_USER: proquip
+      DB_PASSWORD: proquip
+      # Keycloak接続情報
+      # FIXME: URLがハードコードされている。環境に応じて切り替えが必要
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_REALM: proquip
+      KEYCLOAK_CLIENT_ID: proquip-api
+      # JVM設定
+      UPLOAD_BASE_PATH: /opt/jboss/wildfly/static-files
+      JAVA_OPTS: >-
+        -Xms512m -Xmx1024m
+        -Djboss.bind.address=0.0.0.0
+        -Djboss.bind.address.management=0.0.0.0
+    volumes:
+      - ./proquip-ear/target/proquip.ear:/opt/jboss/wildfly/standalone/deployments/proquip.ear:ro
+      - ./docker/static-files:/opt/jboss/wildfly/static-files:rw
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - proquip-net
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+
+  # -------------------------------------------------
+  # Nginx リバースプロキシ & フロントエンド配信
+  # Angular SPAの配信とAPIプロキシを担当
+  # -------------------------------------------------
+  nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: proquip-nginx
+    ports:
+      - "4200:80"
+    volumes:
+      - ./proquip-frontend/dist/proquip/browser:/usr/share/nginx/html/proquip:ro
+      - ./docker/static-files:/usr/share/nginx/html/static-files:ro
+    depends_on:
+      wildfly:
+        condition: service_healthy
+    networks:
+      - proquip-net
+
+# 永続化ボリューム定義
+volumes:
+  postgres-data:
+    driver: local
+
+# ネットワーク定義
+networks:
+  proquip-net:
+    driver: bridge

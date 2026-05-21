@@ -1,0 +1,62 @@
+/* ファイルアップロードのスタイル */
+.file-upload {
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-lg);
+  text-align: center;
+  transition: all var(--transition-speed);
+
+  &.drag-over {
+    border-color: var(--primary-light);
+    background-color: rgba(41, 128, 185, 0.05);
+  }
+}
+
+.upload-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.upload-icon {
+  font-size: 2rem;
+}
+
+.upload-text {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.upload-btn {
+  cursor: pointer;
+}
+
+.file-input {
+  display: none;
+}
+
+.selected-file {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding: var(--spacing-sm);
+  background-color: var(--bg-color);
+  border-radius: var(--border-radius);
+}
+
+.file-name {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.clear-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  &:hover { color: var(--danger-color); }
+}

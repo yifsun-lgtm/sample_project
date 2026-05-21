@@ -1,0 +1,95 @@
+<div class="data-table-wrapper">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th
+          *ngFor="let col of columns"
+          [style.width]="col.width || 'auto'"
+          [class.sortable]="col.sortable"
+          (click)="onSort(col)"
+        >
+          {{ col.label }}
+          <span class="sort-icon" *ngIf="col.sortable">{{ getSortIcon(col) }}</span>
+        </th>
+        <th *ngIf="rowActionsTemplate" style="width: 140px;">操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let row of displayData"
+        (click)="onRowClick(row)"
+        class="data-row"
+      >
+        <td *ngFor="let col of columns">
+          <ng-container [ngSwitch]="col.type">
+            <span *ngSwitchCase="'currency'">{{ row[col.key] | currencyJp }}</span>
+            <span *ngSwitchCase="'date'">{{ row[col.key] | japaneseDate }}</span>
+            <span *ngSwitchCase="'status'">
+              <app-status-badge [status]="row[col.key]"></app-status-badge>
+            </span>
+            <span *ngSwitchDefault>{{ row[col.key] }}</span>
+          </ng-container>
+        </td>
+        <td *ngIf="rowActionsTemplate" class="actions-cell" (click)="$event.stopPropagation()">
+          <ng-container *ngTemplateOutlet="rowActionsTemplate; context: { $implicit: row }"></ng-container>
+        </td>
+      </tr>
+      <tr *ngIf="displayData.length === 0">
+        <td [attr.colspan]="columns.length + (rowActionsTemplate ? 1 : 0)" class="empty-row">
+          データがありません
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ページネーション -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <div class="pagination-info">
+      {{ totalCount }}件中 {{ (currentPage - 1) * pageSize + 1 }}〜{{ currentPage * pageSize > totalCount ? totalCount : currentPage * pageSize }}件を表示
+    </div>
+    <div class="pagination-controls">
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(1)"
+        title="最初のページ"
+      >
+        &laquo;
+      </button>
+      <button
+        class="page-btn"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+        title="前のページ"
+      >
+        &lsaquo;
+      </button>
+
+      <button
+        *ngFor="let page of displayPages"
+        class="page-btn"
+        [class.active]="page === currentPage"
+        (click)="goToPage(page)"
+      >
+        {{ page }}
+      </button>
+
+      <button
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+        title="次のページ"
+      >
+        &rsaquo;
+      </button>
+      <button
+        class="page-btn"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(totalPages)"
+        title="最後のページ"
+      >
+        &raquo;
+      </button>
+    </div>
+  </div>
+</div>

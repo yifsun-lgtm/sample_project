@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ProQuip WildFly カスタム設定ファイル
+  standalone-full.xml をベースにプロジェクト固有の設定を追加
+
+  TODO: セキュリティ設定が甘い箇所がある。本番前にレビュー必須
+  FIXME: 一部のタイムアウト値がハードコードされている
+-->
+<server xmlns="urn:jboss:domain:20.0">
+
+    <extensions>
+        <extension module="org.jboss.as.clustering.infinispan"/>
+        <extension module="org.jboss.as.connector"/>
+        <extension module="org.jboss.as.deployment-scanner"/>
+        <extension module="org.jboss.as.ee"/>
+        <extension module="org.jboss.as.ejb3"/>
+        <extension module="org.jboss.as.jaxrs"/>
+        <extension module="org.jboss.as.jpa"/>
+        <extension module="org.jboss.as.logging"/>
+        <extension module="org.jboss.as.naming"/>
+        <!-- org.jboss.as.security は WildFly 30 で削除済。Elytronを使用 -->
+        <extension module="org.jboss.as.transactions"/>
+        <extension module="org.jboss.as.weld"/>
+        <extension module="org.wildfly.extension.batch.jberet"/>
+        <extension module="org.wildfly.extension.bean-validation"/>
+        <extension module="org.wildfly.extension.elytron"/>
+        <extension module="org.wildfly.extension.elytron-oidc-client"/>
+        <extension module="org.wildfly.extension.io"/>
+        <extension module="org.wildfly.extension.messaging-activemq"/>
+        <extension module="org.wildfly.extension.request-controller"/>
+        <extension module="org.wildfly.extension.undertow"/>
+    </extensions>
+
+    <!-- システムプロパティ（環境変数で上書き可能） -->
+    <system-properties>
+        <!-- データベース接続プロパティ -->
+        <property name="proquip.db.host" value="${env.DB_HOST:localhost}"/>
+        <property name="proquip.db.port" value="${env.DB_PORT:5432}"/>
+        <property name="proquip.db.name" value="${env.DB_NAME:proquip}"/>
+        <property name="proquip.db.user" value="${env.DB_USER:proquip}"/>
+        <property name="proquip.db.password" value="${env.DB_PASSWORD:proquip}"/>
+        <!-- Keycloak接続プロパティ -->
+        <property name="proquip.keycloak.url" value="${env.KEYCLOAK_URL:http://localhost:8180}"/>
+        <property name="proquip.keycloak.realm" value="${env.KEYCLOAK_REALM:proquip}"/>
+        <property name="proquip.keycloak.client-id" value="${env.KEYCLOAK_CLIENT_ID:proquip-api}"/>
+        <!-- アプリケーション設定 -->
+        <!-- TODO: バッチサイズをハードコードしているが設定可能にすべき -->
+        <property name="proquip.batch.size" value="100"/>
+        <property name="proquip.upload.max-size" value="10485760"/>
+    </system-properties>
+
+    <management>
+        <audit-log>
+            <formatters>
+                <json-formatter name="json-formatter"/>
+            </formatters>
+            <handlers>
+                <file-handler name="file" formatter="json-formatter"
+                              path="audit-log.log" relative-to="jboss.server.data.dir"/>
+            </handlers>
+            <logger log-boot="true" log-read-only="false" enabled="false">
+                <handlers>
+                    <handler name="file"/>
+                </handlers>
+            </logger>
+        </audit-log>
+        <management-interfaces>
+            <http-interface>
+                <http-upgrade enabled="true"/>
+                <socket-binding http="management-http"/>
+            </http-interface>
+        </management-interfaces>
+    </management>
+
+    <profile>
+        <!-- ロギングサブシステム -->
+        <subsystem xmlns="urn:jboss:domain:logging:8.0">
+            <console-handler name="CONSOLE">
+                <level name="INFO"/>
+                <formatter>
+                    <named-formatter name="COLOR-PATTERN"/>
+                </formatter>
+            </console-handler>
+            <!-- アプリケーション用ファイルハンドラ -->
+            <periodic-rotating-file-handler name="PROQUIP_LOG" autoflush="true">
+                <formatter>
+                    <named-formatter name="PATTERN"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="proquip.log"/>
+                <suffix value=".yyyy-MM-dd"/>
+                <append value="true"/>
+            </periodic-rotating-file-handler>
+            <!-- 監査ログハンドラ -->
+            <periodic-rotating-file-handler name="AUDIT_LOG" autoflush="true">
+                <formatter>
+                    <named-formatter name="PATTERN"/>
+                </formatter>
+                <file relative-to="jboss.server.log.dir" path="proquip-audit.log"/>
+                <suffix value=".yyyy-MM-dd"/>
+                <append value="true"/>
+            </periodic-rotating-file-handler>
+
+            <!-- アプリケーションロガー -->
+            <!-- FIXME: DEBUGレベルが本番でも有効になっている。パフォーマンスに影響 -->
+            <logger category="com.proquip" use-parent-handlers="false">
+                <level name="DEBUG"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                    <handler name="PROQUIP_LOG"/>
+                </handlers>
+            </logger>
+            <!-- 調達モジュール専用ロガー -->
+            <logger category="com.proquip.procurement">
+                <level name="DEBUG"/>
+            </logger>
+            <!-- 在庫モジュール専用ロガー -->
+            <logger category="com.proquip.inventory">
+                <level name="DEBUG"/>
+            </logger>
+            <!-- 監査ロガー -->
+            <logger category="com.proquip.audit" use-parent-handlers="false">
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="AUDIT_LOG"/>
+                </handlers>
+            </logger>
+            <!-- Hibernate SQLログ（開発用） -->
+            <!-- TODO: 本番では無効にすること -->
+            <logger category="org.hibernate.SQL">
+                <level name="DEBUG"/>
+            </logger>
+            <logger category="org.hibernate.type.descriptor.sql.BasicBinder">
+                <level name="TRACE"/>
+            </logger>
+
+            <root-logger>
+                <level name="INFO"/>
+                <handlers>
+                    <handler name="CONSOLE"/>
+                </handlers>
+            </root-logger>
+
+            <formatter name="PATTERN">
+                <pattern-formatter pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+            </formatter>
+            <formatter name="COLOR-PATTERN">
+                <pattern-formatter pattern="%K{level}%d{HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n"/>
+            </formatter>
+        </subsystem>
+
+        <!-- データソースサブシステム -->
+        <subsystem xmlns="urn:jboss:domain:datasources:7.1">
+            <datasources>
+                <!-- ProQuip メインデータソース -->
+                <datasource jndi-name="java:jboss/datasources/ProQuipDS"
+                            pool-name="ProQuipDS"
+                            enabled="true"
+                            use-java-context="true"
+                            statistics-enabled="true">
+                    <connection-url>jdbc:postgresql://${proquip.db.host}:${proquip.db.port}/${proquip.db.name}</connection-url>
+                    <driver>postgresql</driver>
+                    <pool>
+                        <!-- FIXME: プール設定が本番向きではない。最大接続数が多すぎる -->
+                        <min-pool-size>5</min-pool-size>
+                        <initial-pool-size>5</initial-pool-size>
+                        <max-pool-size>50</max-pool-size>
+                        <prefill>true</prefill>
+                        <flush-strategy>FailingConnectionOnly</flush-strategy>
+                    </pool>
+                    <security user-name="${proquip.db.user}" password="${proquip.db.password}"/>
+                    <validation>
+                        <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker"/>
+                        <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter"/>
+                        <validate-on-match>true</validate-on-match>
+                        <background-validation>false</background-validation>
+                    </validation>
+                    <timeout>
+                        <!-- TODO: タイムアウト値の見直しが必要 -->
+                        <blocking-timeout-millis>30000</blocking-timeout-millis>
+                        <idle-timeout-minutes>15</idle-timeout-minutes>
+                        <allocation-retry>3</allocation-retry>
+                    </timeout>
+                    <statement>
+                        <track-statements>true</track-statements>
+                        <prepared-statement-cache-size>32</prepared-statement-cache-size>
+                        <share-prepared-statements>true</share-prepared-statements>
+                    </statement>
+                </datasource>
+                <drivers>
+                    <driver name="postgresql" module="org.postgresql">
+                        <xa-datasource-class>org.postgresql.xa.PGXADataSource</xa-datasource-class>
+                    </driver>
+                </drivers>
+            </datasources>
+        </subsystem>
+
+        <!-- EE サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:ee:6.0">
+            <spec-descriptor-property-replacement>false</spec-descriptor-property-replacement>
+            <concurrent>
+                <context-services>
+                    <context-service name="default" jndi-name="java:jboss/ee/concurrency/context/default" use-transaction-setup-provider="true"/>
+                </context-services>
+                <managed-thread-factories>
+                    <managed-thread-factory name="default" jndi-name="java:jboss/ee/concurrency/factory/default" context-service="default"/>
+                </managed-thread-factories>
+                <managed-executor-services>
+                    <!-- バッチ処理用のスレッドプール -->
+                    <managed-executor-service name="default"
+                                              jndi-name="java:jboss/ee/concurrency/executor/default"
+                                              context-service="default"
+                                              hung-task-threshold="60000"
+                                              keepalive-time="5000"
+                                              core-threads="5"
+                                              max-threads="25"/>
+                </managed-executor-services>
+                <managed-scheduled-executor-services>
+                    <managed-scheduled-executor-service name="default"
+                                                        jndi-name="java:jboss/ee/concurrency/scheduler/default"
+                                                        context-service="default"
+                                                        hung-task-threshold="60000"
+                                                        keepalive-time="3000"
+                                                        core-threads="2"/>
+                </managed-scheduled-executor-services>
+            </concurrent>
+            <default-bindings context-service="java:jboss/ee/concurrency/context/default"
+                             datasource="java:jboss/datasources/ProQuipDS"
+                             managed-executor-service="java:jboss/ee/concurrency/executor/default"
+                             managed-scheduled-executor-service="java:jboss/ee/concurrency/scheduler/default"
+                             managed-thread-factory="java:jboss/ee/concurrency/factory/default"/>
+        </subsystem>
+
+        <!-- EJB3 サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:ejb3:10.0">
+            <session-bean>
+                <stateless>
+                    <bean-instance-pool-ref pool-name="slsb-strict-max-pool"/>
+                </stateless>
+                <stateful default-access-timeout="5000" cache-ref="simple" passivation-disabled-cache-ref="simple"/>
+                <singleton default-access-timeout="5000"/>
+            </session-bean>
+            <pools>
+                <bean-instance-pools>
+                    <strict-max-pool name="slsb-strict-max-pool" derive-size="from-worker-pools" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                    <strict-max-pool name="mdb-strict-max-pool" derive-size="from-cpu-count" instance-acquisition-timeout="5" instance-acquisition-timeout-unit="MINUTES"/>
+                </bean-instance-pools>
+            </pools>
+            <caches>
+                <cache name="simple"/>
+                <cache name="distributable" passivation-store-ref="infinispan" aliases="passivating clustered"/>
+            </caches>
+            <passivation-stores>
+                <passivation-store name="infinispan" cache-container="ejb" max-size="10000"/>
+            </passivation-stores>
+            <async thread-pool-name="default"/>
+            <timer-service thread-pool-name="default" default-data-store="default-file-store">
+                <data-stores>
+                    <file-data-store name="default-file-store" path="timer-service-data" relative-to="jboss.server.data.dir"/>
+                </data-stores>
+            </timer-service>
+            <thread-pools>
+                <thread-pool name="default">
+                    <max-threads count="10"/>
+                    <keepalive-time time="60" unit="seconds"/>
+                </thread-pool>
+            </thread-pools>
+            <default-security-domain value="other"/>
+            <default-missing-method-permissions-deny-access value="true"/>
+            <statistics enabled="${wildfly.ejb3.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+        </subsystem>
+
+        <!-- Elytron セキュリティサブシステム -->
+        <subsystem xmlns="urn:wildfly:elytron:18.0" final-providers="combined-providers" disallowed-providers="OracleUcrypto">
+            <providers>
+                <aggregate-providers name="combined-providers">
+                    <providers name="elytron"/>
+                    <providers name="openssl"/>
+                </aggregate-providers>
+                <provider-loader name="elytron" module="org.wildfly.security.elytron"/>
+                <provider-loader name="openssl" module="org.wildfly.openssl"/>
+            </providers>
+            <audit-logging>
+                <file-audit-log name="local-audit" path="audit.log" relative-to="jboss.server.log.dir" format="JSON"/>
+            </audit-logging>
+            <security-domains>
+                <security-domain name="ApplicationDomain" default-realm="ApplicationRealm" permission-mapper="default-permission-mapper">
+                    <realm name="ApplicationRealm" role-decoder="groups-to-roles"/>
+                </security-domain>
+            </security-domains>
+            <security-realms>
+                <properties-realm name="ApplicationRealm">
+                    <users-properties path="application-users.properties" relative-to="jboss.server.config.dir"/>
+                    <groups-properties path="application-roles.properties" relative-to="jboss.server.config.dir"/>
+                </properties-realm>
+            </security-realms>
+            <mappers>
+                <simple-permission-mapper name="default-permission-mapper" mapping-mode="first">
+                    <permission-mapping>
+                        <principal name="anonymous"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                    <permission-mapping match-all="true">
+                        <permission-set name="login-permission"/>
+                        <permission-set name="default-permissions"/>
+                    </permission-mapping>
+                </simple-permission-mapper>
+                <simple-role-decoder name="groups-to-roles" attribute="groups"/>
+            </mappers>
+            <permission-sets>
+                <permission-set name="login-permission">
+                    <permission class-name="org.wildfly.security.auth.permission.LoginPermission"/>
+                </permission-set>
+                <permission-set name="default-permissions">
+                    <permission class-name="org.wildfly.extension.batch.jberet.deployment.BatchPermission" module="org.wildfly.extension.batch.jberet" target-name="*"/>
+                </permission-set>
+            </permission-sets>
+            <http>
+                <http-authentication-factory name="application-http-authentication" security-domain="ApplicationDomain" http-server-mechanism-factory="global">
+                    <mechanism-configuration>
+                        <mechanism mechanism-name="BASIC">
+                            <mechanism-realm realm-name="ApplicationRealm"/>
+                        </mechanism>
+                    </mechanism-configuration>
+                </http-authentication-factory>
+                <provider-http-server-mechanism-factory name="global"/>
+            </http>
+        </subsystem>
+
+        <!-- Elytron OIDC クライアント（Keycloak連携） -->
+        <subsystem xmlns="urn:wildfly:elytron-oidc-client:2.0">
+            <!-- TODO: credential の secret がハードコードされている -->
+            <secure-deployment name="proquip-app.ear">
+                <resource>${proquip.keycloak.client-id}</resource>
+                <provider-url>${proquip.keycloak.url}/realms/${proquip.keycloak.realm}</provider-url>
+                <ssl-required>EXTERNAL</ssl-required>
+                <bearer-only>true</bearer-only>
+            </secure-deployment>
+        </subsystem>
+
+        <!-- JPA サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:jpa:1.1">
+            <jpa default-datasource=""
+                 default-extended-persistence-inheritance="DEEP"/>
+        </subsystem>
+
+        <!-- JAX-RS サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:jaxrs:3.0"/>
+
+        <!-- トランザクションサブシステム -->
+        <subsystem xmlns="urn:jboss:domain:transactions:6.0">
+            <core-environment node-identifier="${jboss.tx.node.id:1}">
+                <process-id>
+                    <uuid/>
+                </process-id>
+            </core-environment>
+            <recovery-environment socket-binding="txn-recovery-environment" status-socket-binding="txn-status-manager"/>
+            <coordinator-environment statistics-enabled="${wildfly.transactions.statistics-enabled:${wildfly.statistics-enabled:false}}"/>
+            <object-store path="tx-object-store" relative-to="jboss.server.data.dir"/>
+        </subsystem>
+
+        <!-- Undertow (HTTP) サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:undertow:14.0" default-virtual-host="default-host" default-servlet-container="default" default-server="default-server" statistics-enabled="${wildfly.undertow.statistics-enabled:${wildfly.statistics-enabled:false}}">
+            <buffer-cache name="default"/>
+            <server name="default-server">
+                <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true"/>
+                <host name="default-host" alias="localhost">
+                    <location name="/" handler="welcome-content"/>
+                    <!-- CORS設定（開発用） -->
+                    <!-- FIXME: 本番ではオリジンを制限すること -->
+                    <filter-ref name="cors-allow-origin"/>
+                    <filter-ref name="cors-allow-methods"/>
+                    <filter-ref name="cors-allow-headers"/>
+                    <filter-ref name="cors-allow-credentials"/>
+                    <http-invoker http-authentication-factory="application-http-authentication"/>
+                </host>
+            </server>
+            <servlet-container name="default">
+                <jsp-config/>
+                <websockets/>
+            </servlet-container>
+            <handlers>
+                <file name="welcome-content" path="${jboss.home.dir}/welcome-content"/>
+            </handlers>
+            <filters>
+                <!-- CORS フィルター設定 -->
+                <response-header name="cors-allow-origin" header-name="Access-Control-Allow-Origin" header-value="*"/>
+                <response-header name="cors-allow-methods" header-name="Access-Control-Allow-Methods" header-value="GET, POST, PUT, DELETE, PATCH, OPTIONS"/>
+                <response-header name="cors-allow-headers" header-name="Access-Control-Allow-Headers" header-value="accept, authorization, content-type, x-requested-with"/>
+                <response-header name="cors-allow-credentials" header-name="Access-Control-Allow-Credentials" header-value="true"/>
+            </filters>
+        </subsystem>
+
+        <!-- Weld (CDI) サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:weld:5.0" require-bean-descriptor="false" non-portable-mode="false" development-mode="false"/>
+
+        <!-- Bean Validation サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:bean-validation:1.0"/>
+
+        <!-- IO サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:io:4.0">
+            <worker name="default" io-threads="8" task-max-threads="64"/>
+            <buffer-pool name="default"/>
+        </subsystem>
+
+        <!-- Infinispan キャッシュ -->
+        <subsystem xmlns="urn:jboss:domain:infinispan:14.0">
+            <cache-container name="ejb" default-cache="passivation" marshaller="PROTOSTREAM" aliases="sfsb" modules="org.wildfly.clustering.ejb.infinispan">
+                <local-cache name="passivation">
+                    <file-store passivation="true" purge="false"/>
+                </local-cache>
+            </cache-container>
+            <cache-container name="hibernate" marshaller="JBOSS" modules="org.infinispan.hibernate-cache">
+                <local-cache name="entity">
+                    <heap-memory size="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="local-query">
+                    <heap-memory size="10000"/>
+                    <expiration max-idle="100000"/>
+                </local-cache>
+                <local-cache name="timestamps"/>
+                <local-cache name="pending-puts">
+                    <expiration max-idle="60000"/>
+                </local-cache>
+            </cache-container>
+        </subsystem>
+
+        <!-- Naming サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:naming:2.0">
+            <remote-naming/>
+        </subsystem>
+
+        <!-- Connector サブシステム -->
+        <subsystem xmlns="urn:jboss:domain:connector:2.0">
+            <default-workmanager>
+                <short-running-threads>
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </short-running-threads>
+                <long-running-threads>
+                    <core-threads count="50"/>
+                    <queue-length count="50"/>
+                    <max-threads count="50"/>
+                    <keepalive-time time="10" unit="seconds"/>
+                </long-running-threads>
+            </default-workmanager>
+        </subsystem>
+
+        <!-- デプロイメントスキャナー -->
+        <subsystem xmlns="urn:jboss:domain:deployment-scanner:2.0">
+            <deployment-scanner path="deployments" relative-to="jboss.server.base.dir" scan-interval="5000" runtime-failure-causes-rollback="${jboss.deployment.scanner.rollback.on.failure:false}"/>
+        </subsystem>
+
+        <!-- バッチ処理 (JBeret) -->
+        <subsystem xmlns="urn:jboss:domain:batch-jberet:3.0">
+            <default-job-repository name="in-memory"/>
+            <default-thread-pool name="batch"/>
+            <job-repository name="in-memory">
+                <in-memory/>
+            </job-repository>
+            <thread-pool name="batch">
+                <max-threads count="10"/>
+                <keepalive-time time="30" unit="seconds"/>
+            </thread-pool>
+        </subsystem>
+
+        <!-- リクエストコントローラー -->
+        <subsystem xmlns="urn:jboss:domain:request-controller:1.0"/>
+
+        <!-- セキュリティはElytronサブシステムで管理 -->
+    </profile>
+
+    <!-- ソケットバインディング -->
+    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
+        <socket-binding name="http" port="${jboss.http.port:8080}"/>
+        <socket-binding name="https" port="${jboss.https.port:8443}"/>
+        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+        <socket-binding name="txn-recovery-environment" port="4712"/>
+        <socket-binding name="txn-status-manager" port="4713"/>
+    </socket-binding-group>
+
+    <interfaces>
+        <interface name="management">
+            <inet-address value="${jboss.bind.address.management:127.0.0.1}"/>
+        </interface>
+        <interface name="public">
+            <inet-address value="${jboss.bind.address:127.0.0.1}"/>
+        </interface>
+    </interfaces>
+</server>

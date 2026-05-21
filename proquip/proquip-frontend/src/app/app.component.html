@@ -1,0 +1,12 @@
+<div class="app-wrapper" [class.sidebar-collapsed]="sidebarCollapsed">
+  <app-header (toggleSidebar)="onSidebarToggle()"></app-header>
+  <div class="main-content">
+    <app-sidebar [collapsed]="sidebarCollapsed"></app-sidebar>
+    <main class="page-content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+  <app-footer></app-footer>
+  <app-notification-toast></app-notification-toast>
+  <app-loading-spinner></app-loading-spinner>
+</div>

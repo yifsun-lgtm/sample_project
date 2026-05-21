@@ -1,0 +1,110 @@
+<app-page-header
+  title="カテゴリ管理"
+  description="製品カテゴリの階層管理">
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<div class="category-container" *ngIf="!isLoading">
+
+  <!-- メッセージ表示 -->
+  <div class="success-banner" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="error-banner" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <div class="category-layout">
+
+    <!-- カテゴリツリー -->
+    <div class="tree-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">カテゴリ一覧</h3>
+        <button class="btn-add" (click)="startCreate(null)">+ 新規カテゴリ</button>
+      </div>
+
+      <div class="tree-list" *ngIf="flattenedTree.length > 0">
+        <div class="tree-item"
+             *ngFor="let node of flattenedTree"
+             [ngStyle]="getIndentStyle(node.level)"
+             [class.editing]="editingCategoryId === node.category.id">
+
+          <!-- 展開/折りたたみアイコン -->
+          <button class="btn-toggle" (click)="toggleExpand(node)"
+                  *ngIf="node.children.length > 0">
+            {{ node.expanded ? '▼' : '▶' }}
+          </button>
+          <span class="toggle-spacer" *ngIf="node.children.length === 0"></span>
+
+          <!-- カテゴリ情報 -->
+          <div class="tree-item-info">
+            <span class="category-name">{{ node.category.name }}</span>
+            <span class="product-count">{{ node.category.productCount }} 製品</span>
+          </div>
+
+          <!-- アクションボタン -->
+          <div class="tree-item-actions">
+            <button class="btn-icon" title="上へ移動" (click)="moveUp(node)">↑</button>
+            <button class="btn-icon" title="下へ移動" (click)="moveDown(node)">↓</button>
+            <button class="btn-icon" title="子カテゴリを追加" (click)="startCreate(node.category.id)">+</button>
+            <button class="btn-icon" title="編集" (click)="startEdit(node.category)">&#9998;</button>
+            <button class="btn-icon btn-icon-danger" title="削除" (click)="confirmDelete(node.category)">&#10005;</button>
+          </div>
+        </div>
+      </div>
+
+      <app-empty-state
+        *ngIf="flattenedTree.length === 0"
+        message="カテゴリが登録されていません">
+      </app-empty-state>
+    </div>
+
+    <!-- 編集パネル -->
+    <div class="edit-panel" *ngIf="editMode">
+      <h3 class="panel-title">
+        {{ editMode === 'create' ? 'カテゴリ作成' : 'カテゴリ編集' }}
+      </h3>
+
+      <form [formGroup]="categoryForm" (ngSubmit)="saveCategory()" class="category-form">
+        <div class="form-group">
+          <label class="form-label">カテゴリ名 <span class="required">*</span></label>
+          <input type="text" formControlName="name" class="form-input"
+                 placeholder="カテゴリ名を入力">
+          <span class="form-error"
+                *ngIf="categoryForm.get('name')?.touched && categoryForm.get('name')?.errors">
+            カテゴリ名は必須です
+          </span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">説明</label>
+          <textarea formControlName="description" class="form-textarea" rows="3"
+                    placeholder="カテゴリの説明"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">親カテゴリ</label>
+          <select formControlName="parentId" class="form-select">
+            <option *ngFor="let opt of parentOptions" [ngValue]="opt.id">{{ opt.name }}</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="btn-cancel" (click)="cancelEdit()">キャンセル</button>
+          <button type="submit" class="btn-save" [disabled]="isSubmitting">
+            {{ isSubmitting ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<!-- 削除確認ダイアログ -->
+<app-confirm-dialog
+  *ngIf="showDeleteConfirm"
+  title="カテゴリの削除"
+  [message]="'「' + (deletingCategory?.name || '') + '」を削除してもよろしいですか？'"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="deleteCategory()"
+  (cancel)="cancelDelete()">
+</app-confirm-dialog>

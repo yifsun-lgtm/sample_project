@@ -1,0 +1,18 @@
+/* フッターコンポーネントのスタイル */
+.app-footer {
+  height: var(--footer-height);
+  background-color: var(--bg-white);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  padding: 0 var(--spacing-md);
+  margin-left: var(--sidebar-width);
+  transition: margin-left var(--transition-speed) ease;
+
+  .sidebar-collapsed & {
+    margin-left: var(--sidebar-collapsed-width);
+  }
+}

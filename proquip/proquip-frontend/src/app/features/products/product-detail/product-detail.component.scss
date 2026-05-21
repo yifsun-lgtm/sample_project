@@ -1,0 +1,562 @@
+// 製品詳細画面のスタイル
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  margin-bottom: 16px;
+}
+
+.btn-back {
+  padding: 4px 12px;
+  background: none;
+  border: 1px solid #991b1b;
+  border-radius: 4px;
+  color: #991b1b;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.detail-container {
+  padding: 0 0 40px;
+}
+
+// ヘッダー
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+  padding: 20px 24px;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.product-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.product-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.product-meta {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.meta-item {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-primary {
+  padding: 8px 20px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+.btn-secondary {
+  padding: 8px 16px;
+  background-color: #fff;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.btn-danger {
+  padding: 8px 16px;
+  background-color: #fff;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fef2f2;
+  }
+}
+
+.btn-link {
+  padding: 4px 8px;
+  background: none;
+  border: none;
+  color: #3b82f6;
+  cursor: pointer;
+  font-size: 13px;
+
+  &:hover {
+    color: #2563eb;
+    text-decoration: underline;
+  }
+}
+
+// タブナビゲーション
+.tab-navigation {
+  display: flex;
+  gap: 2px;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 0;
+  overflow-x: auto;
+}
+
+.tab-button {
+  padding: 12px 20px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #6b7280;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  white-space: nowrap;
+
+  &:hover {
+    color: #374151;
+  }
+
+  &.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+    font-weight: 500;
+  }
+}
+
+// タブコンテンツ
+.tab-content {
+  background: #fff;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-panel {
+  padding: 24px;
+}
+
+// 情報グリッド
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.info-section {
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+}
+
+.section-subtitle {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+// 情報テーブル
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    text-align: left;
+    padding: 8px 12px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    width: 140px;
+    vertical-align: top;
+  }
+
+  td {
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #1f2937;
+  }
+}
+
+.mono {
+  font-family: 'SFMono-Regular', 'Consolas', monospace;
+}
+
+.amount {
+  font-family: 'SFMono-Regular', 'Consolas', monospace;
+  font-weight: 500;
+}
+
+// 在庫サマリー
+.stock-summary {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+}
+
+.stock-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stock-label {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.stock-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+
+  &.reserved {
+    color: #f59e0b;
+  }
+
+  &.available {
+    color: #10b981;
+  }
+}
+
+// データテーブル
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  tbody td {
+    padding: 10px 12px;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .preferred {
+    background-color: #eff6ff;
+  }
+}
+
+// 仕様テーブル
+.spec-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    padding: 10px 16px;
+    text-align: left;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6b7280;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  tbody td {
+    padding: 10px 16px;
+    font-size: 14px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .spec-key {
+    font-weight: 500;
+    color: #1f2937;
+    width: 200px;
+  }
+}
+
+// ステータスタグ
+.status-tag {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.status-active {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.status-inactive {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.status-discontinued {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.status-default {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+// 優先バッジ
+.preferred-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+// 画像グリッド
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.image-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+
+  &.primary {
+    border-color: #3b82f6;
+    border-width: 2px;
+  }
+}
+
+.image-wrapper {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  background-color: #f9fafb;
+}
+
+.product-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.primary-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 2px 8px;
+  background-color: #3b82f6;
+  color: #fff;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.image-alt {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #6b7280;
+  margin: 0;
+}
+
+// ドキュメントリスト
+.document-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.document-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.document-icon {
+  flex-shrink: 0;
+}
+
+.file-type-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background-color: #fee2e2;
+  color: #dc2626;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.document-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.document-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.document-meta {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+// 変更履歴
+.changelog {
+  display: flex;
+  flex-direction: column;
+}
+
+.changelog-entry {
+  display: flex;
+  gap: 16px;
+  padding-bottom: 20px;
+
+  &:last-child {
+    .timeline-line {
+      display: none;
+    }
+  }
+}
+
+.changelog-timeline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #3b82f6;
+  flex-shrink: 0;
+}
+
+.timeline-line {
+  width: 2px;
+  flex: 1;
+  background-color: #e5e7eb;
+  margin-top: 4px;
+}
+
+.changelog-content {
+  flex: 1;
+}
+
+.changelog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.changelog-field {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.changelog-date {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+.changelog-values {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  margin-bottom: 4px;
+}
+
+.old-value {
+  color: #ef4444;
+  text-decoration: line-through;
+}
+
+.arrow {
+  color: #9ca3af;
+}
+
+.new-value {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.changelog-user {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+// レスポンシブ
+@media (max-width: 1024px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-header {
+    flex-direction: column;
+    gap: 16px;
+  }
+}

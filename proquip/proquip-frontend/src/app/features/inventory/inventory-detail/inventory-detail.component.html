@@ -1,0 +1,164 @@
+<!-- 在庫詳細画面 -->
+<app-page-header
+  title="在庫詳細"
+  [description]="inventoryItem ? inventoryItem.productName : ''">
+  <button class="btn btn-outline" (click)="goBack()">
+    <i class="icon-arrow-left"></i>
+    一覧へ戻る
+  </button>
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+<div class="detail-content" *ngIf="inventoryItem && !isLoading">
+
+  <!-- 製品情報 -->
+  <section class="detail-section">
+    <h3 class="section-title">製品情報</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">製品名</span>
+        <span class="info-value">{{ inventoryItem.productName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">SKU</span>
+        <span class="info-value">{{ inventoryItem.productSku }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">現在の倉庫</span>
+        <span class="info-value">{{ inventoryItem.warehouseName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">最終棚卸日</span>
+        <span class="info-value">{{ inventoryItem.lastStockCheckDate | japaneseDate }}</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 全倉庫の在庫状況 -->
+  <section class="detail-section">
+    <h3 class="section-title">全倉庫の在庫状況</h3>
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th>倉庫</th>
+          <th class="text-right">数量</th>
+          <th class="text-right">引当数</th>
+          <th class="text-right">有効在庫</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let stock of warehouseStocks">
+          <td>{{ stock.warehouseName }}</td>
+          <td class="text-right">{{ stock.quantity }}</td>
+          <td class="text-right">{{ stock.reservedQuantity }}</td>
+          <td class="text-right font-bold">{{ stock.availableQuantity }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td class="font-bold">合計</td>
+          <td class="text-right font-bold">{{ totalQuantity }}</td>
+          <td class="text-right">-</td>
+          <td class="text-right font-bold">{{ totalAvailable }}</td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <!-- 在庫推移チャート（プレースホルダ） -->
+  <section class="detail-section">
+    <h3 class="section-title">在庫推移</h3>
+    <div class="chart-placeholder">
+      <i class="icon-bar-chart"></i>
+      <span>在庫推移グラフ（実装予定）</span>
+    </div>
+  </section>
+
+  <!-- 発注点設定 -->
+  <section class="detail-section">
+    <div class="section-header">
+      <h3 class="section-title">発注点設定</h3>
+      <button
+        class="btn btn-outline btn-sm"
+        (click)="toggleEditSettings()">
+        {{ isEditingSettings ? 'キャンセル' : '編集' }}
+      </button>
+    </div>
+
+    <div class="settings-grid" *ngIf="!isEditingSettings">
+      <div class="setting-item">
+        <span class="setting-label">発注点</span>
+        <span class="setting-value">{{ inventoryItem.reorderPoint }}</span>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">最低在庫</span>
+        <span class="setting-value">{{ inventoryItem.minimumStock }}</span>
+      </div>
+      <div class="setting-item">
+        <span class="setting-label">最大在庫</span>
+        <span class="setting-value">{{ inventoryItem.maximumStock }}</span>
+      </div>
+    </div>
+
+    <div class="settings-edit" *ngIf="isEditingSettings">
+      <div class="edit-row">
+        <label>発注点</label>
+        <input type="number" [(ngModel)]="editReorderPoint" class="form-control" min="0" />
+      </div>
+      <div class="edit-row">
+        <label>最低在庫</label>
+        <input type="number" [(ngModel)]="editMinimumStock" class="form-control" min="0" />
+      </div>
+      <div class="edit-row">
+        <label>最大在庫</label>
+        <input type="number" [(ngModel)]="editMaximumStock" class="form-control" min="0" />
+      </div>
+      <button
+        class="btn btn-primary"
+        (click)="saveSettings()"
+        [disabled]="isSavingSettings">
+        保存
+      </button>
+    </div>
+  </section>
+
+  <!-- 取引履歴 -->
+  <section class="detail-section">
+    <h3 class="section-title">取引履歴（直近20件）</h3>
+    <table class="detail-table" *ngIf="transactions.length > 0">
+      <thead>
+        <tr>
+          <th>日時</th>
+          <th>種別</th>
+          <th class="text-right">数量</th>
+          <th>参照</th>
+          <th>担当者</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tx of transactions">
+          <td>{{ tx.transactionDate | japaneseDate }}</td>
+          <td>
+            <span class="tx-type" [style.color]="getTransactionTypeColor(tx.transactionType)">
+              {{ getTransactionTypeLabel(tx.transactionType) }}
+            </span>
+          </td>
+          <td class="text-right"
+              [class.positive]="tx.quantity > 0"
+              [class.negative]="tx.quantity < 0">
+            {{ tx.quantity > 0 ? '+' : '' }}{{ tx.quantity }}
+          </td>
+          <td>{{ tx.notes }}</td>
+          <td>{{ tx.performedBy }}</td>
+        </tr>
+      </tbody>
+    </table>
+    <app-empty-state
+      *ngIf="transactions.length === 0"
+      message="取引履歴がありません">
+    </app-empty-state>
+  </section>
+</div>

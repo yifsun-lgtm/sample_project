@@ -1,0 +1,162 @@
+<!-- 棚卸し画面 -->
+<app-page-header
+  title="棚卸し（サイクルカウント）"
+  description="倉庫在庫の実地棚卸しを行います">
+</app-page-header>
+
+<!-- アラート -->
+<div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+<div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+
+<!-- 倉庫選択 -->
+<section class="form-section">
+  <h3 class="section-title">倉庫選択</h3>
+  <div class="warehouse-row">
+    <div class="warehouse-select">
+      <label for="warehouseSelect">対象倉庫</label>
+      <select
+        id="warehouseSelect"
+        [(ngModel)]="selectedWarehouseId"
+        (ngModelChange)="onWarehouseSelect()"
+        class="form-select">
+        <option [ngValue]="null">倉庫を選択してください</option>
+        <option *ngFor="let wh of warehouses" [ngValue]="wh.id">
+          {{ wh.name }} ({{ wh.code }})
+        </option>
+      </select>
+    </div>
+
+    <div class="count-date">
+      <label for="countDate">棚卸し日</label>
+      <input id="countDate" type="date" [(ngModel)]="countDate" class="form-control" />
+    </div>
+  </div>
+
+  <!-- 倉庫情報 -->
+  <div class="warehouse-info" *ngIf="selectedWarehouse">
+    <span>{{ selectedWarehouse.name }}</span>
+    <span class="warehouse-meta">品目数: {{ countLines.length }} | キャパシティ使用率: {{ selectedWarehouse.currentOccupancy }}%</span>
+  </div>
+</section>
+
+<!-- 棚卸し明細 -->
+<section class="form-section" *ngIf="countLines.length > 0">
+  <div class="section-header">
+    <h3 class="section-title">棚卸し明細</h3>
+    <div class="section-actions">
+      <label class="filter-toggle">
+        <input type="checkbox" [(ngModel)]="showDiscrepancyOnly" />
+        差異ありのみ表示
+      </label>
+      <button class="btn btn-outline btn-sm" (click)="fillExpected()">理論値で埋める</button>
+      <button class="btn btn-outline btn-sm" (click)="clearActual()">クリア</button>
+    </div>
+  </div>
+
+  <!-- 進捗バー -->
+  <div class="progress-section">
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="getProgressPercent()"></div>
+    </div>
+    <div class="progress-stats">
+      <span>進捗: {{ getProgressPercent() }}%</span>
+      <span>確認済み: {{ confirmedCount }} / {{ countLines.length }}</span>
+      <span class="stat-discrepancy" *ngIf="discrepancyCount > 0">
+        差異あり: {{ discrepancyCount }}件（合計差異: {{ getTotalDiscrepancy() }}）
+      </span>
+    </div>
+  </div>
+
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <table class="count-table" *ngIf="!isLoading">
+    <thead>
+      <tr>
+        <th>製品名</th>
+        <th>SKU</th>
+        <th class="text-right">理論在庫</th>
+        <th class="text-right">実在庫</th>
+        <th class="text-right">差異</th>
+        <th>調整理由</th>
+        <th class="col-actions">確認</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr
+        *ngFor="let line of getDisplayLines()"
+        [class.discrepancy-row]="line.discrepancy !== 0 && line.actualQuantity !== null"
+        [class.positive-discrepancy]="line.discrepancy > 0"
+        [class.negative-discrepancy]="line.discrepancy < 0"
+        [class.confirmed]="line.isConfirmed">
+
+        <td>{{ line.productName }}</td>
+        <td class="sku-cell">{{ line.productSku }}</td>
+        <td class="text-right">{{ line.expectedQuantity }}</td>
+        <td class="text-right">
+          <input
+            type="number"
+            class="form-control count-input"
+            [(ngModel)]="line.actualQuantity"
+            (ngModelChange)="onActualQuantityChange(line)"
+            min="0"
+            [disabled]="line.isConfirmed"
+            [class.has-discrepancy]="line.discrepancy !== 0 && line.actualQuantity !== null" />
+        </td>
+        <td class="text-right">
+          <span
+            *ngIf="line.actualQuantity !== null"
+            [class.positive]="line.discrepancy > 0"
+            [class.negative]="line.discrepancy < 0"
+            [class.zero]="line.discrepancy === 0">
+            {{ line.discrepancy > 0 ? '+' : '' }}{{ line.discrepancy }}
+          </span>
+          <span *ngIf="line.actualQuantity === null" class="not-counted">-</span>
+        </td>
+        <td>
+          <select
+            class="form-select reason-select"
+            [(ngModel)]="line.adjustmentReason"
+            [disabled]="line.isConfirmed || line.discrepancy === 0"
+            [required]="line.discrepancy !== 0">
+            <option value="">-</option>
+            <option *ngFor="let reason of adjustmentReasons" [value]="reason">{{ reason }}</option>
+          </select>
+        </td>
+        <td class="col-actions">
+          <button
+            *ngIf="!line.isConfirmed"
+            class="btn btn-success btn-sm"
+            (click)="confirmLine(line)"
+            [disabled]="line.actualQuantity === null"
+            title="確認">
+            確認
+          </button>
+          <button
+            *ngIf="line.isConfirmed"
+            class="btn btn-outline btn-sm"
+            (click)="unconfirmLine(line)"
+            title="取消">
+            取消
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- アクション -->
+  <div class="form-actions">
+    <button
+      class="btn btn-primary"
+      (click)="submitCount()"
+      [disabled]="!isSubmitValid() || isSubmitting">
+      <app-loading-spinner *ngIf="isSubmitting" [inline]="true"></app-loading-spinner>
+      棚卸し結果を保存
+    </button>
+  </div>
+</section>
+
+<!-- 倉庫未選択 -->
+<app-empty-state
+  *ngIf="!selectedWarehouseId && !isLoading"
+  message="棚卸しを行う倉庫を選択してください">
+</app-empty-state>

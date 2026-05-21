@@ -1,0 +1,29 @@
+<div
+  class="file-upload"
+  [class.drag-over]="isDragOver"
+  (dragover)="onDragOver($event)"
+  (dragleave)="onDragLeave()"
+  (drop)="onDrop($event)"
+>
+  <div class="upload-area">
+    <span class="upload-icon">&#128196;</span>
+    <p class="upload-text">
+      ファイルをドラッグ＆ドロップまたは
+    </p>
+    <label class="upload-btn btn btn-outline">
+      {{ label }}
+      <input
+        type="file"
+        [accept]="accept"
+        [multiple]="multiple"
+        (change)="onFileChange($event)"
+        class="file-input"
+      />
+    </label>
+  </div>
+
+  <div class="selected-file" *ngIf="selectedFileName">
+    <span class="file-name">{{ selectedFileName }}</span>
+    <button class="clear-btn" (click)="clearFile()" aria-label="クリア">&times;</button>
+  </div>
+</div>

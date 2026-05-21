@@ -1,0 +1,383 @@
+// 製品編集画面のスタイル
+// 技術的負債 #2: product-createのスタイルと大部分が重複
+
+.edit-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 0 40px;
+}
+
+.success-banner {
+  padding: 12px 20px;
+  background-color: #d1fae5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  color: #065f46;
+  margin-bottom: 16px;
+}
+
+.error-banner {
+  padding: 12px 20px;
+  background-color: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  color: #991b1b;
+  margin-bottom: 16px;
+}
+
+.error-container {
+  text-align: center;
+  padding: 40px;
+  color: #991b1b;
+}
+
+.edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.form-section {
+  background: #fff;
+  border-radius: 10px;
+  padding: 24px 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  margin: 0 0 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.form-row {
+  margin-bottom: 16px;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &.two-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+.form-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #374151;
+  outline: none;
+  box-sizing: border-box;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.15);
+  }
+
+  &.ng-invalid.ng-touched {
+    border-color: #ef4444;
+  }
+}
+
+.form-textarea {
+  @extend .form-input;
+  resize: vertical;
+}
+
+.form-select {
+  @extend .form-input;
+  appearance: auto;
+  cursor: pointer;
+}
+
+.input-with-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sku-check {
+  font-size: 12px;
+  white-space: nowrap;
+
+  &.sku-ok {
+    color: #10b981;
+  }
+
+  &.sku-ng {
+    color: #ef4444;
+  }
+}
+
+.input-with-prefix {
+  display: flex;
+  align-items: center;
+}
+
+.input-prefix {
+  padding: 8px 10px;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-right: none;
+  border-radius: 6px 0 0 6px;
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.input-with-prefix .form-input {
+  border-radius: 0 6px 6px 0;
+}
+
+// 仕様行
+.spec-rows {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.spec-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 40px;
+  gap: 12px;
+  padding: 10px 16px;
+  background-color: #f9fafb;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.spec-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 40px;
+  gap: 12px;
+  padding: 10px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  align-items: center;
+}
+
+.btn-remove {
+  width: 28px;
+  height: 28px;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  background-color: #fff;
+  color: #ef4444;
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:hover:not(:disabled) {
+    background-color: #fef2f2;
+  }
+
+  &:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+}
+
+.btn-add-row {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  background-color: #f9fafb;
+  color: #3b82f6;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #eff6ff;
+  }
+}
+
+// アクションボタン
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 8px;
+}
+
+.btn-cancel {
+  padding: 10px 20px;
+  background: none;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  color: #6b7280;
+  font-size: 14px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.btn-submit {
+  padding: 10px 28px;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: #2563eb;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-back {
+  padding: 8px 16px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 16px;
+}
+
+// 画像グリッド
+.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.image-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #fafafa;
+}
+
+.image-thumb {
+  width: 100%;
+  height: 100px;
+  object-fit: cover;
+}
+
+.image-card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+}
+
+.image-badge {
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.btn-delete-sm {
+  background: none;
+  border: 1px solid #fecaca;
+  border-radius: 4px;
+  color: #ef4444;
+  font-size: 11px;
+  padding: 2px 8px;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #fef2f2;
+  }
+}
+
+.empty-message {
+  font-size: 13px;
+  color: #9ca3af;
+  margin: 0 0 12px;
+}
+
+.upload-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 8px;
+
+  &:hover {
+    border-color: #3b82f6;
+    background-color: #eff6ff;
+  }
+}
+
+.upload-area-inline {
+  flex: 1;
+}
+
+.upload-label {
+  color: #3b82f6;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.upload-row {
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  margin-top: 8px;
+}
+
+.doc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.doc-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #fafafa;
+}
+
+.doc-icon {
+  font-size: 18px;
+}
+
+.doc-link {
+  flex: 1;
+  font-size: 13px;
+  color: #3b82f6;
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 768px) {
+  .form-row.two-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .image-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}

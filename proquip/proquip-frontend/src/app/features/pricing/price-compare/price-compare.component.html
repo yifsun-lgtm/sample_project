@@ -1,0 +1,172 @@
+<!-- 価格比較画面 -->
+<div class="price-compare">
+  <app-page-header
+    title="価格比較"
+    subtitle="複数サプライヤーの価格を製品ごとに比較します">
+  </app-page-header>
+
+  <!-- 製品選択セクション -->
+  <div class="selection-section">
+    <h3 class="section-title">比較する製品を選択</h3>
+
+    <div class="selection-panel">
+      <!-- 製品検索 -->
+      <div class="product-search">
+        <app-search-box
+          placeholder="製品名・SKUで検索..."
+          (searchChange)="onProductSearch($event)">
+        </app-search-box>
+
+        <div class="product-list">
+          <div *ngIf="filteredProducts.length === 0" class="empty-list">
+            該当する製品がありません
+          </div>
+          <div *ngFor="let product of filteredProducts"
+               class="product-item"
+               [ngClass]="{'product-item--selected': isProductSelected(product.id)}"
+               (click)="addProduct(product)">
+            <div class="product-item__info">
+              <span class="product-item__name">{{ product.name }}</span>
+              <span class="product-item__sku">{{ product.sku }}</span>
+            </div>
+            <span class="product-item__price">{{ product.unitPrice | currencyJp }}</span>
+            <span class="product-item__check" *ngIf="isProductSelected(product.id)">&#10003;</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 選択済み製品 -->
+      <div class="selected-products">
+        <h4 class="selected-title">選択済み（{{ selectedProductIds.length }} 件）</h4>
+        <div *ngIf="selectedProductIds.length === 0" class="empty-selection">
+          左のリストから製品を選択してください
+        </div>
+        <div *ngFor="let productId of selectedProductIds" class="selected-tag">
+          <span class="selected-tag__name">{{ getProductName(productId) }}</span>
+          <button class="selected-tag__remove" (click)="removeProduct(productId)">&times;</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 比較実行ボタン -->
+    <div class="compare-actions">
+      <div class="compare-options">
+        <label class="checkbox-option">
+          <input type="checkbox" [(ngModel)]="highlightBest">
+          最安値をハイライト
+        </label>
+        <label class="checkbox-option">
+          <input type="checkbox" [(ngModel)]="highlightWorst">
+          最高値をハイライト
+        </label>
+      </div>
+      <button class="btn btn-primary" (click)="executeCompare()" [disabled]="selectedProductIds.length === 0 || isLoading">
+        {{ isLoading ? '比較中...' : '比較実行' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- エラーメッセージ -->
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <!-- 比較結果セクション -->
+  <div class="comparison-section" *ngIf="hasCompared && !isLoading">
+    <h3 class="section-title">比較結果</h3>
+
+    <div *ngIf="comparisons.length === 0" class="no-results">
+      <app-empty-state></app-empty-state>
+    </div>
+
+    <!-- 比較テーブル -->
+    <div class="table-container" *ngIf="comparisons.length > 0">
+      <div class="table-scroll">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th class="col-product sortable" (click)="onSort('productName')">
+                製品{{ getSortIcon('productName') }}
+              </th>
+              <th class="col-sku">SKU</th>
+              <th *ngFor="let supplierName of comparedSupplierNames" class="col-supplier">
+                {{ supplierName }}
+              </th>
+              <th class="col-best sortable" (click)="onSort('bestPrice')">
+                最安値{{ getSortIcon('bestPrice') }}
+              </th>
+              <th class="col-worst sortable" (click)="onSort('worstPrice')">
+                最高値{{ getSortIcon('worstPrice') }}
+              </th>
+              <th class="col-avg sortable" (click)="onSort('averagePrice')">
+                平均{{ getSortIcon('averagePrice') }}
+              </th>
+              <th class="col-range sortable" (click)="onSort('priceRange')">
+                価格差{{ getSortIcon('priceRange') }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let comparison of comparisons">
+              <td class="col-product">
+                <span class="product-name">{{ comparison.productName }}</span>
+              </td>
+              <td class="col-sku">
+                <span class="sku-code">{{ comparison.sku }}</span>
+              </td>
+              <!-- サプライヤー別価格 -->
+              <td *ngFor="let supplierName of comparedSupplierNames"
+                  class="col-supplier">
+                <ng-container *ngIf="getSupplierPrice(comparison, supplierName) as sp; else noPrice">
+                  <div class="supplier-price-cell"
+                       [ngClass]="{
+                         'price-best': isBestPrice(comparison, sp.unitPrice),
+                         'price-worst': isWorstPrice(comparison, sp.unitPrice)
+                       }">
+                    <span class="supplier-price-value">{{ formatCurrency(sp.unitPrice) }}</span>
+                    <div class="supplier-price-details">
+                      <span class="detail-item">納期: {{ sp.leadTimeDays }}日</span>
+                      <span class="detail-item">最低: {{ sp.minimumOrder }}個</span>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-template #noPrice>
+                  <span class="no-price">--</span>
+                </ng-template>
+              </td>
+              <!-- 集計カラム -->
+              <td class="col-best">
+                <span class="best-price-value">{{ formatCurrency(comparison.bestPrice) }}</span>
+              </td>
+              <td class="col-worst">
+                <span class="worst-price-value">{{ formatCurrency(comparison.worstPrice) }}</span>
+              </td>
+              <td class="col-avg">
+                <span class="avg-price-value">{{ formatCurrency(comparison.averagePrice) }}</span>
+              </td>
+              <td class="col-range">
+                <span class="range-value">{{ formatCurrency(comparison.priceRange) }}</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 凡例 -->
+    <div class="legend" *ngIf="comparisons.length > 0">
+      <div class="legend-item" *ngIf="highlightBest">
+        <span class="legend-color legend-color--best"></span>
+        <span class="legend-label">最安値</span>
+      </div>
+      <div class="legend-item" *ngIf="highlightWorst">
+        <span class="legend-color legend-color--worst"></span>
+        <span class="legend-label">最高値</span>
+      </div>
+    </div>
+  </div>
+</div>

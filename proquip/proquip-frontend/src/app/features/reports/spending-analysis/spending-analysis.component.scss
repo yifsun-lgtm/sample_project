@@ -1,0 +1,344 @@
+/* 支出分析レポートスタイル */
+
+.spending-analysis {
+  padding: 24px;
+}
+
+.filter-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 150px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.filter-input,
+.filter-select {
+  padding: 6px 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.filter-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+  &__label {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 8px;
+  }
+
+  &__value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #111827;
+    font-variant-numeric: tabular-nums;
+
+    &--text {
+      font-size: 20px;
+    }
+
+    .unit {
+      font-size: 14px;
+      font-weight: 400;
+      color: #6b7280;
+    }
+  }
+
+  &__period {
+    font-size: 12px;
+    color: #9ca3af;
+    margin-top: 4px;
+  }
+
+  &__sub {
+    font-size: 14px;
+    color: #6b7280;
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px;
+}
+
+/* CSSベースのバーチャート */
+.chart-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.bar-chart {
+  padding: 16px 0;
+}
+
+.bar-chart__bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 220px;
+  border-bottom: 2px solid #e5e7eb;
+  padding: 0 16px;
+}
+
+.bar-chart__bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  max-width: 120px;
+}
+
+.bar-chart__value {
+  font-size: 11px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  white-space: nowrap;
+}
+
+.bar-chart__bar {
+  width: 48px;
+  min-height: 4px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bar-chart__bar-fill {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%);
+  border-radius: 4px 4px 0 0;
+  min-height: 4px;
+  transition: height 0.3s ease;
+}
+
+.bar-chart__label {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 8px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+/* 内訳テーブル */
+.breakdown-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.breakdown-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.breakdown-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.group-by-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+  }
+
+  th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+
+    &.sortable {
+      cursor: pointer;
+
+      &:hover {
+        background: #f3f4f6;
+      }
+    }
+  }
+
+  tbody tr:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.col-name {
+  min-width: 150px;
+}
+
+.col-order-count,
+.col-amount,
+.col-percentage {
+  text-align: right;
+  min-width: 100px;
+}
+
+.col-bar {
+  min-width: 160px;
+}
+
+.item-name {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.percentage-bar {
+  background: #f3f4f6;
+  border-radius: 4px;
+  height: 20px;
+  overflow: hidden;
+}
+
+.percentage-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 4px;
+  min-width: 2px;
+  transition: width 0.3s ease;
+}
+
+.total-row {
+  background: #f9fafb;
+
+  td {
+    border-top: 2px solid #d1d5db;
+    font-weight: 600;
+  }
+}
+
+.empty-row {
+  text-align: center;
+  padding: 40px !important;
+  color: #9ca3af;
+}
+
+/* アラート */
+.alert {
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.alert-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.alert-icon {
+  font-weight: 700;
+}
+
+/* ボタン */
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+.btn-primary {
+  background: #1a56db;
+  color: #fff;
+
+  &:hover:not(:disabled) {
+    background: #1e40af;
+  }
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d0d5dd;
+
+  &:hover {
+    background: #e5e7eb;
+  }
+}
+
+.btn-outline {
+  background: #fff;
+  color: #1a56db;
+  border: 1px solid #1a56db;
+
+  &:hover:not(:disabled) {
+    background: #eff6ff;
+  }
+}

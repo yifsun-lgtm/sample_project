@@ -1,0 +1,63 @@
+/* 棚卸し画面のスタイル */
+:host { display: block; padding: 24px; }
+
+.alert {
+  padding: 12px 16px; border-radius: 4px; margin-bottom: 16px;
+  &.alert-error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; }
+  &.alert-success { background: #e8f5e9; border: 1px solid #a5d6a7; color: #2e7d32; }
+}
+
+.form-section { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 24px; margin-bottom: 20px; }
+.section-title { font-size: 18px; font-weight: 600; color: #333; margin: 0 0 20px 0; padding-bottom: 12px; border-bottom: 2px solid #1976d2; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; .section-title { margin: 0; padding-bottom: 0; border-bottom: none; } }
+.section-actions { display: flex; gap: 12px; align-items: center; }
+
+.warehouse-row { display: flex; gap: 24px; align-items: flex-end; }
+.warehouse-select, .count-date { display: flex; flex-direction: column; gap: 6px; label { font-size: 13px; font-weight: 500; color: #555; } }
+.warehouse-info { margin-top: 12px; padding: 8px 12px; background: #e3f2fd; border-radius: 4px; display: flex; justify-content: space-between; }
+.warehouse-meta { font-size: 13px; color: #555; }
+
+/* 進捗 */
+.progress-section { margin-bottom: 16px; }
+.progress-bar { height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+.progress-fill { height: 100%; background: #43a047; border-radius: 4px; transition: width 0.3s; }
+.progress-stats { display: flex; gap: 20px; font-size: 13px; color: #555; }
+.stat-discrepancy { color: #e53935; font-weight: 600; }
+
+.filter-toggle { display: flex; align-items: center; gap: 6px; font-size: 13px; cursor: pointer; }
+
+/* テーブル */
+.count-table {
+  width: 100%; border-collapse: collapse;
+  th, td { padding: 10px 12px; border-bottom: 1px solid #e0e0e0; text-align: left; }
+  th { background: #f5f5f5; font-weight: 600; font-size: 13px; color: #555; }
+}
+
+.text-right { text-align: right; }
+.sku-cell { font-size: 12px; color: #888; }
+.col-actions { width: 70px; text-align: center; }
+
+.count-input { width: 80px; text-align: right; padding: 6px 8px; &.has-discrepancy { border-color: #f57c00; background: #fff8e1; } }
+.reason-select { width: 140px; padding: 4px 8px; font-size: 13px; }
+
+.positive { color: #43a047; font-weight: 600; }
+.negative { color: #e53935; font-weight: 600; }
+.zero { color: #888; }
+.not-counted { color: #ccc; }
+
+.discrepancy-row { background: #fffde7; }
+.positive-discrepancy { border-left: 3px solid #43a047; }
+.negative-discrepancy { border-left: 3px solid #e53935; }
+.confirmed { opacity: 0.7; background: #f5f5f5; }
+
+.form-actions { display: flex; justify-content: flex-end; margin-top: 20px; }
+
+.form-control, .form-select { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; box-sizing: border-box; &:focus { outline: none; border-color: #1976d2; } }
+
+.btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; gap: 6px;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &.btn-sm { padding: 6px 12px; font-size: 13px; }
+  &.btn-primary { background: #1976d2; color: #fff; &:hover:not(:disabled) { background: #1565c0; } }
+  &.btn-success { background: #43a047; color: #fff; &:hover:not(:disabled) { background: #388e3c; } }
+  &.btn-outline { background: transparent; border: 1px solid #bdbdbd; color: #616161; }
+}

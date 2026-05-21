@@ -1,0 +1,722 @@
+{
+  "common": {
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "create": "新規作成",
+    "search": "検索",
+    "filter": "フィルター",
+    "export": "エクスポート",
+    "import": "インポート",
+    "confirm": "確認",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "loading": "読み込み中...",
+    "noData": "データがありません",
+    "required": "必須項目です",
+    "success": "処理が完了しました",
+    "error": "エラーが発生しました",
+    "actions": "操作",
+    "status": "ステータス",
+    "total": "合計",
+    "submit": "提出",
+    "approve": "承認",
+    "reject": "却下",
+    "close": "閉じる",
+    "reset": "リセット",
+    "refresh": "更新",
+    "download": "ダウンロード",
+    "upload": "アップロード",
+    "yes": "はい",
+    "no": "いいえ",
+    "ok": "OK",
+    "detail": "詳細",
+    "list": "一覧",
+    "all": "すべて",
+    "select": "選択",
+    "selectAll": "すべて選択",
+    "deselectAll": "選択解除",
+    "sort": "並べ替え",
+    "ascending": "昇順",
+    "descending": "降順",
+    "date": "日付",
+    "dateRange": "期間",
+    "startDate": "開始日",
+    "endDate": "終了日",
+    "createdAt": "作成日時",
+    "updatedAt": "更新日時",
+    "createdBy": "作成者",
+    "updatedBy": "更新者",
+    "name": "名前",
+    "description": "説明",
+    "notes": "備考",
+    "category": "カテゴリ",
+    "code": "コード",
+    "quantity": "数量",
+    "unitPrice": "単価",
+    "amount": "金額",
+    "currency": "通貨",
+    "unit": "単位",
+    "percentage": "割合",
+    "address": "住所",
+    "phone": "電話番号",
+    "email": "メールアドレス",
+    "website": "ウェブサイト",
+    "department": "部署",
+    "enabled": "有効",
+    "disabled": "無効",
+    "active": "有効",
+    "inactive": "無効",
+    "pending": "保留中",
+    "completed": "完了",
+    "copyToClipboard": "クリップボードにコピー",
+    "copied": "コピーしました",
+    "confirmDelete": "削除してもよろしいですか？",
+    "confirmAction": "この操作を実行してもよろしいですか？",
+    "unsavedChanges": "未保存の変更があります。破棄してもよろしいですか？",
+    "noResults": "検索結果がありません",
+    "itemsPerPage": "表示件数",
+    "pageOf": "{{current}} / {{total}} ページ",
+    "totalItems": "全 {{count}} 件",
+    "showingItems": "{{start}} - {{end}} / {{total}} 件を表示",
+    "validation": {
+      "required": "この項目は必須です",
+      "minLength": "{{min}}文字以上で入力してください",
+      "maxLength": "{{max}}文字以内で入力してください",
+      "min": "{{min}}以上の値を入力してください",
+      "max": "{{max}}以下の値を入力してください",
+      "email": "有効なメールアドレスを入力してください",
+      "pattern": "入力形式が正しくありません",
+      "duplicate": "この値は既に使用されています",
+      "invalidDate": "有効な日付を入力してください",
+      "dateRange": "終了日は開始日より後の日付を指定してください"
+    }
+  },
+  "auth": {
+    "login": "ログイン",
+    "logout": "ログアウト",
+    "username": "ユーザー名",
+    "password": "パスワード",
+    "sessionExpired": "セッションが期限切れです。再度ログインしてください。",
+    "accessDenied": "アクセスが拒否されました。この操作を行う権限がありません。",
+    "unauthorized": "認証エラーが発生しました"
+  },
+  "layout": {
+    "header": {
+      "title": "ProQuip",
+      "subtitle": "調達・在庫管理システム",
+      "notifications": "通知",
+      "profile": "プロフィール",
+      "settings": "設定",
+      "help": "ヘルプ"
+    },
+    "sidebar": {
+      "dashboard": "ダッシュボード",
+      "products": "製品管理",
+      "suppliers": "サプライヤー管理",
+      "procurement": "調達管理",
+      "inventory": "在庫管理",
+      "warehouses": "倉庫管理",
+      "pricing": "価格管理",
+      "reports": "レポート",
+      "admin": "システム管理"
+    },
+    "footer": {
+      "copyright": "© 2026 ProQuip - 調達・在庫管理システム",
+      "version": "バージョン"
+    }
+  },
+  "dashboard": {
+    "title": "ダッシュボード",
+    "summary": {
+      "totalOrders": "発注件数",
+      "pendingOrders": "保留中発注",
+      "approvedOrders": "承認済み発注",
+      "lowStockAlerts": "在庫アラート",
+      "pendingApprovals": "承認待ち",
+      "budgetUtilization": "予算消化率",
+      "budgetTotal": "予算総額",
+      "budgetSpent": "支出済み",
+      "budgetRemaining": "残予算"
+    },
+    "charts": {
+      "monthlySpending": "月別支出推移",
+      "categorySpending": "カテゴリ別支出内訳",
+      "noChartData": "チャートデータがありません"
+    },
+    "recentOrders": {
+      "title": "最近の発注",
+      "orderNumber": "発注番号",
+      "supplier": "サプライヤー",
+      "amount": "金額",
+      "status": "ステータス",
+      "date": "発注日",
+      "viewAll": "すべて表示"
+    },
+    "lowStock": {
+      "title": "在庫アラート",
+      "product": "製品",
+      "warehouse": "倉庫",
+      "current": "現在数",
+      "minimum": "最低数",
+      "reorderPoint": "発注点",
+      "viewAll": "すべて表示"
+    },
+    "myTasks": {
+      "title": "マイタスク",
+      "approvalRequired": "承認が必要",
+      "reviewRequired": "レビューが必要",
+      "overdueDelivery": "納期超過",
+      "noTasks": "タスクはありません"
+    },
+    "refresh": "データを更新",
+    "lastUpdated": "最終更新: {{time}}",
+    "errorLoading": "データの取得に失敗しました。再度お試しください。"
+  },
+  "products": {
+    "title": "製品管理",
+    "list": {
+      "title": "製品一覧",
+      "createNew": "新規製品登録",
+      "exportCsv": "CSV出力",
+      "categories": "カテゴリ管理",
+      "bundles": "バンドル管理"
+    },
+    "detail": {
+      "title": "製品詳細",
+      "tabs": {
+        "basic": "基本情報",
+        "specifications": "仕様",
+        "images": "画像",
+        "alternatives": "代替品",
+        "suppliers": "サプライヤー",
+        "documents": "ドキュメント",
+        "history": "変更履歴"
+      },
+      "confirmDelete": "この製品を削除してもよろしいですか？関連する在庫データも削除されます。"
+    },
+    "create": {
+      "title": "新規製品登録",
+      "steps": {
+        "basic": "基本情報",
+        "basicDesc": "製品名、SKU、カテゴリ",
+        "pricing": "価格・在庫",
+        "pricingDesc": "価格、単位、発注点",
+        "specs": "仕様",
+        "specsDesc": "製品仕様の詳細",
+        "confirm": "確認",
+        "confirmDesc": "入力内容の最終確認"
+      },
+      "success": "製品が正常に登録されました。",
+      "error": "製品の登録に失敗しました。入力内容を確認してください。"
+    },
+    "edit": {
+      "title": "製品編集",
+      "success": "製品情報が更新されました。",
+      "error": "製品の更新に失敗しました。"
+    },
+    "fields": {
+      "sku": "SKU",
+      "skuPlaceholder": "例: AB-12345",
+      "skuHint": "2-4文字の英大文字 + ハイフン + 3-8桁の数字",
+      "name": "製品名",
+      "description": "説明",
+      "category": "カテゴリ",
+      "manufacturer": "メーカー",
+      "unitPrice": "単価",
+      "unit": "単位",
+      "minimumOrderQuantity": "最低発注数",
+      "leadTimeDays": "リードタイム（日）",
+      "weight": "重量（kg）",
+      "dimensions": "寸法",
+      "status": "ステータス",
+      "specifications": "仕様",
+      "notes": "備考"
+    },
+    "status": {
+      "ACTIVE": "有効",
+      "INACTIVE": "無効",
+      "DISCONTINUED": "廃番",
+      "PENDING": "保留"
+    },
+    "validation": {
+      "skuRequired": "SKUは必須です",
+      "skuPattern": "SKU形式が不正です（例: AB-12345）",
+      "skuDuplicate": "このSKUは既に使用されています",
+      "nameRequired": "製品名は必須です",
+      "categoryRequired": "カテゴリを選択してください",
+      "manufacturerRequired": "メーカーを選択してください",
+      "unitPriceRequired": "単価を入力してください",
+      "unitPriceMin": "単価は0以上を指定してください"
+    },
+    "categoryManagement": {
+      "title": "カテゴリ管理",
+      "createCategory": "新規カテゴリ",
+      "parentCategory": "親カテゴリ",
+      "productCount": "製品数"
+    },
+    "bundleManagement": {
+      "title": "バンドル管理",
+      "createBundle": "新規バンドル",
+      "bundleItems": "バンドル構成品",
+      "bundlePrice": "バンドル価格"
+    }
+  },
+  "suppliers": {
+    "title": "サプライヤー管理",
+    "list": {
+      "title": "サプライヤー一覧",
+      "createNew": "新規サプライヤー登録",
+      "compare": "サプライヤー比較"
+    },
+    "detail": {
+      "title": "サプライヤー詳細",
+      "tabs": {
+        "basic": "基本情報",
+        "contacts": "連絡先",
+        "contracts": "契約",
+        "products": "取扱製品",
+        "performance": "実績",
+        "history": "変更履歴"
+      }
+    },
+    "create": {
+      "title": "新規サプライヤー登録",
+      "success": "サプライヤーが登録されました。",
+      "error": "サプライヤーの登録に失敗しました。"
+    },
+    "fields": {
+      "code": "サプライヤーコード",
+      "name": "会社名",
+      "nameKana": "会社名（カナ）",
+      "status": "ステータス",
+      "rating": "評価",
+      "address": "住所",
+      "phone": "電話番号",
+      "email": "メールアドレス",
+      "website": "ウェブサイト",
+      "paymentTerms": "支払条件",
+      "notes": "備考"
+    },
+    "status": {
+      "ACTIVE": "取引中",
+      "INACTIVE": "取引停止",
+      "PENDING": "審査中",
+      "BLOCKED": "ブロック済み"
+    },
+    "contacts": {
+      "title": "連絡先一覧",
+      "addContact": "連絡先を追加",
+      "name": "氏名",
+      "department": "部署",
+      "position": "役職",
+      "phone": "電話番号",
+      "email": "メールアドレス",
+      "isPrimary": "主要連絡先"
+    },
+    "contracts": {
+      "title": "契約一覧",
+      "addContract": "契約を追加",
+      "contractNumber": "契約番号",
+      "startDate": "開始日",
+      "endDate": "終了日",
+      "status": "ステータス",
+      "totalAmount": "契約金額"
+    },
+    "compare": {
+      "title": "サプライヤー比較",
+      "selectSuppliers": "比較するサプライヤーを2-3社選択してください",
+      "compareButton": "比較する"
+    }
+  },
+  "procurement": {
+    "title": "調達管理",
+    "orders": {
+      "title": "発注書一覧",
+      "createNew": "新規発注書作成",
+      "detail": "発注書詳細"
+    },
+    "orderCreate": {
+      "title": "新規発注書作成",
+      "selectSupplier": "サプライヤーを選択",
+      "searchSupplier": "サプライヤーを検索...",
+      "items": "明細行",
+      "addItem": "明細行を追加",
+      "removeItem": "明細行を削除",
+      "searchProduct": "製品を検索...",
+      "deliveryInfo": "配送情報",
+      "deliveryAddress": "配送先住所",
+      "expectedDeliveryDate": "希望納期",
+      "discount": "値引き",
+      "discountPercent": "値引き率（%）",
+      "subtotal": "小計",
+      "tax": "消費税",
+      "taxRate": "税率",
+      "total": "合計金額",
+      "saveDraft": "下書き保存",
+      "submitOrder": "発注書を作成",
+      "success": "発注書が作成されました。",
+      "error": "発注書の作成に失敗しました。"
+    },
+    "orderDetail": {
+      "title": "発注書詳細",
+      "orderNumber": "発注番号",
+      "supplier": "サプライヤー",
+      "orderDate": "発注日",
+      "expectedDelivery": "希望納期",
+      "actualDelivery": "実納品日",
+      "status": "ステータス",
+      "amount": "金額",
+      "createdBy": "作成者",
+      "approvedBy": "承認者",
+      "approvedAt": "承認日時",
+      "items": "明細",
+      "approvalHistory": "承認履歴",
+      "actions": {
+        "submitForApproval": "承認申請",
+        "approve": "承認する",
+        "reject": "却下する",
+        "cancel": "キャンセル",
+        "receiveGoods": "入荷処理",
+        "print": "印刷"
+      }
+    },
+    "status": {
+      "DRAFT": "下書き",
+      "SUBMITTED": "申請中",
+      "PENDING_APPROVAL": "承認待ち",
+      "APPROVED": "承認済み",
+      "REJECTED": "却下",
+      "ORDERED": "発注済み",
+      "SHIPPED": "出荷済み",
+      "PARTIALLY_RECEIVED": "一部入荷",
+      "RECEIVED": "入荷済み",
+      "DELIVERED": "納品済み",
+      "CANCELLED": "キャンセル",
+      "CLOSED": "完了"
+    },
+    "requisitions": {
+      "title": "購買依頼一覧",
+      "createNew": "新規購買依頼",
+      "detail": "購買依頼詳細",
+      "requestedBy": "依頼者",
+      "department": "部署",
+      "priority": "優先度",
+      "requiredDate": "希望日",
+      "justification": "理由"
+    },
+    "requisitionPriority": {
+      "HIGH": "高",
+      "MEDIUM": "中",
+      "LOW": "低",
+      "URGENT": "緊急"
+    },
+    "approval": {
+      "title": "承認キュー",
+      "pendingCount": "承認待ち: {{count}}件",
+      "approveButton": "承認",
+      "rejectButton": "却下",
+      "comment": "コメント",
+      "commentPlaceholder": "承認・却下の理由を入力してください",
+      "approveConfirm": "この発注書を承認してもよろしいですか？",
+      "rejectConfirm": "この発注書を却下してもよろしいですか？"
+    },
+    "goodsReceipt": {
+      "title": "入荷処理",
+      "receivedQuantity": "入荷数量",
+      "orderedQuantity": "発注数量",
+      "remainingQuantity": "未入荷数量",
+      "receiveAll": "全数入荷",
+      "partialReceive": "一部入荷",
+      "confirmReceive": "入荷を確定してもよろしいですか？"
+    },
+    "returns": {
+      "title": "返品管理",
+      "createReturn": "返品処理",
+      "returnReason": "返品理由",
+      "returnQuantity": "返品数量"
+    },
+    "validation": {
+      "supplierRequired": "サプライヤーを選択してください",
+      "itemsRequired": "明細行を1行以上追加してください",
+      "productRequired": "製品を選択してください",
+      "quantityRequired": "数量を入力してください",
+      "quantityMin": "数量は1以上を指定してください",
+      "deliveryAddressRequired": "配送先住所を入力してください",
+      "deliveryDateRequired": "希望納期を指定してください",
+      "amountExceeded": "合計金額が上限（{{max}}円）を超えています",
+      "itemAmountExceeded": "明細行 {{line}} の金額が上限（{{max}}円）を超えています"
+    }
+  },
+  "inventory": {
+    "title": "在庫管理",
+    "overview": {
+      "title": "在庫一覧",
+      "summary": {
+        "totalItems": "在庫品目数",
+        "totalValue": "在庫総額",
+        "lowStockItems": "在庫少",
+        "outOfStockItems": "在庫切れ"
+      }
+    },
+    "detail": {
+      "title": "在庫詳細",
+      "product": "製品",
+      "warehouse": "倉庫",
+      "quantity": "在庫数",
+      "reservedQuantity": "予約数",
+      "availableQuantity": "利用可能数",
+      "minimumStock": "最低在庫数",
+      "maximumStock": "最大在庫数",
+      "reorderPoint": "発注点",
+      "lastStockCheck": "最終棚卸日"
+    },
+    "status": {
+      "IN_STOCK": "在庫あり",
+      "LOW_STOCK": "在庫少",
+      "OUT_OF_STOCK": "在庫切れ",
+      "RESERVED": "予約済み",
+      "ON_ORDER": "発注中"
+    },
+    "transfer": {
+      "title": "在庫移動",
+      "createTransfer": "移動依頼作成",
+      "sourceWarehouse": "移動元倉庫",
+      "destinationWarehouse": "移動先倉庫",
+      "transferQuantity": "移動数量",
+      "transferNumber": "移動番号",
+      "requestedBy": "依頼者",
+      "requestedDate": "依頼日",
+      "completedDate": "完了日"
+    },
+    "stockCheck": {
+      "title": "棚卸",
+      "startStockCheck": "棚卸開始",
+      "adjustQuantity": "在庫数調整",
+      "difference": "差異",
+      "notes": "備考"
+    },
+    "alerts": {
+      "title": "在庫アラート",
+      "lowStock": "在庫が発注点を下回っています",
+      "outOfStock": "在庫が切れています",
+      "overstock": "在庫が最大数を超えています"
+    }
+  },
+  "warehouses": {
+    "title": "倉庫管理",
+    "list": {
+      "title": "倉庫一覧",
+      "createNew": "新規倉庫登録"
+    },
+    "detail": {
+      "title": "倉庫詳細",
+      "code": "倉庫コード",
+      "name": "倉庫名",
+      "address": "所在地",
+      "manager": "管理者",
+      "capacity": "容量",
+      "currentOccupancy": "現在使用率",
+      "status": "ステータス",
+      "phone": "電話番号"
+    },
+    "status": {
+      "ACTIVE": "稼働中",
+      "INACTIVE": "停止中",
+      "MAINTENANCE": "メンテナンス中"
+    }
+  },
+  "pricing": {
+    "title": "価格管理",
+    "priceList": {
+      "title": "価格表一覧",
+      "createNew": "新規価格表作成",
+      "name": "価格表名",
+      "effectiveDate": "有効日",
+      "expirationDate": "失効日",
+      "status": "ステータス",
+      "items": "価格表明細"
+    },
+    "priceEdit": {
+      "title": "価格編集",
+      "currentPrice": "現在価格",
+      "newPrice": "新価格",
+      "effectiveDate": "適用日",
+      "reason": "変更理由"
+    },
+    "priceCompare": {
+      "title": "価格比較",
+      "selectProducts": "比較する製品を選択",
+      "selectSuppliers": "比較するサプライヤーを選択",
+      "bestPrice": "最安値",
+      "averagePrice": "平均価格"
+    },
+    "status": {
+      "ACTIVE": "有効",
+      "INACTIVE": "無効",
+      "DRAFT": "下書き",
+      "EXPIRED": "期限切れ"
+    }
+  },
+  "reports": {
+    "title": "レポート",
+    "spendingAnalysis": {
+      "title": "支出分析",
+      "totalSpending": "総支出額",
+      "orderCount": "発注件数",
+      "averageOrderValue": "平均発注額",
+      "topCategory": "最多カテゴリ",
+      "byCategory": "カテゴリ別",
+      "bySupplier": "サプライヤー別",
+      "byMonth": "月別推移",
+      "period": "対象期間"
+    },
+    "inventoryValuation": {
+      "title": "在庫評価",
+      "totalValue": "在庫総額",
+      "byWarehouse": "倉庫別",
+      "byCategory": "カテゴリ別",
+      "turnoverRate": "回転率",
+      "avgDaysInStock": "平均在庫日数"
+    },
+    "supplierPerformance": {
+      "title": "サプライヤー実績",
+      "deliveryRate": "納期遵守率",
+      "qualityRate": "品質合格率",
+      "priceCompetitiveness": "価格競争力",
+      "overallScore": "総合スコア",
+      "orderCount": "発注件数",
+      "totalAmount": "取引総額"
+    },
+    "budgetActual": {
+      "title": "予算実績対比",
+      "fiscalYear": "会計年度",
+      "budget": "予算額",
+      "actual": "実績額",
+      "variance": "差異",
+      "utilizationRate": "消化率",
+      "byDepartment": "部署別",
+      "byCategory": "カテゴリ別"
+    },
+    "export": {
+      "csv": "CSV出力",
+      "excel": "Excel出力",
+      "pdf": "PDF出力",
+      "generating": "レポート生成中...",
+      "downloadReady": "ダウンロード準備完了"
+    }
+  },
+  "admin": {
+    "title": "システム管理",
+    "userManagement": {
+      "title": "ユーザー管理",
+      "createUser": "新規ユーザー作成",
+      "editUser": "ユーザー編集",
+      "username": "ユーザー名",
+      "firstName": "名",
+      "lastName": "姓",
+      "email": "メールアドレス",
+      "department": "部署",
+      "roles": "ロール",
+      "enabled": "有効",
+      "disabled": "無効",
+      "lastLogin": "最終ログイン",
+      "resetPassword": "パスワードリセット",
+      "note": "ユーザー作成はKeycloakで行います。ここではプロファイルの管理のみ行えます。"
+    },
+    "rolePermission": {
+      "title": "ロール・権限管理",
+      "roleName": "ロール名",
+      "description": "説明",
+      "permissions": "権限",
+      "assignedUsers": "割当ユーザー数",
+      "createRole": "新規ロール作成",
+      "editPermissions": "権限編集"
+    },
+    "systemConfig": {
+      "title": "システム設定",
+      "key": "設定キー",
+      "value": "設定値",
+      "description": "説明",
+      "category": "カテゴリ",
+      "lastUpdated": "最終更新",
+      "updatedBy": "更新者",
+      "saveConfig": "設定を保存"
+    },
+    "auditLog": {
+      "title": "監査ログ",
+      "action": "操作",
+      "entityType": "エンティティ種別",
+      "entityId": "エンティティID",
+      "username": "ユーザー",
+      "timestamp": "日時",
+      "details": "詳細",
+      "ipAddress": "IPアドレス",
+      "filterByEntity": "エンティティ種別でフィルタ",
+      "filterByUser": "ユーザーでフィルタ",
+      "filterByDate": "日付でフィルタ",
+      "exportLogs": "ログをエクスポート",
+      "actions": {
+        "CREATE": "作成",
+        "UPDATE": "更新",
+        "DELETE": "削除",
+        "LOGIN": "ログイン",
+        "LOGOUT": "ログアウト",
+        "APPROVE": "承認",
+        "REJECT": "却下",
+        "EXPORT": "エクスポート",
+        "IMPORT": "インポート"
+      },
+      "entities": {
+        "PurchaseOrder": "発注書",
+        "Product": "製品",
+        "Supplier": "サプライヤー",
+        "InventoryItem": "在庫",
+        "User": "ユーザー",
+        "SystemConfig": "システム設定"
+      }
+    },
+    "import": {
+      "title": "マスターデータインポート",
+      "selectFile": "ファイルを選択",
+      "dataType": "データ種別",
+      "products": "製品マスタ",
+      "suppliers": "サプライヤーマスタ",
+      "categories": "カテゴリマスタ",
+      "preview": "プレビュー",
+      "importButton": "インポート実行",
+      "result": "インポート結果",
+      "success": "{{count}}件のデータがインポートされました",
+      "errors": "{{count}}件のエラーがあります"
+    },
+    "health": {
+      "title": "システムヘルスチェック",
+      "database": "データベース",
+      "api": "APIサーバー",
+      "keycloak": "認証サーバー",
+      "storage": "ストレージ",
+      "healthy": "正常",
+      "unhealthy": "異常",
+      "unknown": "不明"
+    }
+  },
+  "errors": {
+    "networkError": "通信エラーが発生しました。ネットワーク接続を確認してください。",
+    "serverError": "サーバーエラーが発生しました。しばらく経ってから再度お試しください。",
+    "notFound": "リソースが見つかりません。",
+    "conflict": "データが他のユーザーによって更新されています。画面を更新してください。",
+    "validationError": "入力内容にエラーがあります。",
+    "unknownError": "予期しないエラーが発生しました。"
+  },
+  "notifications": {
+    "orderCreated": "発注書 {{orderNumber}} が作成されました",
+    "orderApproved": "発注書 {{orderNumber}} が承認されました",
+    "orderRejected": "発注書 {{orderNumber}} が却下されました",
+    "goodsReceived": "発注書 {{orderNumber}} の入荷処理が完了しました",
+    "lowStockAlert": "製品 {{productName}} の在庫が発注点を下回っています",
+    "productCreated": "製品 {{productName}} が登録されました",
+    "supplierCreated": "サプライヤー {{supplierName}} が登録されました"
+  }
+}

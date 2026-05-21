@@ -1,0 +1,108 @@
+/* データテーブルコンポーネントのスタイル */
+.data-table-wrapper {
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+
+    &.sortable {
+      cursor: pointer;
+      user-select: none;
+      &:hover {
+        background-color: var(--primary-light);
+      }
+    }
+  }
+
+  .sort-icon {
+    font-size: var(--font-size-xs);
+    margin-left: var(--spacing-xs);
+  }
+}
+
+.data-row {
+  cursor: pointer;
+  transition: background-color 0.15s;
+
+  &:hover {
+    background-color: #eef2f7;
+  }
+
+  &:nth-child(even) {
+    background-color: #fafbfc;
+    &:hover {
+      background-color: #eef2f7;
+    }
+  }
+}
+
+.actions-cell {
+  cursor: default;
+}
+
+.empty-row {
+  text-align: center;
+  padding: var(--spacing-xl) !important;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* ページネーション */
+.pagination {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-md);
+  border-top: 1px solid var(--border-color);
+}
+
+.pagination-info {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.pagination-controls {
+  display: flex;
+  gap: 4px;
+}
+
+.page-btn {
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-white);
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+  transition: all 0.15s;
+
+  &:hover:not(:disabled):not(.active) {
+    background-color: var(--bg-color);
+    border-color: var(--primary-light);
+  }
+
+  &.active {
+    background-color: var(--primary-color);
+    color: var(--text-white);
+    border-color: var(--primary-color);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+}

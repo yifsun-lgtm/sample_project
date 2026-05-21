@@ -1,0 +1,93 @@
+<!-- 倉庫一覧画面 -->
+<app-page-header
+  title="倉庫管理"
+  description="倉庫の一覧と管理を行います">
+  <div class="header-actions">
+    <button class="btn btn-primary" (click)="openCreateModal()">+ 新規作成</button>
+  </div>
+</app-page-header>
+
+<div class="table-container">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-data-table
+    *ngIf="!isLoading"
+    [columns]="columns"
+    [data]="warehouses"
+    [totalCount]="totalCount"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [sortColumn]="sortColumn"
+    [sortDirection]="sortDirection"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (rowClick)="onRowClick($event)">
+
+    <ng-template #cellTemplate let-row let-column="column">
+      <ng-container [ngSwitch]="column.key">
+        <!-- 使用率バー -->
+        <span *ngSwitchCase="'utilization'" class="utilization-cell">
+          <div class="capacity-bar">
+            <div
+              class="capacity-fill"
+              [style.width.%]="getUtilizationPercent(row)"
+              [style.background-color]="getUtilizationColor(row)">
+            </div>
+          </div>
+          <span class="capacity-text">
+            {{ getUtilizationPercent(row) }}%
+            ({{ row.currentOccupancy }} / {{ row.capacity }})
+          </span>
+        </span>
+
+        <!-- ステータス -->
+        <span *ngSwitchCase="'status'">
+          <span class="status-badge" [style.background-color]="getStatusColor(row.status)">
+            {{ getStatusLabel(row.status) }}
+          </span>
+        </span>
+
+        <!-- デフォルト -->
+        <span *ngSwitchDefault>{{ row[column.key] }}</span>
+      </ng-container>
+    </ng-template>
+  </app-data-table>
+
+  <app-empty-state *ngIf="!isLoading && warehouses.length === 0" message="倉庫データがありません"></app-empty-state>
+</div>
+
+<div class="success-message" *ngIf="successMessage">{{ successMessage }}</div>
+
+<!-- 新規作成モーダル -->
+<div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>新規倉庫作成</h3>
+      <button class="modal-close" (click)="closeCreateModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>倉庫コード <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="createForm.code" class="form-input" placeholder="例: WH-004" />
+      </div>
+      <div class="form-group">
+        <label>倉庫名 <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="createForm.name" class="form-input" placeholder="倉庫名を入力" />
+      </div>
+      <div class="form-group">
+        <label>住所</label>
+        <input type="text" [(ngModel)]="createForm.address" class="form-input" placeholder="住所を入力" />
+      </div>
+      <div class="form-group">
+        <label>キャパシティ</label>
+        <input type="number" [(ngModel)]="createForm.capacity" class="form-input" placeholder="最大収容量" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="closeCreateModal()">キャンセル</button>
+      <button class="btn btn-primary" (click)="submitCreate()" [disabled]="isSaving || !createForm.code || !createForm.name">
+        {{ isSaving ? '保存中...' : '作成' }}
+      </button>
+    </div>
+  </div>
+</div>

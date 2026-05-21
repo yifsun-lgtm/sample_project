@@ -1,0 +1,56 @@
+<header class="app-header">
+  <div class="header-left">
+    <button class="sidebar-toggle" (click)="onToggleSidebar()" aria-label="メニュー切替">
+      &#9776;
+    </button>
+    <div class="logo">
+      <span class="logo-text">ProQuip</span>
+      <span class="logo-subtitle">調達・在庫管理</span>
+    </div>
+  </div>
+
+  <div class="header-center">
+    <div class="search-bar">
+      <input
+        type="search"
+        [(ngModel)]="searchKeyword"
+        (keyup.enter)="onSearch()"
+        placeholder="製品・サプライヤー・注文番号を検索..."
+        class="search-input"
+        aria-label="グローバル検索"
+      />
+      <button class="search-btn" (click)="onSearch()">検索</button>
+    </div>
+  </div>
+
+  <div class="header-right">
+    <button class="notification-btn" aria-label="通知">
+      &#128276;
+      <span class="notification-badge" *ngIf="notificationCount > 0">
+        {{ notificationCount }}
+      </span>
+    </button>
+
+    <div class="user-menu" (appClickOutside)="onCloseUserMenu()">
+      <button class="user-btn" (click)="onToggleUserMenu()">
+        <span class="user-avatar">{{ username.charAt(0) }}</span>
+        <span class="user-name">{{ username }}</span>
+        <span class="user-caret">&#9660;</span>
+      </button>
+
+      <div class="user-dropdown" *ngIf="showUserMenu">
+        <div class="user-info">
+          <div class="user-fullname">{{ username }}</div>
+          <div class="user-role">{{ userRole }}</div>
+        </div>
+        <hr />
+        <button class="dropdown-item" routerLink="/admin">
+          &#9881; 設定
+        </button>
+        <button class="dropdown-item logout-btn" (click)="onLogout()">
+          &#10140; ログアウト
+        </button>
+      </div>
+    </div>
+  </div>
+</header>

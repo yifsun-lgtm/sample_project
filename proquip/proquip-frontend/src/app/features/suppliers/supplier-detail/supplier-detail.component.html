@@ -1,0 +1,522 @@
+<app-page-header
+  title="サプライヤー詳細"
+  description="サプライヤー情報の表示">
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<div class="error-banner" *ngIf="errorMessage">
+  <span>{{ errorMessage }}</span>
+  <button class="btn-back" (click)="navigateToList()">一覧に戻る</button>
+</div>
+
+<div class="detail-container" *ngIf="!isLoading && supplier">
+
+  <!-- ヘッダー -->
+  <div class="detail-header">
+    <div class="header-info">
+      <div class="title-row">
+        <h2 class="supplier-name">{{ supplier.name }}</h2>
+        <app-status-badge [status]="supplier.status"></app-status-badge>
+      </div>
+      <div class="supplier-meta">
+        <span class="meta-item">コード: {{ supplier.code }}</span>
+        <span class="meta-item">評価: {{ getRatingStars(supplier.rating) }} {{ supplier.rating.toFixed(1) }}</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="navigateToList()">← 一覧に戻る</button>
+      <button class="btn-primary" (click)="navigateToEdit()">編集</button>
+      <button class="btn-danger" (click)="confirmDelete()">削除</button>
+    </div>
+  </div>
+
+  <!-- タブナビゲーション -->
+  <div class="tab-navigation">
+    <button *ngFor="let tab of tabs; let i = index"
+            class="tab-button"
+            [class.active]="activeTab === i"
+            (click)="switchTab(i)">
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <div class="tab-content">
+
+    <!-- 基本情報タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 0">
+      <div class="info-grid">
+        <div class="info-section">
+          <h4 class="section-subtitle">会社情報</h4>
+          <table class="info-table">
+            <tr>
+              <th>会社名</th>
+              <td>{{ supplier.name }}</td>
+            </tr>
+            <tr>
+              <th>会社名（カナ）</th>
+              <td>{{ supplier.nameKana || '-' }}</td>
+            </tr>
+            <tr>
+              <th>コード</th>
+              <td class="mono">{{ supplier.code }}</td>
+            </tr>
+            <tr>
+              <th>住所</th>
+              <td>{{ supplier.address || '-' }}</td>
+            </tr>
+            <tr>
+              <th>電話番号</th>
+              <td>{{ supplier.phone || '-' }}</td>
+            </tr>
+            <tr>
+              <th>メールアドレス</th>
+              <td>{{ supplier.email || '-' }}</td>
+            </tr>
+            <tr>
+              <th>ウェブサイト</th>
+              <td>
+                <a *ngIf="supplier.website" [href]="supplier.website" target="_blank" class="link">
+                  {{ supplier.website }}
+                </a>
+                <span *ngIf="!supplier.website">-</span>
+              </td>
+            </tr>
+            <tr>
+              <th>支払条件</th>
+              <td>{{ supplier.paymentTerms || '-' }}</td>
+            </tr>
+            <tr>
+              <th>備考</th>
+              <td>{{ supplier.notes || '-' }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="info-section">
+          <h4 class="section-subtitle">連絡先</h4>
+          <div class="contact-list" *ngIf="contacts.length > 0">
+            <div class="contact-card" *ngFor="let contact of contacts"
+                 [class.primary]="contact.isPrimary">
+              <div class="contact-header">
+                <span class="contact-name">{{ contact.name }}</span>
+                <span class="primary-tag" *ngIf="contact.isPrimary">主担当</span>
+              </div>
+              <div class="contact-details">
+                <div class="contact-detail" *ngIf="contact.department">
+                  <span class="detail-label">部署</span>
+                  <span>{{ contact.department }}</span>
+                </div>
+                <div class="contact-detail" *ngIf="contact.position">
+                  <span class="detail-label">役職</span>
+                  <span>{{ contact.position }}</span>
+                </div>
+                <div class="contact-detail" *ngIf="contact.phone">
+                  <span class="detail-label">電話</span>
+                  <span>{{ contact.phone }}</span>
+                </div>
+                <div class="contact-detail" *ngIf="contact.email">
+                  <span class="detail-label">メール</span>
+                  <span>{{ contact.email }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <app-empty-state
+            *ngIf="contacts.length === 0"
+            message="連絡先は登録されていません">
+          </app-empty-state>
+        </div>
+      </div>
+    </div>
+
+    <!-- 製品タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 1">
+      <div class="tab-panel-header">
+        <div></div>
+        <button class="btn-primary" (click)="openProductModal()">+ 製品紐付け追加</button>
+      </div>
+      <div class="success-message" *ngIf="successMessage && activeTab === 1">{{ successMessage }}</div>
+      <table class="data-table" *ngIf="supplierProducts.length > 0">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>製品名</th>
+            <th>仕入先SKU</th>
+            <th>単価</th>
+            <th>リードタイム</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let product of supplierProducts">
+            <td class="mono">{{ product.sku }}</td>
+            <td>{{ product.name }}</td>
+            <td class="mono">{{ product.supplierSku || '-' }}</td>
+            <td class="amount">{{ formatCurrency(product.unitPrice) }}</td>
+            <td>{{ product.leadTimeDays }}日</td>
+            <td>
+              <button class="btn-link" (click)="navigateToProduct(product.id)">詳細</button>
+              <button class="btn-link" style="color:#dc2626" (click)="confirmDeleteProduct(product.spId)">削除</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <app-empty-state
+        *ngIf="supplierProducts.length === 0"
+        message="取扱製品はありません">
+      </app-empty-state>
+    </div>
+
+    <!-- 契約タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 2">
+      <div class="tab-panel-header">
+        <div></div>
+        <button class="btn-primary" (click)="openContractModal()">+ 新規契約</button>
+      </div>
+      <div class="success-message" *ngIf="successMessage && activeTab === 2">{{ successMessage }}</div>
+      <table class="data-table" *ngIf="contracts.length > 0">
+        <thead>
+          <tr>
+            <th>契約番号</th>
+            <th>期間</th>
+            <th>ステータス</th>
+            <th>条件</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let contract of contracts">
+            <td class="mono">{{ contract.contractNumber }}</td>
+            <td>{{ formatDate(contract.startDate) }} 〜 {{ formatDate(contract.endDate) }}</td>
+            <td>{{ getContractStatusLabel(contract.status) }}</td>
+            <td>{{ contract.terms || '-' }}</td>
+            <td>
+              <button class="btn-link" (click)="openContractModal(contract)">編集</button>
+              <button class="btn-link" style="color:#dc2626" (click)="confirmDeleteContract(contract.id)">削除</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <app-empty-state
+        *ngIf="contracts.length === 0"
+        message="契約はありません">
+      </app-empty-state>
+    </div>
+
+    <!-- 評価履歴タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 3">
+      <div class="tab-panel-header">
+        <div class="rating-summary" *ngIf="ratingHistory.length > 0">
+          <div class="average-rating">
+            <span class="avg-value">{{ averageRating }}</span>
+            <span class="avg-stars">{{ getRatingStars(averageRating) }}</span>
+            <span class="avg-count">（{{ ratingHistory.length }} 件の評価）</span>
+          </div>
+        </div>
+        <button class="btn-primary" (click)="openRatingModal()">+ 新規評価</button>
+      </div>
+
+      <div class="success-message" *ngIf="ratingSuccessMessage">{{ ratingSuccessMessage }}</div>
+
+      <!-- 評価履歴リスト -->
+      <div class="rating-list" *ngIf="ratingHistory.length > 0">
+        <div class="rating-entry" *ngFor="let rating of ratingHistory">
+          <div class="rating-header">
+            <span class="rating-date">{{ formatDate(rating.evaluationDate) }}</span>
+            <span class="rating-overall">
+              {{ getRatingStars(rating.overallRating) }} {{ rating.overallRating.toFixed(1) }}
+            </span>
+          </div>
+
+          <div class="rating-categories">
+            <div class="rating-category">
+              <span class="cat-label">品質</span>
+              <div class="cat-bar">
+                <div class="cat-bar-fill" [style.width.%]="rating.quality * 20"></div>
+              </div>
+              <span class="cat-value">{{ rating.quality.toFixed(1) }}</span>
+            </div>
+            <div class="rating-category">
+              <span class="cat-label">納期</span>
+              <div class="cat-bar">
+                <div class="cat-bar-fill" [style.width.%]="rating.delivery * 20"></div>
+              </div>
+              <span class="cat-value">{{ rating.delivery.toFixed(1) }}</span>
+            </div>
+            <div class="rating-category">
+              <span class="cat-label">価格</span>
+              <div class="cat-bar">
+                <div class="cat-bar-fill" [style.width.%]="rating.price * 20"></div>
+              </div>
+              <span class="cat-value">{{ rating.price.toFixed(1) }}</span>
+            </div>
+            <div class="rating-category">
+              <span class="cat-label">対応</span>
+              <div class="cat-bar">
+                <div class="cat-bar-fill" [style.width.%]="rating.communication * 20"></div>
+              </div>
+              <span class="cat-value">{{ rating.communication.toFixed(1) }}</span>
+            </div>
+          </div>
+
+          <p class="rating-comment" *ngIf="rating.comment">{{ rating.comment }}</p>
+          <span class="rating-evaluator">評価者: {{ rating.evaluatedBy }}</span>
+        </div>
+      </div>
+
+      <app-empty-state
+        *ngIf="ratingHistory.length === 0"
+        message="評価履歴はありません">
+      </app-empty-state>
+    </div>
+
+    <!-- 認証タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 4">
+      <div class="tab-panel-header">
+        <div></div>
+        <button class="btn-primary" (click)="openCertModal()">+ 新規認証</button>
+      </div>
+      <div class="success-message" *ngIf="successMessage && activeTab === 4">{{ successMessage }}</div>
+      <div class="cert-list" *ngIf="certifications.length > 0">
+        <div class="cert-card" *ngFor="let cert of certifications">
+          <div class="cert-header">
+            <h4 class="cert-name">{{ cert.name }}</h4>
+            <div>
+              <span class="cert-status" [ngClass]="getCertStatusClass(cert.status)">
+                {{ getCertStatusLabel(cert.status) }}
+              </span>
+              <button class="btn-link" (click)="openCertModal(cert)">編集</button>
+              <button class="btn-link" style="color:#dc2626" (click)="confirmDeleteCert(cert.id)">削除</button>
+            </div>
+          </div>
+          <table class="cert-details">
+            <tr>
+              <th>認証番号</th>
+              <td class="mono">{{ cert.certificationNumber }}</td>
+            </tr>
+            <tr>
+              <th>発行日</th>
+              <td>{{ formatDate(cert.issueDate) }}</td>
+            </tr>
+            <tr>
+              <th>有効期限</th>
+              <td>{{ formatDate(cert.expiryDate) }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      <app-empty-state
+        *ngIf="certifications.length === 0"
+        message="認証情報はありません">
+      </app-empty-state>
+    </div>
+
+  </div>
+</div>
+
+<!-- 評価登録モーダル -->
+<div class="modal-overlay" *ngIf="showRatingModal" (click)="closeRatingModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>新規評価登録</h3>
+      <button class="modal-close" (click)="closeRatingModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="rating-form-group">
+        <label>品質スコア</label>
+        <div class="score-input">
+          <input type="range" min="1" max="5" step="0.5" [(ngModel)]="newQualityScore" />
+          <span class="score-value">{{ newQualityScore }}</span>
+        </div>
+      </div>
+      <div class="rating-form-group">
+        <label>納期スコア</label>
+        <div class="score-input">
+          <input type="range" min="1" max="5" step="0.5" [(ngModel)]="newDeliveryScore" />
+          <span class="score-value">{{ newDeliveryScore }}</span>
+        </div>
+      </div>
+      <div class="rating-form-group">
+        <label>価格スコア</label>
+        <div class="score-input">
+          <input type="range" min="1" max="5" step="0.5" [(ngModel)]="newPriceScore" />
+          <span class="score-value">{{ newPriceScore }}</span>
+        </div>
+      </div>
+      <div class="rating-form-group">
+        <label>対応スコア</label>
+        <div class="score-input">
+          <input type="range" min="1" max="5" step="0.5" [(ngModel)]="newServiceScore" />
+          <span class="score-value">{{ newServiceScore }}</span>
+        </div>
+      </div>
+      <div class="rating-form-group">
+        <label>コメント</label>
+        <textarea [(ngModel)]="newComments" rows="3" maxlength="2000"
+                  placeholder="評価コメントを入力してください（任意）"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeRatingModal()">キャンセル</button>
+      <button class="btn-primary" (click)="submitRating()" [disabled]="isSavingRating">
+        {{ isSavingRating ? '保存中...' : '評価を登録' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="showDeleteConfirm"
+  title="サプライヤーの削除"
+  message="このサプライヤーを削除してもよろしいですか？関連する契約情報も削除されます。"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="deleteSupplier()"
+  (cancel)="cancelDelete()">
+</app-confirm-dialog>
+
+<app-confirm-dialog
+  *ngIf="showItemDeleteConfirm"
+  title="削除確認"
+  message="この項目を削除してもよろしいですか？"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="executeItemDelete()"
+  (cancel)="cancelItemDelete()">
+</app-confirm-dialog>
+
+<!-- 契約モーダル -->
+<div class="modal-overlay" *ngIf="showContractModal" (click)="closeContractModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingContract ? '契約編集' : '新規契約' }}</h3>
+      <button class="modal-close" (click)="closeContractModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="rating-form-group">
+        <label>契約番号</label>
+        <input type="text" [(ngModel)]="contractForm.contractNumber" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>契約名</label>
+        <input type="text" [(ngModel)]="contractForm.title" class="form-input" placeholder="契約タイトル" />
+      </div>
+      <div class="rating-form-group">
+        <label>開始日</label>
+        <input type="date" [(ngModel)]="contractForm.startDate" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>終了日</label>
+        <input type="date" [(ngModel)]="contractForm.endDate" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>ステータス</label>
+        <select [(ngModel)]="contractForm.status" class="form-input">
+          <option value="DRAFT">下書き</option>
+          <option value="ACTIVE">有効</option>
+          <option value="EXPIRED">期限切れ</option>
+          <option value="TERMINATED">解約済み</option>
+        </select>
+      </div>
+      <div class="rating-form-group">
+        <label>条件</label>
+        <textarea [(ngModel)]="contractForm.terms" rows="3" class="form-input"
+                  placeholder="契約条件を入力してください（任意）"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeContractModal()">キャンセル</button>
+      <button class="btn-primary" (click)="submitContract()" [disabled]="isSavingContract">
+        {{ isSavingContract ? '保存中...' : (editingContract ? '更新' : '作成') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 認証モーダル -->
+<div class="modal-overlay" *ngIf="showCertModal" (click)="closeCertModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>{{ editingCert ? '認証編集' : '新規認証' }}</h3>
+      <button class="modal-close" (click)="closeCertModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="rating-form-group">
+        <label>認証種別</label>
+        <select [(ngModel)]="certForm.certType" class="form-input">
+          <option value="ISO_9001">ISO 9001</option>
+          <option value="ISO_14001">ISO 14001</option>
+          <option value="ISO_27001">ISO 27001</option>
+          <option value="OHSAS_18001">OHSAS 18001</option>
+          <option value="OTHER">その他</option>
+        </select>
+      </div>
+      <div class="rating-form-group">
+        <label>認証番号</label>
+        <input type="text" [(ngModel)]="certForm.certNumber" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>発行日</label>
+        <input type="date" [(ngModel)]="certForm.issuedDate" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>有効期限</label>
+        <input type="date" [(ngModel)]="certForm.expiryDate" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>ステータス</label>
+        <select [(ngModel)]="certForm.status" class="form-input">
+          <option value="ACTIVE">有効</option>
+          <option value="EXPIRED">期限切れ</option>
+          <option value="REVOKED">取消済み</option>
+          <option value="PENDING">審査中</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeCertModal()">キャンセル</button>
+      <button class="btn-primary" (click)="submitCert()" [disabled]="isSavingCert">
+        {{ isSavingCert ? '保存中...' : (editingCert ? '更新' : '登録') }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- 製品紐付けモーダル -->
+<div class="modal-overlay" *ngIf="showProductModal" (click)="closeProductModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>製品紐付け追加</h3>
+      <button class="modal-close" (click)="closeProductModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="rating-form-group">
+        <label>製品ID</label>
+        <input type="number" [(ngModel)]="productForm.productId" class="form-input" placeholder="製品IDを入力" />
+      </div>
+      <div class="rating-form-group">
+        <label>仕入先SKU</label>
+        <input type="text" [(ngModel)]="productForm.supplierSku" class="form-input" placeholder="仕入先側のSKU（任意）" />
+      </div>
+      <div class="rating-form-group">
+        <label>単価</label>
+        <input type="number" [(ngModel)]="productForm.unitCost" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>リードタイム（日）</label>
+        <input type="number" [(ngModel)]="productForm.leadTimeDays" class="form-input" />
+      </div>
+      <div class="rating-form-group">
+        <label>最小発注数量</label>
+        <input type="number" [(ngModel)]="productForm.minOrderQty" class="form-input" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeProductModal()">キャンセル</button>
+      <button class="btn-primary" (click)="submitProduct()" [disabled]="isSavingProduct">
+        {{ isSavingProduct ? '保存中...' : '追加' }}
+      </button>
+    </div>
+  </div>
+</div>

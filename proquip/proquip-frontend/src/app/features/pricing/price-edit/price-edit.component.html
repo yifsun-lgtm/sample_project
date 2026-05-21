@@ -1,0 +1,290 @@
+<!-- 価格編集画面 -->
+<div class="price-edit">
+  <!-- ヘッダー -->
+  <div class="page-header-section">
+    <div class="page-header-left">
+      <button class="btn btn-back" (click)="goBack()">
+        &larr; 戻る
+      </button>
+      <div class="page-title-block">
+        <h1 class="page-title">価格編集</h1>
+        <p class="page-subtitle" *ngIf="priceListHeader">
+          {{ priceListHeader.name }}
+          <span class="currency-tag">{{ priceListHeader.currency }}</span>
+          <span class="date-range">
+            {{ priceListHeader.effectiveStartDate | japaneseDate }} 〜 {{ priceListHeader.effectiveEndDate | japaneseDate }}
+          </span>
+        </p>
+      </div>
+    </div>
+    <div class="page-header-right">
+      <span class="modified-badge" *ngIf="modifiedCount > 0">
+        {{ modifiedCount }} 件変更あり
+      </span>
+      <button class="btn btn-secondary" (click)="discardChanges()" [disabled]="modifiedCount === 0 || isSaving">
+        変更を破棄
+      </button>
+      <button class="btn btn-primary" (click)="saveChanges()" [disabled]="modifiedCount === 0 || isSaving">
+        {{ isSaving ? '保存中...' : '変更を保存' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- 操作バー -->
+  <div class="action-bar">
+    <div class="action-bar__left">
+      <app-search-box
+        placeholder="製品名・SKUで検索..."
+        (searchChange)="onSearchChange($event)">
+      </app-search-box>
+    </div>
+    <div class="action-bar__right">
+      <span class="selection-info" *ngIf="selectedCount > 0">
+        {{ selectedCount }} 件選択中
+      </span>
+      <button class="btn btn-outline" (click)="openBulkUpdateModal()" [disabled]="selectedCount === 0">
+        一括更新
+      </button>
+    </div>
+  </div>
+
+  <!-- メッセージ -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <!-- 価格テーブル -->
+  <div class="table-container" *ngIf="!isLoading">
+    <div class="table-scroll">
+      <table class="price-table">
+        <thead>
+          <tr>
+            <th class="col-checkbox">
+              <input
+                type="checkbox"
+                [checked]="allSelected"
+                (change)="toggleSelectAll()">
+            </th>
+            <th class="col-product sortable" (click)="onSort('productName')">
+              製品{{ getSortIcon('productName') }}
+            </th>
+            <th class="col-sku sortable" (click)="onSort('sku')">
+              SKU{{ getSortIcon('sku') }}
+            </th>
+            <th class="col-standard-price sortable" (click)="onSort('standardUnitPrice')">
+              標準単価{{ getSortIcon('standardUnitPrice') }}
+            </th>
+            <th class="col-list-price sortable" (click)="onSort('listPrice')">
+              リスト価格{{ getSortIcon('listPrice') }}
+            </th>
+            <th class="col-discount sortable" (click)="onSort('discountRate')">
+              割引率{{ getSortIcon('discountRate') }}
+            </th>
+            <th class="col-tax-included">税込価格</th>
+            <th class="col-start-date">有効開始日</th>
+            <th class="col-end-date">有効終了日</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredItems.length === 0">
+            <td colspan="9" class="empty-row">
+              <span class="empty-text">該当する価格データがありません</span>
+            </td>
+          </tr>
+          <tr *ngFor="let item of filteredItems; let i = index"
+              [ngClass]="{'row-modified': item.isModified, 'row-selected': item.isSelected}">
+            <!-- チェックボックス -->
+            <td class="col-checkbox">
+              <input
+                type="checkbox"
+                [checked]="item.isSelected"
+                (change)="toggleSelect(item)">
+            </td>
+
+            <!-- 製品名（読み取り専用） -->
+            <td class="col-product">
+              <span class="product-name">{{ item.productName }}</span>
+            </td>
+
+            <!-- SKU（読み取り専用） -->
+            <td class="col-sku">
+              <span class="sku-code">{{ item.sku }}</span>
+            </td>
+
+            <!-- 標準単価（編集可能） -->
+            <td class="col-standard-price editable-cell"
+                (click)="startEditing(i, 'standardUnitPrice', item.standardUnitPrice)">
+              <ng-container *ngIf="!isEditing(i, 'standardUnitPrice')">
+                <span class="cell-value">{{ formatCurrency(item.standardUnitPrice) }}</span>
+                <span class="edit-indicator">&#9998;</span>
+              </ng-container>
+              <input
+                *ngIf="isEditing(i, 'standardUnitPrice')"
+                [id]="'cell-input-' + i + '-standardUnitPrice'"
+                type="number"
+                class="cell-input"
+                [value]="item.standardUnitPrice"
+                (blur)="confirmEdit(i, 'standardUnitPrice', $any($event.target).value)"
+                (keydown)="onCellKeyDown($event, i, 'standardUnitPrice')"
+                min="0">
+            </td>
+
+            <!-- リスト価格（編集可能） -->
+            <td class="col-list-price editable-cell"
+                (click)="startEditing(i, 'listPrice', item.listPrice)">
+              <ng-container *ngIf="!isEditing(i, 'listPrice')">
+                <span class="cell-value">{{ formatCurrency(item.listPrice) }}</span>
+                <span class="edit-indicator">&#9998;</span>
+              </ng-container>
+              <input
+                *ngIf="isEditing(i, 'listPrice')"
+                [id]="'cell-input-' + i + '-listPrice'"
+                type="number"
+                class="cell-input"
+                [value]="item.listPrice"
+                (blur)="confirmEdit(i, 'listPrice', $any($event.target).value)"
+                (keydown)="onCellKeyDown($event, i, 'listPrice')"
+                min="0">
+            </td>
+
+            <!-- 割引率（編集可能） -->
+            <td class="col-discount editable-cell"
+                (click)="startEditing(i, 'discountRate', item.discountRate)">
+              <ng-container *ngIf="!isEditing(i, 'discountRate')">
+                <span class="cell-value" [ngClass]="{'discount-positive': item.discountRate > 0}">
+                  {{ formatPercent(item.discountRate) }}
+                </span>
+                <span class="edit-indicator">&#9998;</span>
+              </ng-container>
+              <input
+                *ngIf="isEditing(i, 'discountRate')"
+                [id]="'cell-input-' + i + '-discountRate'"
+                type="number"
+                class="cell-input"
+                [value]="item.discountRate"
+                (blur)="confirmEdit(i, 'discountRate', $any($event.target).value)"
+                (keydown)="onCellKeyDown($event, i, 'discountRate')"
+                min="0"
+                max="100"
+                step="0.1">
+            </td>
+
+            <!-- 税込価格（自動計算・読み取り専用） -->
+            <td class="col-tax-included">
+              <span class="cell-value tax-included-value">{{ formatCurrency(item.taxIncludedPrice) }}</span>
+            </td>
+
+            <!-- 有効開始日（編集可能） -->
+            <td class="col-start-date editable-cell"
+                (click)="startEditing(i, 'effectiveStartDate', item.effectiveStartDate)">
+              <ng-container *ngIf="!isEditing(i, 'effectiveStartDate')">
+                <span class="cell-value">{{ item.effectiveStartDate | japaneseDate }}</span>
+                <span class="edit-indicator">&#9998;</span>
+              </ng-container>
+              <input
+                *ngIf="isEditing(i, 'effectiveStartDate')"
+                [id]="'cell-input-' + i + '-effectiveStartDate'"
+                type="date"
+                class="cell-input"
+                [value]="item.effectiveStartDate"
+                (blur)="confirmEdit(i, 'effectiveStartDate', $any($event.target).value)"
+                (keydown)="onCellKeyDown($event, i, 'effectiveStartDate')">
+            </td>
+
+            <!-- 有効終了日（編集可能） -->
+            <td class="col-end-date editable-cell"
+                (click)="startEditing(i, 'effectiveEndDate', item.effectiveEndDate)">
+              <ng-container *ngIf="!isEditing(i, 'effectiveEndDate')">
+                <span class="cell-value">{{ item.effectiveEndDate | japaneseDate }}</span>
+                <span class="edit-indicator">&#9998;</span>
+              </ng-container>
+              <input
+                *ngIf="isEditing(i, 'effectiveEndDate')"
+                [id]="'cell-input-' + i + '-effectiveEndDate'"
+                type="date"
+                class="cell-input"
+                [value]="item.effectiveEndDate"
+                (blur)="confirmEdit(i, 'effectiveEndDate', $any($event.target).value)"
+                (keydown)="onCellKeyDown($event, i, 'effectiveEndDate')">
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- レコード件数表示 -->
+    <div class="record-count">
+      表示: {{ filteredItems.length }} 件 / 全 {{ priceItems.length }} 件
+    </div>
+  </div>
+
+  <!-- 一括更新モーダル -->
+  <div class="modal-overlay" *ngIf="showBulkUpdateModal" (click)="closeBulkUpdateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">一括価格更新</h2>
+        <button class="modal-close" (click)="closeBulkUpdateModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-info">選択中: {{ selectedCount }} 件のアイテム</p>
+
+        <div class="form-group">
+          <label class="form-label">更新方法</label>
+          <div class="radio-group">
+            <label class="radio-option">
+              <input type="radio" name="bulkType" value="discount" [(ngModel)]="bulkUpdateType">
+              割引率を設定
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="bulkType" value="markup" [(ngModel)]="bulkUpdateType">
+              マークアップ率を設定
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="bulkType" value="fixed" [(ngModel)]="bulkUpdateType">
+              固定価格を設定
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="bulkValue">
+            {{ bulkUpdateType === 'discount' ? '割引率 (%)' : bulkUpdateType === 'markup' ? 'マークアップ率 (%)' : '固定価格 (円)' }}
+          </label>
+          <input
+            type="number"
+            id="bulkValue"
+            class="form-input"
+            [(ngModel)]="bulkUpdateValue"
+            [min]="0"
+            [max]="bulkUpdateType !== 'fixed' ? 100 : 99999999"
+            [step]="bulkUpdateType === 'fixed' ? 1 : 0.1">
+        </div>
+
+        <div class="bulk-preview" *ngIf="bulkUpdateType !== 'fixed'">
+          <p class="preview-label">プレビュー例:</p>
+          <p class="preview-text">
+            標準単価 ¥1,000 の場合 →
+            リスト価格
+            <strong>
+              {{ bulkUpdateType === 'discount'
+                ? formatCurrency(1000 * (1 - bulkUpdateValue / 100))
+                : formatCurrency(1000 * (1 + bulkUpdateValue / 100)) }}
+            </strong>
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeBulkUpdateModal()">キャンセル</button>
+        <button class="btn btn-primary" (click)="applyBulkUpdate()">適用</button>
+      </div>
+    </div>
+  </div>
+</div>

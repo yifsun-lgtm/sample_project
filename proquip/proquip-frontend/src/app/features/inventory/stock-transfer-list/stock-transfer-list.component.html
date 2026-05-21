@@ -1,0 +1,76 @@
+<!-- 在庫移動一覧画面 -->
+<app-page-header
+  title="在庫移動一覧"
+  description="倉庫間の在庫移動を管理します">
+  <button class="btn btn-primary" (click)="navigateToCreate()">
+    <i class="icon-plus"></i>
+    新規移動
+  </button>
+</app-page-header>
+
+<!-- フィルタ -->
+<div class="filter-section">
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="statusFilter">ステータス</label>
+      <select id="statusFilter" [(ngModel)]="filterStatus" (ngModelChange)="onFilterChange()" class="form-select">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label for="sourceFilter">移動元倉庫</label>
+      <select id="sourceFilter" [(ngModel)]="filterSourceWarehouse" (ngModelChange)="onFilterChange()" class="form-select">
+        <option [ngValue]="null">すべて</option>
+        <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.name }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label for="destFilter">移動先倉庫</label>
+      <select id="destFilter" [(ngModel)]="filterDestWarehouse" (ngModelChange)="onFilterChange()" class="form-select">
+        <option [ngValue]="null">すべて</option>
+        <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.name }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label for="dateFrom">開始日</label>
+      <input id="dateFrom" type="date" [(ngModel)]="filterDateFrom" (ngModelChange)="onFilterChange()" class="form-control" />
+    </div>
+    <div class="filter-item">
+      <label for="dateTo">終了日</label>
+      <input id="dateTo" type="date" [(ngModel)]="filterDateTo" (ngModelChange)="onFilterChange()" class="form-control" />
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-outline" (click)="clearFilters()">クリア</button>
+    </div>
+  </div>
+</div>
+
+<!-- テーブル -->
+<div class="table-container">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-data-table
+    *ngIf="!isLoading"
+    [columns]="columns"
+    [data]="transfers"
+    [totalCount]="totalCount"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [sortColumn]="sortColumn"
+    [sortDirection]="sortDirection"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)">
+
+    <ng-template #cellTemplate let-row let-column="column">
+      <ng-container [ngSwitch]="column.key">
+        <span *ngSwitchCase="'status'">
+          <app-status-badge [status]="row.status"></app-status-badge>
+        </span>
+        <span *ngSwitchCase="'requestedDate'">{{ row.requestedDate | japaneseDate }}</span>
+        <span *ngSwitchDefault>{{ row[column.key] }}</span>
+      </ng-container>
+    </ng-template>
+  </app-data-table>
+
+  <app-empty-state *ngIf="!isLoading && transfers.length === 0" message="在庫移動データがありません" actionLabel="新規移動を作成" (action)="navigateToCreate()"></app-empty-state>
+</div>

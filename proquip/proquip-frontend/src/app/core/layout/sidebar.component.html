@@ -1,0 +1,25 @@
+<nav class="sidebar" [class.collapsed]="collapsed" aria-label="メインナビゲーション">
+  <ul class="nav-list">
+    <li
+      *ngFor="let item of menuItems"
+      class="nav-item"
+      [class.active]="isActive(item.route)"
+    >
+      <a
+        [routerLink]="item.route"
+        class="nav-link"
+        [attr.title]="collapsed ? item.label : null"
+      >
+        <span class="nav-icon" [innerHTML]="item.icon"></span>
+        <span class="nav-label" *ngIf="!collapsed">{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer" *ngIf="!collapsed">
+    <div class="version-info">
+      <span class="version-label">バージョン</span>
+      <span class="version-number">v1.0.0</span>
+    </div>
+  </div>
+</nav>

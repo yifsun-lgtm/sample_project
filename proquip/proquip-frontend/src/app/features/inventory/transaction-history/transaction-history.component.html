@@ -1,0 +1,82 @@
+<!-- 在庫取引履歴画面 -->
+<app-page-header
+  title="在庫取引履歴"
+  description="在庫の入出庫・調整履歴を確認します">
+</app-page-header>
+
+<!-- フィルタ -->
+<div class="filter-section">
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="productFilter">製品名</label>
+      <input
+        id="productFilter"
+        type="text"
+        [(ngModel)]="filterProduct"
+        (ngModelChange)="onFilterChange()"
+        class="form-control"
+        placeholder="製品名で検索" />
+    </div>
+    <div class="filter-item">
+      <label for="warehouseFilter">倉庫</label>
+      <select id="warehouseFilter" [(ngModel)]="filterWarehouseId" (ngModelChange)="onFilterChange()" class="form-select">
+        <option [ngValue]="null">すべて</option>
+        <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.name }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label for="typeFilter">種別</label>
+      <select id="typeFilter" [(ngModel)]="filterTransactionType" (ngModelChange)="onFilterChange()" class="form-select">
+        <option *ngFor="let opt of transactionTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+    </div>
+    <div class="filter-item">
+      <label for="dateFrom">開始日</label>
+      <input id="dateFrom" type="date" [(ngModel)]="filterDateFrom" (ngModelChange)="onFilterChange()" class="form-control" />
+    </div>
+    <div class="filter-item">
+      <label for="dateTo">終了日</label>
+      <input id="dateTo" type="date" [(ngModel)]="filterDateTo" (ngModelChange)="onFilterChange()" class="form-control" />
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-outline" (click)="clearFilters()">クリア</button>
+    </div>
+  </div>
+</div>
+
+<!-- テーブル -->
+<div class="table-container">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-data-table
+    *ngIf="!isLoading"
+    [columns]="columns"
+    [data]="transactions"
+    [totalCount]="totalCount"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [sortColumn]="sortColumn"
+    [sortDirection]="sortDirection"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)">
+
+    <ng-template #cellTemplate let-row let-column="column">
+      <ng-container [ngSwitch]="column.key">
+        <span *ngSwitchCase="'transactionDate'">{{ row.transactionDate | japaneseDate }}</span>
+        <span *ngSwitchCase="'transactionType'">
+          <span class="tx-type-badge" [style.color]="getTransactionTypeColor(row.transactionType)">
+            {{ getTransactionTypeLabel(row.transactionType) }}
+          </span>
+        </span>
+        <span *ngSwitchCase="'quantity'"
+              [class.positive]="row.quantity > 0"
+              [class.negative]="row.quantity < 0">
+          {{ row.quantity > 0 ? '+' : '' }}{{ row.quantity }}
+        </span>
+        <span *ngSwitchDefault>{{ row[column.key] }}</span>
+      </ng-container>
+    </ng-template>
+  </app-data-table>
+
+  <app-empty-state *ngIf="!isLoading && transactions.length === 0" message="取引履歴がありません"></app-empty-state>
+</div>

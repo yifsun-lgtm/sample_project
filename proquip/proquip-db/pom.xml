@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =========================================================== -->
+    <!-- ProQuip データベースモジュール                                  -->
+    <!-- Flywayによるデータベースマイグレーションスクリプトを管理する       -->
+    <!-- テーブル定義、インデックス、初期データ投入、ストアドプロシージャ等  -->
+    <!-- の変更履歴をバージョン管理下に置く                               -->
+    <!-- =========================================================== -->
+    <parent>
+        <groupId>com.proquip</groupId>
+        <artifactId>proquip-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../proquip-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>proquip-db</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ProQuip :: データベースモジュール</name>
+    <description>
+        Flywayマイグレーションスクリプト管理モジュール。
+        src/main/resources/db/migration 配下にSQLマイグレーションファイルを配置する。
+        命名規則: V{バージョン}__{説明}.sql (例: V1.0.0__create_purchase_order_tables.sql)
+    </description>
+
+    <dependencies>
+        <!-- =============================== -->
+        <!-- Flyway                           -->
+        <!-- DBマイグレーションエンジン         -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- PostgreSQL JDBCドライバ           -->
+        <!-- マイグレーション実行時に使用       -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- テスト関連                        -->
+        <!-- マイグレーションスクリプトの        -->
+        <!-- 構文検証・整合性チェックに使用      -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- マイグレーションリソースの配置 -->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>db/migration/**/*.sql</include>
+                    <include>db/seed/**/*.sql</include>
+                </includes>
+            </resource>
+        </resources>
+
+        <plugins>
+            <!-- Javaコンパイラ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- =============================== -->
+            <!-- Flyway Mavenプラグイン            -->
+            <!-- コマンドラインからマイグレーション  -->
+            <!-- を実行するための設定               -->
+            <!--                                  -->
+            <!-- 使用方法:                         -->
+            <!--   mvn flyway:info     - 状態確認  -->
+            <!--   mvn flyway:migrate  - 適用      -->
+            <!--   mvn flyway:validate - 検証      -->
+            <!--   mvn flyway:repair   - 修復      -->
+            <!-- =============================== -->
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <configuration>
+                    <!-- データベース接続情報 -->
+                    <!-- プロファイルに応じて切り替え可能 (mvn -P staging flyway:migrate) -->
+                    <url>${db.url}</url>
+                    <user>${db.username}</user>
+                    <password>${db.password}</password>
+
+                    <!-- スキーマ設定 -->
+                    <schemas>
+                        <schema>${db.schema}</schema>
+                    </schemas>
+                    <defaultSchema>${db.schema}</defaultSchema>
+                    <createSchemas>true</createSchemas>
+
+                    <!-- マイグレーションファイルの場所 -->
+                    <locations>
+                        <location>filesystem:src/main/resources/db/migration</location>
+                    </locations>
+
+                    <!-- マイグレーション設定 -->
+                    <table>flyway_schema_history</table>
+                    <baselineOnMigrate>true</baselineOnMigrate>
+                    <baselineVersion>0</baselineVersion>
+                    <baselineDescription>ProQuip 初期ベースライン</baselineDescription>
+
+                    <!-- バリデーション設定 -->
+                    <validateOnMigrate>true</validateOnMigrate>
+                    <cleanDisabled>true</cleanDisabled>
+
+                    <!-- エンコーディング -->
+                    <encoding>UTF-8</encoding>
+
+                    <!-- プレースホルダ（SQL内で参照可能な変数） -->
+                    <placeholders>
+                        <app.schema>${db.schema}</app.schema>
+                    </placeholders>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${postgresql.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.flywaydb</groupId>
+                        <artifactId>flyway-database-postgresql</artifactId>
+                        <version>${flyway.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <!-- 単体テスト実行 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

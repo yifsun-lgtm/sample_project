@@ -1,0 +1,21 @@
+<!--
+  PostgreSQL JDBCドライバー モジュール定義
+  WildFlyのモジュールシステムにPostgreSQLドライバーを登録する
+
+  TODO: ドライバーのバージョンアップ時にファイル名の更新を忘れないこと
+-->
+<module xmlns="urn:jboss:module:1.9" name="org.postgresql">
+
+    <resources>
+        <!-- PostgreSQL JDBCドライバー JAR -->
+        <resource-root path="postgresql-jdbc.jar"/>
+    </resources>
+
+    <dependencies>
+        <module name="java.sql"/>
+        <module name="java.logging"/>
+        <module name="javax.api"/>
+        <module name="javax.transaction.api"/>
+    </dependencies>
+
+</module>

@@ -1,0 +1,202 @@
+<div class="master-data">
+  <div class="page-header">
+    <h1>マスタデータ管理</h1>
+    <button class="btn btn-primary" (click)="openCreateModal()">+ {{ getTabLabel() }}を追加</button>
+  </div>
+
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button [class.active]="activeTab === 'manufacturers'" (click)="switchTab('manufacturers')">メーカー</button>
+    <button [class.active]="activeTab === 'units'" (click)="switchTab('units')">単位</button>
+    <button [class.active]="activeTab === 'currencies'" (click)="switchTab('currencies')">通貨</button>
+    <button [class.active]="activeTab === 'taxRates'" (click)="switchTab('taxRates')">税率</button>
+  </div>
+
+  <div class="loading" *ngIf="isLoading">読み込み中...</div>
+
+  <!-- メーカー一覧 -->
+  <div class="table-container" *ngIf="!isLoading && activeTab === 'manufacturers'">
+    <table class="data-table" *ngIf="manufacturers.length > 0">
+      <thead>
+        <tr><th>コード</th><th>名称</th><th>国</th><th>Webサイト</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of manufacturers">
+          <td>{{ item.code }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.country || '-' }}</td>
+          <td>{{ item.website || '-' }}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-outline" (click)="openEditModal(item)">編集</button>
+            <button class="btn btn-sm btn-danger-outline" (click)="deleteItem(item)">削除</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="manufacturers.length === 0"><p>メーカーが登録されていません。</p></div>
+  </div>
+
+  <!-- 単位一覧 -->
+  <div class="table-container" *ngIf="!isLoading && activeTab === 'units'">
+    <table class="data-table" *ngIf="units.length > 0">
+      <thead>
+        <tr><th>コード</th><th>名称</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of units">
+          <td>{{ item.code }}</td>
+          <td>{{ item.name }}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-outline" (click)="openEditModal(item)">編集</button>
+            <button class="btn btn-sm btn-danger-outline" (click)="deleteItem(item)">削除</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="units.length === 0"><p>単位が登録されていません。</p></div>
+  </div>
+
+  <!-- 通貨一覧 -->
+  <div class="table-container" *ngIf="!isLoading && activeTab === 'currencies'">
+    <table class="data-table" *ngIf="currencies.length > 0">
+      <thead>
+        <tr><th>コード</th><th>名称</th><th>記号</th><th>為替レート</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of currencies">
+          <td>{{ item.code }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.symbol || '-' }}</td>
+          <td>{{ item.exchangeRate }}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-outline" (click)="openEditModal(item)">編集</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="currencies.length === 0"><p>通貨が登録されていません。</p></div>
+  </div>
+
+  <!-- 税率一覧 -->
+  <div class="table-container" *ngIf="!isLoading && activeTab === 'taxRates'">
+    <table class="data-table" *ngIf="taxRates.length > 0">
+      <thead>
+        <tr><th>コード</th><th>名称</th><th>税率</th><th>国</th><th>適用開始</th><th>適用終了</th><th>操作</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of taxRates">
+          <td>{{ item.code }}</td>
+          <td>{{ item.name }}</td>
+          <td>{{ item.rate }}%</td>
+          <td>{{ item.country || '-' }}</td>
+          <td>{{ item.effectiveFrom | date:'yyyy/MM/dd' }}</td>
+          <td>{{ item.effectiveTo ? (item.effectiveTo | date:'yyyy/MM/dd') : '無期限' }}</td>
+          <td class="actions">
+            <button class="btn btn-sm btn-outline" (click)="openEditModal(item)">編集</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="taxRates.length === 0"><p>税率が登録されていません。</p></div>
+  </div>
+
+  <!-- 編集モーダル -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditing ? getTabLabel() + '編集' : getTabLabel() + '追加' }}</h2>
+        <button class="btn-close" (click)="closeEditModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <!-- メーカーフォーム -->
+        <ng-container *ngIf="activeTab === 'manufacturers'">
+          <div class="form-group">
+            <label>コード <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.code" placeholder="例: APPLE">
+          </div>
+          <div class="form-group">
+            <label>名称 <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.name" placeholder="例: Apple Inc.">
+          </div>
+          <div class="form-group">
+            <label>国</label>
+            <input type="text" [(ngModel)]="editItem.country" placeholder="例: アメリカ">
+          </div>
+          <div class="form-group">
+            <label>Webサイト</label>
+            <input type="text" [(ngModel)]="editItem.website" placeholder="例: https://www.apple.com">
+          </div>
+        </ng-container>
+
+        <!-- 単位フォーム -->
+        <ng-container *ngIf="activeTab === 'units'">
+          <div class="form-group">
+            <label>コード <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.code" placeholder="例: PCS">
+          </div>
+          <div class="form-group">
+            <label>名称 <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.name" placeholder="例: 個">
+          </div>
+        </ng-container>
+
+        <!-- 通貨フォーム -->
+        <ng-container *ngIf="activeTab === 'currencies'">
+          <div class="form-group">
+            <label>コード <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.code" maxlength="3" placeholder="例: JPY">
+          </div>
+          <div class="form-group">
+            <label>名称 <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.name" placeholder="例: 日本円">
+          </div>
+          <div class="form-group">
+            <label>記号</label>
+            <input type="text" [(ngModel)]="editItem.symbol" maxlength="5" placeholder="例: ¥">
+          </div>
+          <div class="form-group">
+            <label>為替レート</label>
+            <input type="number" [(ngModel)]="editItem.exchangeRate" step="0.01">
+          </div>
+        </ng-container>
+
+        <!-- 税率フォーム -->
+        <ng-container *ngIf="activeTab === 'taxRates'">
+          <div class="form-group">
+            <label>コード <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.code" placeholder="例: JP_STANDARD">
+          </div>
+          <div class="form-group">
+            <label>名称 <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="editItem.name" placeholder="例: 標準税率">
+          </div>
+          <div class="form-group">
+            <label>税率（%） <span class="required">*</span></label>
+            <input type="number" [(ngModel)]="editItem.rate" step="0.01" placeholder="例: 10">
+          </div>
+          <div class="form-group">
+            <label>国コード</label>
+            <input type="text" [(ngModel)]="editItem.country" maxlength="3" placeholder="例: JP">
+          </div>
+          <div class="form-group">
+            <label>適用開始日 <span class="required">*</span></label>
+            <input type="date" [(ngModel)]="editItem.effectiveFrom">
+          </div>
+          <div class="form-group">
+            <label>適用終了日</label>
+            <input type="date" [(ngModel)]="editItem.effectiveTo">
+          </div>
+        </ng-container>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeEditModal()">キャンセル</button>
+        <button class="btn btn-primary" (click)="save()" [disabled]="isSaving">
+          {{ isSaving ? '保存中...' : (isEditing ? '更新' : '作成') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

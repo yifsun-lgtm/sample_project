@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =========================================================== -->
+    <!-- ProQuip Webモジュール                                         -->
+    <!-- プレゼンテーション層を担当するWARモジュール                      -->
+    <!-- JAX-RS RESTエンドポイント、サーブレットフィルタ、                 -->
+    <!-- Keycloak認証連携、静的リソースなどを格納する                     -->
+    <!-- =========================================================== -->
+    <parent>
+        <groupId>com.proquip</groupId>
+        <artifactId>proquip-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../proquip-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>proquip-web</artifactId>
+    <packaging>war</packaging>
+
+    <name>ProQuip :: Webモジュール</name>
+    <description>
+        REST APIエンドポイント、認証フィルタ、例外ハンドラなどの
+        Webプレゼンテーション層。JAX-RS (Jakarta RESTful Web Services) を使用。
+    </description>
+
+    <dependencies>
+        <!-- =============================== -->
+        <!-- プロジェクト内部依存              -->
+        <!-- =============================== -->
+        <!-- 共通モジュール（DTO、バリデーション） -->
+        <!-- EAR内の共有ライブラリとして配置されるため provided スコープ -->
+        <dependency>
+            <groupId>com.proquip</groupId>
+            <artifactId>proquip-common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- EJBモジュール（ビジネスロジック呼出し） -->
+        <!-- EAR内で同梱されるため provided スコープ -->
+        <dependency>
+            <groupId>com.proquip</groupId>
+            <artifactId>proquip-ejb</artifactId>
+            <type>ejb</type>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- Jakarta EE API                   -->
+        <!-- JAX-RS、Servlet、CDI等のAPI       -->
+        <!-- WildFlyが実行時に提供 (provided)  -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakarta.ee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- JSON処理 (Jackson)               -->
+        <!-- JAX-RSのJSON シリアライズ/         -->
+        <!-- デシリアライズプロバイダとして使用   -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.jakarta.rs</groupId>
+            <artifactId>jackson-jakarta-rs-json-provider</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- 認証・認可 (Keycloak)             -->
+        <!-- OpenID Connect / OAuth 2.0       -->
+        <!-- によるシングルサインオン連携       -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-servlet-filter-adapter</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-admin-client</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- RESTEasy Multipart               -->
+        <!-- ファイルアップロード用              -->
+        <!-- WildFlyが実行時に提供 (provided)  -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.jboss.resteasy</groupId>
+            <artifactId>resteasy-multipart-provider</artifactId>
+            <version>6.2.6.Final</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- ユーティリティ                    -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- テスト関連                        -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- WAR名をコンテキストルートに合わせる -->
+        <finalName>proquip</finalName>
+
+        <plugins>
+            <!-- Javaコンパイラ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- WARパッケージング設定 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <configuration>
+                    <!-- web.xmlはJakarta EE 10ではオプション -->
+                    <!-- アノテーションベースの設定を使用するため不要 -->
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Built-By>ProQuip Build System</Built-By>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                    <!-- WEB-INF/libに含めない依存関係のフィルタ -->
+                    <packagingExcludes>
+                        WEB-INF/lib/jakarta.*.jar,
+                        WEB-INF/lib/slf4j-api-*.jar
+                    </packagingExcludes>
+                </configuration>
+            </plugin>
+
+            <!-- 単体テスト実行 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

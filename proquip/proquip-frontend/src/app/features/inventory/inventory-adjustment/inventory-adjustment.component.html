@@ -1,0 +1,56 @@
+<div class="page-container">
+  <div class="page-header">
+    <h2>在庫調整</h2>
+  </div>
+
+  <div class="filter-section">
+    <div class="form-group">
+      <label for="warehouse">倉庫</label>
+      <select id="warehouse" [(ngModel)]="selectedWarehouseId" (change)="onWarehouseSelect()">
+        <option [ngValue]="null">倉庫を選択してください</option>
+        <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.name }}</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-danger">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+  <div *ngIf="isLoading" class="loading">読み込み中...</div>
+
+  <table *ngIf="adjustmentLines.length > 0" class="data-table">
+    <thead>
+      <tr>
+        <th>SKU</th>
+        <th>製品名</th>
+        <th>現在庫数</th>
+        <th>調整数</th>
+        <th>調整後</th>
+        <th>理由</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let line of adjustmentLines">
+        <td>{{ line.productSku }}</td>
+        <td>{{ line.productName }}</td>
+        <td>{{ line.currentQuantity }}</td>
+        <td>
+          <input type="number" [(ngModel)]="line.adjustmentQuantity" class="form-control input-sm">
+        </td>
+        <td>{{ line.currentQuantity + line.adjustmentQuantity }}</td>
+        <td>
+          <select [(ngModel)]="line.reason" class="form-control input-sm">
+            <option value="">選択してください</option>
+            <option *ngFor="let reason of adjustmentReasons" [value]="reason">{{ reason }}</option>
+          </select>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div *ngIf="adjustmentLines.length > 0" class="actions">
+    <button class="btn btn-primary" (click)="submitAdjustments()" [disabled]="isSubmitting">
+      {{ isSubmitting ? '保存中...' : '調整を保存' }}
+    </button>
+  </div>
+</div>

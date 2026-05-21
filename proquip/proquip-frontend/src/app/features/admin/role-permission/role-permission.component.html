@@ -1,0 +1,70 @@
+<!-- ロール・権限管理画面 -->
+<div class="role-permission">
+  <app-page-header
+    title="ロール・権限管理"
+    subtitle="ロールごとのパーミッションを設定します">
+  </app-page-header>
+
+  <!-- メッセージ -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span> {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span> {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <!-- パーミッションマトリクス -->
+  <!--
+    技術的負債: マトリクス全体を1つのオブジェクトで管理
+    チェックボックス変更を1つずつ個別リクエストで保存
+  -->
+  <div class="matrix-container" *ngIf="!isLoading">
+    <div class="matrix-scroll">
+      <table class="matrix-table">
+        <thead>
+          <tr>
+            <th class="col-category">カテゴリ</th>
+            <th class="col-permission">パーミッション</th>
+            <th *ngFor="let role of roles" class="col-role">
+              <div class="role-header">
+                <span class="role-name">{{ role.name }}</span>
+                <span class="role-desc">{{ role.description }}</span>
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let category of permissionCategories">
+            <tr *ngFor="let perm of getPermissionsByCategory(category); let first = first">
+              <td class="col-category" *ngIf="first" [attr.rowspan]="getPermissionsByCategory(category).length">
+                <span class="category-name">{{ category }}</span>
+              </td>
+              <td class="col-permission">
+                <span class="permission-label">{{ perm.label }}</span>
+                <span class="permission-key">{{ perm.key }}</span>
+              </td>
+              <td *ngFor="let role of roles" class="col-role col-checkbox-cell">
+                <label class="matrix-checkbox"
+                       [ngClass]="{'is-saving': isCellSaving(role.id, perm.key)}">
+                  <input type="checkbox"
+                         [checked]="isGranted(role.id, perm.key)"
+                         (change)="togglePermission(role.id, perm.key)"
+                         [disabled]="isCellSaving(role.id, perm.key)">
+                  <span class="checkmark"></span>
+                </label>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 変更件数 -->
+    <div class="change-info" *ngIf="changeCount > 0">
+      このセッションで {{ changeCount }} 件のパーミッションを変更しました
+    </div>
+  </div>
+</div>

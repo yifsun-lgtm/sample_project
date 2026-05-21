@@ -1,0 +1,237 @@
+<!-- 購買依頼作成画面 -->
+<app-page-header
+  title="購買依頼作成"
+  description="新しい購買依頼を作成します">
+  <button class="btn btn-outline" (click)="onCancel()">
+    戻る
+  </button>
+</app-page-header>
+
+<!-- エラーメッセージ -->
+<div class="error-banner" *ngIf="errorMessage">
+  <i class="icon-alert"></i>
+  {{ errorMessage }}
+</div>
+
+<form [formGroup]="requisitionForm" (ngSubmit)="onSubmit()" class="requisition-form">
+
+  <!-- ヘッダー情報セクション -->
+  <section class="form-section">
+    <h3 class="section-title">基本情報</h3>
+
+    <div class="form-grid">
+      <app-form-field
+        label="部門"
+        [required]="true"
+        [hasError]="isFieldInvalid('department')">
+        <select
+          formControlName="department"
+          class="form-select"
+          id="department">
+          <option value="">部門を選択してください</option>
+          <option *ngFor="let opt of departmentOptions" [value]="opt.value">
+            {{ opt.label }}
+          </option>
+        </select>
+        <span class="error-text" *ngIf="isFieldInvalid('department')">
+          部門を選択してください
+        </span>
+      </app-form-field>
+
+      <app-form-field
+        label="緊急度"
+        [required]="true">
+        <select
+          formControlName="urgency"
+          class="form-select"
+          id="urgency">
+          <option *ngFor="let opt of urgencyOptions" [value]="opt.value">
+            {{ opt.label }}
+          </option>
+        </select>
+      </app-form-field>
+
+      <app-form-field
+        label="希望納期"
+        [required]="true"
+        [hasError]="isFieldInvalid('requiredDate')">
+        <input
+          formControlName="requiredDate"
+          type="date"
+          class="form-control"
+          id="requiredDate" />
+        <span class="error-text" *ngIf="isFieldInvalid('requiredDate')">
+          希望納期を入力してください
+        </span>
+      </app-form-field>
+    </div>
+
+    <div class="form-row-full">
+      <app-form-field
+        label="依頼理由"
+        [required]="true"
+        [hasError]="isFieldInvalid('justification')">
+        <textarea
+          formControlName="justification"
+          class="form-control textarea"
+          id="justification"
+          rows="4"
+          placeholder="購買依頼の理由・目的を記入してください（10文字以上）"></textarea>
+        <span class="error-text" *ngIf="isFieldInvalid('justification')">
+          依頼理由を10文字以上500文字以下で入力してください
+        </span>
+        <span class="char-count">
+          {{ requisitionForm.get('justification')?.value?.length || 0 }} / 500
+        </span>
+      </app-form-field>
+    </div>
+  </section>
+
+  <!-- 明細行セクション -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3 class="section-title">依頼品目</h3>
+      <button type="button" class="btn btn-outline btn-sm" (click)="addItem()">
+        <i class="icon-plus"></i>
+        品目追加
+      </button>
+    </div>
+
+    <div class="items-table" formArrayName="items">
+      <div class="items-header">
+        <span class="col-index">#</span>
+        <span class="col-product">製品</span>
+        <span class="col-quantity">数量</span>
+        <span class="col-price">見積単価</span>
+        <span class="col-subtotal">小計</span>
+        <span class="col-notes">備考</span>
+        <span class="col-actions">操作</span>
+      </div>
+
+      <div
+        *ngFor="let item of items.controls; let i = index"
+        class="items-row"
+        [formGroupName]="i"
+        [class.has-error]="item.invalid && item.touched">
+
+        <span class="col-index">{{ i + 1 }}</span>
+
+        <!-- 製品検索（オートコンプリート） -->
+        <div class="col-product autocomplete-wrapper">
+          <input
+            formControlName="productSearch"
+            type="text"
+            class="form-control"
+            placeholder="製品名またはSKUで検索"
+            (input)="onProductSearch($any($event.target).value, i)"
+            (focus)="onProductSearch($any($event.target).value, i)"
+            (blur)="hideSuggestions(i)"
+            [class.invalid]="isItemFieldInvalid(i, 'productId')"
+            autocomplete="off" />
+          <div class="suggestions-dropdown" *ngIf="showSuggestions[i] && productSuggestions.length > 0">
+            <div
+              class="suggestion-item"
+              *ngFor="let product of productSuggestions"
+              (mousedown)="selectProduct(product, i)">
+              <span class="suggestion-name">{{ product.name }}</span>
+              <span class="suggestion-sku">{{ product.sku }}</span>
+              <span class="suggestion-price">{{ product.unitPrice | currencyJp }}</span>
+            </div>
+          </div>
+          <span class="error-text" *ngIf="isItemFieldInvalid(i, 'productId')">
+            製品を選択してください
+          </span>
+        </div>
+
+        <!-- 数量 -->
+        <div class="col-quantity">
+          <input
+            formControlName="quantity"
+            type="number"
+            class="form-control text-right"
+            min="1"
+            max="99999"
+            (change)="onQuantityChange()"
+            [class.invalid]="isItemFieldInvalid(i, 'quantity')" />
+        </div>
+
+        <!-- 見積単価 -->
+        <div class="col-price">
+          <input
+            formControlName="estimatedUnitPrice"
+            type="number"
+            class="form-control text-right"
+            min="0"
+            step="1"
+            (change)="onPriceChange()"
+            [class.invalid]="isItemFieldInvalid(i, 'estimatedUnitPrice')" />
+        </div>
+
+        <!-- 小計 -->
+        <span class="col-subtotal text-right">
+          {{ getItemSubtotal(i) | currencyJp }}
+        </span>
+
+        <!-- 備考 -->
+        <div class="col-notes">
+          <input
+            formControlName="notes"
+            type="text"
+            class="form-control"
+            placeholder="備考" />
+        </div>
+
+        <!-- 操作 -->
+        <div class="col-actions">
+          <button
+            type="button"
+            class="btn btn-icon btn-danger"
+            (click)="removeItem(i)"
+            [disabled]="items.length <= 1"
+            title="削除">
+            <i class="icon-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 合計金額表示 -->
+    <div class="total-section">
+      <div class="total-row">
+        <span class="total-label">合計金額</span>
+        <span class="total-amount" [class.over-limit]="totalAmount > 1000000">
+          {{ totalAmount | currencyJp }}
+        </span>
+      </div>
+      <!-- 技術的負債 #17: フロントエンドの上限値はバックエンドと不整合 -->
+      <div class="limit-note" *ngIf="totalAmount > 800000">
+        ※ 合計金額の上限は1,000,000円です
+      </div>
+    </div>
+  </section>
+
+  <!-- フォームアクション -->
+  <div class="form-actions">
+    <button
+      type="button"
+      class="btn btn-outline"
+      (click)="onCancel()"
+      [disabled]="isSubmitting">
+      キャンセル
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="saveDraft()"
+      [disabled]="isSubmitting">
+      下書き保存
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="isSubmitting || requisitionForm.invalid">
+      <app-loading-spinner *ngIf="isSubmitting" [inline]="true"></app-loading-spinner>
+      依頼を申請
+    </button>
+  </div>
+</form>

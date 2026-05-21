@@ -1,0 +1,340 @@
+<!-- 発注書作成画面 — KEY TECH DEBT FILE -->
+<app-page-header
+  title="発注書作成"
+  description="新しい発注書を作成します">
+  <button class="btn btn-outline" (click)="onCancel()">
+    戻る
+  </button>
+</app-page-header>
+
+<!-- エラーメッセージ -->
+<div class="error-banner" *ngIf="errorMessage">
+  <i class="icon-alert"></i>
+  {{ errorMessage }}
+</div>
+
+<form [formGroup]="orderForm" (ngSubmit)="onSubmit()" class="order-form">
+
+  <!-- セクション1: サプライヤー選択 -->
+  <section class="form-section">
+    <h3 class="section-title">サプライヤー選択</h3>
+
+    <div class="supplier-search-wrapper">
+      <app-form-field
+        label="サプライヤー"
+        [required]="true"
+        [hasError]="isFieldInvalid('supplierId')">
+        <div class="autocomplete-wrapper">
+          <input
+            type="text"
+            class="form-control"
+            [value]="supplierSearchKeyword"
+            (input)="onSupplierSearch($any($event.target).value)"
+            (focus)="onSupplierSearch(supplierSearchKeyword)"
+            (blur)="hideSupplierDropdown()"
+            placeholder="サプライヤー名またはコードで検索"
+            autocomplete="off" />
+          <div class="dropdown-list" *ngIf="showSupplierDropdown && filteredSuppliers.length > 0">
+            <div
+              class="dropdown-item"
+              *ngFor="let supplier of filteredSuppliers"
+              (mousedown)="selectSupplier(supplier)">
+              <span class="supplier-code">{{ supplier.code }}</span>
+              <span class="supplier-name">{{ supplier.name }}</span>
+              <span class="supplier-rating" *ngIf="supplier.rating">
+                評価: {{ supplier.rating }}/5
+              </span>
+            </div>
+          </div>
+          <div class="dropdown-list dropdown-empty"
+               *ngIf="showSupplierDropdown && filteredSuppliers.length === 0 && supplierSearchKeyword.length > 0">
+            <span class="no-results">該当するサプライヤーが見つかりません</span>
+          </div>
+        </div>
+        <span class="error-text" *ngIf="isFieldInvalid('supplierId')">
+          サプライヤーを選択してください
+        </span>
+      </app-form-field>
+
+      <!-- 選択済みサプライヤー情報 -->
+      <div class="selected-supplier-info" *ngIf="selectedSupplier">
+        <div class="supplier-detail">
+          <span class="detail-label">住所:</span>
+          <span>{{ selectedSupplier.address }}</span>
+        </div>
+        <div class="supplier-detail">
+          <span class="detail-label">電話:</span>
+          <span>{{ selectedSupplier.phone }}</span>
+        </div>
+        <div class="supplier-detail">
+          <span class="detail-label">支払条件:</span>
+          <span>{{ selectedSupplier.paymentTerms }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- セクション2: 発注明細 -->
+  <section class="form-section">
+    <div class="section-header">
+      <h3 class="section-title">発注明細</h3>
+      <button type="button" class="btn btn-outline btn-sm" (click)="addItem()">
+        <i class="icon-plus"></i>
+        品目追加
+      </button>
+    </div>
+
+    <div class="items-table" formArrayName="items">
+      <div class="items-header">
+        <span class="col-idx">#</span>
+        <span class="col-product">製品</span>
+        <span class="col-sku">SKU</span>
+        <span class="col-qty">数量</span>
+        <span class="col-unit">単位</span>
+        <span class="col-price">単価</span>
+        <span class="col-discount">値引(%)</span>
+        <span class="col-subtotal">小計</span>
+        <span class="col-notes">備考</span>
+        <span class="col-actions">操作</span>
+      </div>
+
+      <div
+        *ngFor="let item of items.controls; let i = index"
+        class="items-row"
+        [formGroupName]="i"
+        [class.has-error]="item.invalid && item.touched">
+
+        <span class="col-idx">{{ i + 1 }}</span>
+
+        <!-- 製品検索 -->
+        <div class="col-product autocomplete-wrapper">
+          <input
+            formControlName="productSearch"
+            type="text"
+            class="form-control"
+            placeholder="製品名で検索"
+            (input)="onProductSearch($any($event.target).value, i)"
+            (focus)="onProductSearch($any($event.target).value, i)"
+            (blur)="hideProductSuggestions(i)"
+            [class.invalid]="isItemFieldInvalid(i, 'productId')"
+            autocomplete="off" />
+          <div class="suggestions-dropdown" *ngIf="showProductSuggestions[i] && productSuggestions.length > 0">
+            <div
+              class="suggestion-item"
+              *ngFor="let product of productSuggestions"
+              (mousedown)="selectProduct(product, i)">
+              <div class="suggestion-main">
+                <span class="suggestion-name">{{ product.name }}</span>
+                <span class="suggestion-sku">{{ product.sku }}</span>
+              </div>
+              <span class="suggestion-price">{{ product.unitPrice | currencyJp }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- SKU（読み取り専用） -->
+        <div class="col-sku">
+          <span class="sku-display">{{ item.get('productSku')?.value || '-' }}</span>
+        </div>
+
+        <!-- 数量 -->
+        <div class="col-qty">
+          <input
+            formControlName="quantity"
+            type="number"
+            class="form-control text-right"
+            min="1"
+            max="99999"
+            (change)="onAmountChange()"
+            [class.invalid]="isItemFieldInvalid(i, 'quantity')" />
+        </div>
+
+        <!-- 単位 -->
+        <div class="col-unit">
+          <input
+            formControlName="unit"
+            type="text"
+            class="form-control"
+            [class.invalid]="isItemFieldInvalid(i, 'unit')" />
+        </div>
+
+        <!-- 単価 -->
+        <div class="col-price">
+          <input
+            formControlName="unitPrice"
+            type="number"
+            class="form-control text-right"
+            min="0"
+            step="1"
+            (change)="onAmountChange()"
+            [class.invalid]="isItemFieldInvalid(i, 'unitPrice')" />
+        </div>
+
+        <!-- 値引き率 -->
+        <div class="col-discount">
+          <input
+            formControlName="discountPercent"
+            type="number"
+            class="form-control text-right"
+            min="0"
+            max="100"
+            step="0.5"
+            (change)="onAmountChange()" />
+        </div>
+
+        <!-- 小計 -->
+        <span class="col-subtotal text-right">
+          {{ getItemSubtotal(i) | currencyJp }}
+          <span class="discount-info" *ngIf="getItemDiscountAmount(i) > 0">
+            (-{{ getItemDiscountAmount(i) | currencyJp }})
+          </span>
+        </span>
+
+        <!-- 備考 -->
+        <div class="col-notes">
+          <input
+            formControlName="notes"
+            type="text"
+            class="form-control"
+            placeholder="備考" />
+        </div>
+
+        <!-- 操作 -->
+        <div class="col-actions">
+          <button
+            type="button"
+            class="btn btn-icon btn-danger"
+            (click)="removeItem(i)"
+            [disabled]="items.length <= 1"
+            title="削除">
+            <i class="icon-trash"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- セクション3: 金額計算 -->
+  <section class="form-section amount-section">
+    <h3 class="section-title">金額計算</h3>
+
+    <div class="amount-grid">
+      <div class="amount-row">
+        <span class="amount-label">小計</span>
+        <span class="amount-value">{{ subtotal | currencyJp }}</span>
+      </div>
+
+      <div class="amount-row discount-row">
+        <span class="amount-label">
+          全体値引き
+          <input
+            formControlName="discountPercent"
+            type="number"
+            class="discount-input"
+            min="0"
+            max="100"
+            step="0.5"
+            (change)="onGlobalDiscountChange()" />
+          %
+        </span>
+        <span class="amount-value discount-value" *ngIf="discountAmount > 0">
+          -{{ discountAmount | currencyJp }}
+        </span>
+        <span class="amount-value" *ngIf="discountAmount === 0">¥0</span>
+      </div>
+
+      <div class="amount-row">
+        <span class="amount-label">
+          消費税（{{ taxRate * 100 }}%）
+          <select class="tax-rate-select" (change)="onTaxRateChange(+$any($event.target).value)">
+            <option [value]="0.10" [selected]="taxRate === 0.10">10%</option>
+            <option [value]="0.08" [selected]="taxRate === 0.08">8%（軽減税率）</option>
+          </select>
+        </span>
+        <span class="amount-value">{{ taxAmount | currencyJp }}</span>
+      </div>
+
+      <div class="amount-row total-row">
+        <span class="amount-label total-label">合計金額（税込）</span>
+        <span class="amount-value total-value" [class.over-limit]="totalAmount > 10000000">
+          {{ totalAmount | currencyJp }}
+        </span>
+      </div>
+    </div>
+  </section>
+
+  <!-- セクション4: 配送情報 -->
+  <section class="form-section">
+    <h3 class="section-title">配送情報</h3>
+
+    <div class="form-grid">
+      <app-form-field
+        label="納品先住所"
+        [required]="true"
+        [hasError]="isFieldInvalid('deliveryAddress')">
+        <input
+          formControlName="deliveryAddress"
+          type="text"
+          class="form-control"
+          placeholder="納品先の住所を入力"
+          id="deliveryAddress" />
+        <span class="error-text" *ngIf="isFieldInvalid('deliveryAddress')">
+          納品先住所を入力してください
+        </span>
+      </app-form-field>
+
+      <app-form-field
+        label="納品予定日"
+        [required]="true"
+        [hasError]="isFieldInvalid('expectedDeliveryDate')">
+        <input
+          formControlName="expectedDeliveryDate"
+          type="date"
+          class="form-control"
+          [min]="getMinDeliveryDate()"
+          id="expectedDeliveryDate" />
+        <span class="error-text" *ngIf="isFieldInvalid('expectedDeliveryDate')">
+          納品予定日を入力してください
+        </span>
+      </app-form-field>
+    </div>
+
+    <div class="form-row-full">
+      <app-form-field label="備考">
+        <textarea
+          formControlName="notes"
+          class="form-control textarea"
+          rows="3"
+          placeholder="発注に関する備考事項"></textarea>
+        <span class="char-count">
+          {{ orderForm.get('notes')?.value?.length || 0 }} / 1000
+        </span>
+      </app-form-field>
+    </div>
+  </section>
+
+  <!-- フォームアクション -->
+  <div class="form-actions">
+    <button
+      type="button"
+      class="btn btn-outline"
+      (click)="onCancel()"
+      [disabled]="isSubmitting">
+      キャンセル
+    </button>
+    <button
+      type="button"
+      class="btn btn-secondary"
+      (click)="saveDraft()"
+      [disabled]="isSubmitting">
+      下書き保存
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="isSubmitting || orderForm.invalid">
+      <app-loading-spinner *ngIf="isSubmitting" [inline]="true"></app-loading-spinner>
+      発注書を作成
+    </button>
+  </div>
+</form>

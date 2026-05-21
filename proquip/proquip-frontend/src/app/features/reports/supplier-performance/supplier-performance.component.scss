@@ -1,0 +1,301 @@
+/* サプライヤー実績レポートスタイル */
+
+.supplier-performance {
+  padding: 24px;
+}
+
+.filter-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.filter-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  &--action {
+    padding-top: 18px;
+  }
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.filter-input,
+.filter-select {
+  padding: 6px 10px;
+  border: 1px solid #d0d5dd;
+  border-radius: 4px;
+  font-size: 13px;
+  background: #fff;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #374151;
+  margin: 0 0 16px;
+}
+
+/* ランキングカード */
+.ranking-section {
+  margin-bottom: 24px;
+}
+
+.ranking-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.ranking-card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  border-top: 4px solid #d1d5db;
+  text-align: center;
+
+  &.rank-gold {
+    border-top-color: #f59e0b;
+  }
+
+  &.rank-silver {
+    border-top-color: #9ca3af;
+  }
+
+  &.rank-bronze {
+    border-top-color: #b45309;
+  }
+
+  &__rank {
+    margin-bottom: 8px;
+  }
+
+  &__name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 4px;
+  }
+
+  &__category {
+    font-size: 13px;
+    color: #6b7280;
+    margin-bottom: 12px;
+  }
+
+  &__score {
+    margin-bottom: 16px;
+
+    .score-value {
+      font-size: 36px;
+      font-weight: 700;
+      color: #1a56db;
+    }
+
+    .score-label {
+      font-size: 14px;
+      color: #6b7280;
+      margin-left: 2px;
+    }
+  }
+
+  &__metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    text-align: left;
+  }
+}
+
+.rank-medal {
+  font-size: 16px;
+  font-weight: 700;
+
+  &.rank-gold { color: #f59e0b; }
+  &.rank-silver { color: #6b7280; }
+  &.rank-bronze { color: #b45309; }
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  border-bottom: 1px solid #f3f4f6;
+
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.metric-label {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.metric-value {
+  font-size: 13px;
+  font-weight: 500;
+}
+
+/* 詳細テーブル */
+.detail-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 10px 14px;
+    text-align: left;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 13px;
+  }
+
+  th {
+    background: #f9fafb;
+    font-weight: 600;
+    color: #374151;
+
+    &.sortable {
+      cursor: pointer;
+      &:hover { background: #f3f4f6; }
+    }
+  }
+
+  tbody tr:hover {
+    background-color: #f9fafb;
+  }
+}
+
+.col-rank {
+  width: 60px;
+  text-align: center;
+}
+
+.col-orders, .col-lead-time, .col-delivery, .col-quality, .col-amount {
+  text-align: right;
+}
+
+.col-score {
+  min-width: 140px;
+}
+
+.rank-badge {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  line-height: 28px;
+  text-align: center;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 600;
+
+  &.rank-gold {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  &.rank-silver {
+    background: #f3f4f6;
+    color: #374151;
+  }
+
+  &.rank-bronze {
+    background: #fde68a;
+    color: #78350f;
+  }
+
+  &.rank-default {
+    background: #f9fafb;
+    color: #6b7280;
+  }
+}
+
+.supplier-name {
+  font-weight: 500;
+  color: #1f2937;
+}
+
+/* 評価カラー */
+.rate-excellent { color: #059669; font-weight: 600; }
+.rate-good { color: #2563eb; }
+.rate-fair { color: #d97706; }
+.rate-poor { color: #dc2626; }
+
+.quality-excellent { color: #059669; font-weight: 600; }
+.quality-good { color: #2563eb; }
+.quality-fair { color: #d97706; }
+.quality-poor { color: #dc2626; }
+
+.score-bar-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.score-text {
+  min-width: 35px;
+  text-align: right;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.score-bar {
+  flex: 1;
+  background: #f3f4f6;
+  border-radius: 4px;
+  height: 14px;
+  overflow: hidden;
+}
+
+.score-bar__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+  border-radius: 4px;
+}
+
+.empty-row {
+  text-align: center;
+  padding: 40px !important;
+  color: #9ca3af;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #1a56db;
+  color: #fff;
+  &:hover { background: #1e40af; }
+}

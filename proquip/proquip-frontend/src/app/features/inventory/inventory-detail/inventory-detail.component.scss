@@ -1,0 +1,130 @@
+/* 在庫詳細画面のスタイル */
+:host {
+  display: block;
+  padding: 24px;
+}
+
+.alert {
+  &.alert-error { background: #ffebee; border: 1px solid #ef9a9a; color: #c62828; padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; }
+}
+
+.detail-section {
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 2px solid #1976d2;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  .section-title { margin: 0; padding-bottom: 0; border-bottom: none; }
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-label { font-size: 12px; color: #888; font-weight: 500; }
+.info-value { font-size: 15px; color: #333; font-weight: 500; }
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+  th { background: #f5f5f5; font-weight: 600; font-size: 13px; color: #555; }
+}
+
+.text-right { text-align: right; }
+.font-bold { font-weight: 700; }
+.total-row { background: #fafafa; }
+
+.positive { color: #43a047; font-weight: 600; }
+.negative { color: #e53935; font-weight: 600; }
+
+.tx-type { font-weight: 600; font-size: 13px; }
+
+.chart-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  background: #fafafa;
+  border: 2px dashed #e0e0e0;
+  border-radius: 8px;
+  color: #bdbdbd;
+  font-size: 16px;
+  gap: 12px;
+  i { font-size: 32px; }
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.setting-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-label { font-size: 13px; color: #888; }
+.setting-value { font-size: 20px; font-weight: 700; color: #333; }
+
+.settings-edit {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+
+  .edit-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    label { font-size: 13px; color: #555; font-weight: 500; }
+  }
+}
+
+.form-control {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 120px;
+  &:focus { outline: none; border-color: #1976d2; }
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+  &.btn-primary { background: #1976d2; color: #fff; }
+  &.btn-outline { background: transparent; border: 1px solid #bdbdbd; color: #616161; }
+  &.btn-sm { padding: 6px 12px; font-size: 13px; }
+}

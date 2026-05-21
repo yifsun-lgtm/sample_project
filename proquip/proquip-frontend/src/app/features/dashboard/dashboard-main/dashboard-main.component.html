@@ -1,0 +1,214 @@
+<app-page-header
+  title="ダッシュボード"
+  description="調達・在庫管理の概況">
+</app-page-header>
+
+<!-- ローディング表示 -->
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<!-- エラーメッセージ -->
+<div class="error-banner" *ngIf="errorMessage">
+  <span class="error-icon">⚠</span>
+  <span>{{ errorMessage }}</span>
+  <button class="btn-retry" (click)="refresh()">再試行</button>
+</div>
+
+<div class="dashboard-container" *ngIf="!isLoading">
+
+  <!-- サマリーカード -->
+  <section class="summary-cards">
+    <div class="summary-card card-orders">
+      <div class="card-header">
+        <h3 class="card-title">発注件数</h3>
+        <span class="card-icon icon-orders"></span>
+      </div>
+      <div class="card-body">
+        <div class="card-main-value">{{ totalOrders }}</div>
+        <div class="card-sub-values">
+          <div class="sub-value">
+            <span class="sub-label">保留中</span>
+            <span class="sub-count pending">{{ pendingOrders }}</span>
+          </div>
+          <div class="sub-value">
+            <span class="sub-label">承認済み</span>
+            <span class="sub-count approved">{{ approvedOrders }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card card-stock" (click)="navigateToInventory()">
+      <div class="card-header">
+        <h3 class="card-title">在庫アラート</h3>
+        <span class="card-icon icon-alert"></span>
+      </div>
+      <div class="card-body">
+        <div class="card-main-value alert-value" [class.has-alert]="lowStockCount > 0">
+          {{ lowStockCount }}
+        </div>
+        <div class="card-description">
+          在庫不足の製品があります
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card card-approvals" (click)="navigateToTasks()">
+      <div class="card-header">
+        <h3 class="card-title">承認待ち</h3>
+        <span class="card-icon icon-approval"></span>
+      </div>
+      <div class="card-body">
+        <div class="card-main-value" [class.has-pending]="pendingApprovals > 0">
+          {{ pendingApprovals }}
+        </div>
+        <div class="card-description">
+          承認が必要なタスク
+        </div>
+      </div>
+    </div>
+
+    <div class="summary-card card-budget">
+      <div class="card-header">
+        <h3 class="card-title">予算消化率</h3>
+        <span class="card-icon icon-budget"></span>
+      </div>
+      <div class="card-body">
+        <div class="card-main-value">{{ budgetUtilization }}%</div>
+        <div class="budget-bar">
+          <div class="budget-bar-fill"
+               [style.width.%]="budgetUtilization"
+               [class.budget-warning]="budgetUtilization > 80"
+               [class.budget-danger]="budgetUtilization > 95">
+          </div>
+        </div>
+        <div class="budget-detail">
+          <span>{{ formatCurrency(budgetSpent) }} / {{ formatCurrency(budgetTotal) }}</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- チャートセクション -->
+  <section class="charts-section">
+    <div class="chart-container">
+      <h3 class="section-title">月別発注金額推移</h3>
+      <!-- 技術的負債: 実際のチャートライブラリ（ng2-charts等）を導入すべき -->
+      <!-- プレースホルダーとしてdivで棒グラフを模擬 -->
+      <div class="chart-placeholder bar-chart">
+        <div class="chart-bars">
+          <div class="chart-bar-wrapper" *ngFor="let item of monthlySpendingData">
+            <div class="chart-bar"
+                 [style.height.px]="getBarHeight(item.amount)"
+                 [title]="item.month + ': ' + formatCurrency(item.amount)">
+            </div>
+            <span class="chart-bar-label">{{ item.month.slice(-3, -1) }}</span>
+          </div>
+        </div>
+        <div class="chart-note">※ グラフはプレースホルダーです</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h3 class="section-title">カテゴリ別支出割合</h3>
+      <!-- 技術的負債: 円グラフの代わりにリスト表示 -->
+      <div class="chart-placeholder pie-chart">
+        <div class="category-list">
+          <div class="category-item" *ngFor="let item of categorySpendingData">
+            <div class="category-bar-container">
+              <span class="category-name">{{ item.category }}</span>
+              <div class="category-bar">
+                <div class="category-bar-fill" [style.width.%]="item.percentage"></div>
+              </div>
+              <span class="category-percentage">{{ item.percentage }}%</span>
+            </div>
+            <span class="category-amount">{{ formatCurrency(item.amount) }}</span>
+          </div>
+        </div>
+        <div class="chart-note">※ グラフはプレースホルダーです</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 最近の発注テーブル & 在庫アラート -->
+  <section class="detail-section">
+    <div class="detail-panel recent-orders">
+      <div class="panel-header">
+        <h3 class="section-title">最近の発注</h3>
+        <a class="link-more" routerLink="/procurement/orders">すべて表示 →</a>
+      </div>
+      <div class="panel-body">
+        <table class="simple-table" *ngIf="recentOrders.length > 0">
+          <thead>
+            <tr>
+              <th>発注番号</th>
+              <th>サプライヤー</th>
+              <th>発注日</th>
+              <th>金額</th>
+              <th>ステータス</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let order of recentOrders"
+                class="clickable-row"
+                (click)="navigateToOrder(order)">
+              <td class="order-number">{{ order.orderNumber }}</td>
+              <td>{{ order.supplierName }}</td>
+              <!-- 技術的負債 #6: パイプを使わず手動フォーマット -->
+              <td>{{ formatDate(order.orderDate) }}</td>
+              <td class="amount">{{ formatCurrency(order.totalAmount) }}</td>
+              <td>
+                <span class="status-tag" [ngClass]="getStatusClass(order.status)">
+                  {{ getStatusLabel(order.status) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <app-empty-state
+          *ngIf="recentOrders.length === 0"
+          message="最近の発注はありません">
+        </app-empty-state>
+      </div>
+    </div>
+
+    <div class="detail-panel stock-alerts">
+      <div class="panel-header">
+        <h3 class="section-title">在庫アラート</h3>
+        <a class="link-more" routerLink="/inventory">すべて表示 →</a>
+      </div>
+      <div class="panel-body">
+        <div class="alert-list" *ngIf="lowStockItems.length > 0">
+          <div class="alert-item" *ngFor="let item of lowStockItems"
+               (click)="navigateToProduct(item.productId)">
+            <div class="alert-item-info">
+              <span class="alert-product-name">{{ item.productName }}</span>
+              <span class="alert-product-sku">{{ item.productSku }}</span>
+            </div>
+            <div class="alert-item-stock">
+              <div class="stock-values">
+                <span class="current-stock" [class.critical]="item.quantity <= item.minimumStock / 2">
+                  現在: {{ item.quantity }} {{ item.status }}
+                </span>
+                <span class="minimum-stock">
+                  最低: {{ item.minimumStock }}
+                </span>
+              </div>
+              <div class="stock-bar">
+                <div class="stock-bar-fill"
+                     [style.width.%]="item.minimumStock > 0 ? (item.quantity / item.minimumStock) * 100 : 0"
+                     [class.stock-critical]="item.quantity <= item.minimumStock / 2"
+                     [class.stock-warning]="item.quantity > item.minimumStock / 2 && item.quantity <= item.minimumStock">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <app-empty-state
+          *ngIf="lowStockItems.length === 0"
+          message="在庫アラートはありません">
+        </app-empty-state>
+      </div>
+    </div>
+  </section>
+
+</div>

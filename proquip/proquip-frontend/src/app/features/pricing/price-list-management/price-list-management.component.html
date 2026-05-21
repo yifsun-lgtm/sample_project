@@ -1,0 +1,234 @@
+<!-- 価格リスト管理画面 -->
+<div class="price-list-management">
+  <app-page-header
+    title="価格リスト管理"
+    subtitle="価格リストの作成・編集・管理を行います">
+  </app-page-header>
+
+  <!-- 操作バー -->
+  <div class="action-bar">
+    <div class="action-bar__left">
+      <app-search-box
+        placeholder="価格リスト名で検索..."
+        (searchChange)="onSearchChange($event)">
+      </app-search-box>
+
+      <div class="filter-group">
+        <label class="filter-label" for="statusFilter">ステータス:</label>
+        <select
+          id="statusFilter"
+          class="filter-select"
+          [(ngModel)]="filterStatus"
+          (ngModelChange)="onStatusFilterChange()">
+          <option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <div class="action-bar__right">
+      <button class="btn btn-primary" (click)="openCreateModal()">
+        <span class="btn-icon">+</span>
+        新規作成
+      </button>
+    </div>
+  </div>
+
+  <!-- 成功メッセージ -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- エラーメッセージ -->
+  <div class="alert alert-error" *ngIf="errorMessage && !showModal">
+    <span class="alert-icon">!</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <!-- 価格リストテーブル -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-name">価格リスト名</th>
+          <th class="col-description">説明</th>
+          <th class="col-currency">通貨</th>
+          <th class="col-start-date">有効開始日</th>
+          <th class="col-end-date">有効終了日</th>
+          <th class="col-status">ステータス</th>
+          <th class="col-item-count">アイテム数</th>
+          <th class="col-actions">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="priceLists.length === 0">
+          <td colspan="8" class="empty-row">
+            <app-empty-state></app-empty-state>
+          </td>
+        </tr>
+        <tr *ngFor="let priceList of priceLists"
+            class="table-row"
+            [routerLink]="[priceList.id, 'edit']">
+          <td class="col-name">
+            <span class="price-list-name">{{ priceList.name }}</span>
+          </td>
+          <td class="col-description">
+            <span class="description-text">{{ priceList.description | truncate:40 }}</span>
+          </td>
+          <td class="col-currency">
+            <span class="currency-badge">{{ priceList.currency }}</span>
+          </td>
+          <td class="col-start-date">{{ priceList.effectiveStartDate | japaneseDate }}</td>
+          <td class="col-end-date">{{ priceList.effectiveEndDate | japaneseDate }}</td>
+          <td class="col-status">
+            <span class="status-label" [ngClass]="getStatusClass(priceList.status)">
+              {{ getStatusLabel(priceList.status) }}
+            </span>
+          </td>
+          <td class="col-item-count">
+            <span class="item-count">{{ priceList.itemCount | number }}</span>
+          </td>
+          <td class="col-actions" (click)="$event.stopPropagation()">
+            <button class="btn-icon-action" title="編集" (click)="openEditModal(priceList)">
+              &#9998;
+            </button>
+            <button class="btn-icon-action btn-danger" title="削除" (click)="openDeleteConfirm(priceList)">
+              &#10005;
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- ページネーション -->
+    <div class="pagination" *ngIf="totalCount > pageSize">
+      <button class="pagination-btn" [disabled]="currentPage === 1" (click)="onPageChange({page: currentPage - 1, pageSize: pageSize})">
+        &laquo; 前へ
+      </button>
+      <span class="pagination-info">{{ currentPage }} / {{ (totalCount / pageSize | number:'1.0-0') || 1 }} ページ</span>
+      <button class="pagination-btn" [disabled]="currentPage * pageSize >= totalCount" (click)="onPageChange({page: currentPage + 1, pageSize: pageSize})">
+        次へ &raquo;
+      </button>
+    </div>
+
+    <!-- 件数表示 -->
+    <div class="record-count">
+      全 {{ totalCount }} 件
+    </div>
+  </div>
+
+  <!-- 作成/編集モーダル -->
+  <!-- 技術的負債: モーダル状態管理がコンポーネント変数に依存している -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ isEditMode ? '価格リスト編集' : '価格リスト新規作成' }}</h2>
+        <button class="modal-close" (click)="closeModal()">&times;</button>
+      </div>
+
+      <form [formGroup]="priceListForm" (ngSubmit)="onSave()">
+        <div class="modal-body">
+          <!-- エラーメッセージ -->
+          <div class="alert alert-error" *ngIf="errorMessage">
+            {{ errorMessage }}
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="name">価格リスト名</label>
+            <input
+              type="text"
+              id="name"
+              class="form-input"
+              formControlName="name"
+              placeholder="例: 標準価格リスト 2025"
+              [ngClass]="{'input-error': priceListForm.get('name')?.touched && priceListForm.get('name')?.invalid}">
+            <span class="error-text" *ngIf="priceListForm.get('name')?.touched && priceListForm.get('name')?.hasError('required')">
+              価格リスト名は必須です。
+            </span>
+            <span class="error-text" *ngIf="priceListForm.get('name')?.touched && priceListForm.get('name')?.hasError('maxlength')">
+              100文字以内で入力してください。
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="description">説明</label>
+            <textarea
+              id="description"
+              class="form-textarea"
+              formControlName="description"
+              rows="3"
+              placeholder="価格リストの説明を入力"></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-group--half">
+              <label class="form-label required" for="currency">通貨</label>
+              <select id="currency" class="form-select" formControlName="currency">
+                <option *ngFor="let opt of currencyOptions" [value]="opt.value">{{ opt.label }}</option>
+              </select>
+            </div>
+
+            <div class="form-group form-group--half">
+              <label class="form-label required" for="status">ステータス</label>
+              <select id="status" class="form-select" formControlName="status">
+                <option value="DRAFT">下書き</option>
+                <option value="ACTIVE">有効</option>
+                <option value="INACTIVE">無効</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group form-group--half">
+              <label class="form-label required" for="startDate">有効開始日</label>
+              <input
+                type="date"
+                id="startDate"
+                class="form-input"
+                formControlName="effectiveStartDate"
+                [ngClass]="{'input-error': priceListForm.get('effectiveStartDate')?.touched && priceListForm.get('effectiveStartDate')?.invalid}">
+              <span class="error-text" *ngIf="priceListForm.get('effectiveStartDate')?.touched && priceListForm.get('effectiveStartDate')?.hasError('required')">
+                有効開始日は必須です。
+              </span>
+            </div>
+
+            <div class="form-group form-group--half">
+              <label class="form-label required" for="endDate">有効終了日</label>
+              <input
+                type="date"
+                id="endDate"
+                class="form-input"
+                formControlName="effectiveEndDate"
+                [ngClass]="{'input-error': priceListForm.get('effectiveEndDate')?.touched && priceListForm.get('effectiveEndDate')?.invalid}">
+              <span class="error-text" *ngIf="priceListForm.get('effectiveEndDate')?.touched && priceListForm.get('effectiveEndDate')?.hasError('required')">
+                有効終了日は必須です。
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeModal()">キャンセル</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isSaving">
+            {{ isSaving ? '保存中...' : '保存' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 削除確認ダイアログ -->
+  <app-confirm-dialog
+    [visible]="showDeleteConfirm"
+    title="価格リスト削除"
+    [message]="'「' + (deletingPriceList?.name || '') + '」を削除してもよろしいですか？この操作は取り消せません。'"
+    confirmText="削除"
+    cancelText="キャンセル"
+    (confirmed)="onDeleteConfirmed($event)">
+  </app-confirm-dialog>
+</div>

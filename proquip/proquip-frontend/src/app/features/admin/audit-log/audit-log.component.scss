@@ -1,0 +1,108 @@
+/* 監査ログスタイル */
+
+.audit-log { padding: 24px; }
+
+.filter-section {
+  background: #fff; border-radius: 8px; padding: 20px; margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.filter-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.filter-group { display: flex; flex-direction: column; gap: 4px; }
+.filter-label { font-size: 12px; font-weight: 500; color: #6b7280; }
+.filter-input, .filter-select {
+  padding: 6px 10px; border: 1px solid #d0d5dd; border-radius: 4px; font-size: 13px; background: #fff;
+}
+.filter-actions { display: flex; justify-content: flex-end; }
+
+.table-container {
+  background: #fff; border-radius: 8px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); overflow-x: auto;
+}
+
+.data-table {
+  width: 100%; border-collapse: collapse;
+  th, td { padding: 10px 14px; text-align: left; border-bottom: 1px solid #e5e7eb; font-size: 13px; }
+  th { background: #f9fafb; font-weight: 600; color: #374151; }
+}
+
+.log-row {
+  cursor: pointer; transition: background-color 0.15s;
+  &:hover { background-color: #f9fafb; }
+}
+
+.col-timestamp { min-width: 150px; white-space: nowrap; }
+.col-user { min-width: 120px; }
+.col-action { min-width: 80px; }
+.col-entity { min-width: 150px; }
+.col-details { min-width: 200px; }
+
+.action-badge {
+  display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 500;
+  &.action-create { background: #dcfce7; color: #166534; }
+  &.action-update { background: #dbeafe; color: #1e40af; }
+  &.action-delete { background: #fef2f2; color: #991b1b; }
+  &.action-login { background: #f3f4f6; color: #374151; }
+  &.action-logout { background: #f3f4f6; color: #6b7280; }
+  &.action-approve { background: #dcfce7; color: #166534; }
+  &.action-reject { background: #fef3c7; color: #92400e; }
+  &.action-export { background: #ede9fe; color: #5b21b6; }
+}
+
+.entity-type { font-weight: 500; color: #1f2937; }
+.entity-id { color: #6b7280; font-family: monospace; font-size: 12px; }
+.details-preview { color: #6b7280; font-size: 12px; }
+
+.record-count {
+  padding: 8px 16px; text-align: right; font-size: 13px; color: #6b7280; border-top: 1px solid #e5e7eb;
+}
+.empty-row { text-align: center; padding: 40px !important; color: #9ca3af; }
+
+/* モーダル */
+.modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.modal-content {
+  background: #fff; border-radius: 12px; width: 700px; max-width: 90vw;
+  max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+.modal-header {
+  display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #e5e7eb;
+}
+.modal-title { font-size: 18px; font-weight: 600; margin: 0; }
+.modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #9ca3af; }
+.modal-body { padding: 24px; }
+.modal-footer { display: flex; justify-content: flex-end; padding: 16px 24px; border-top: 1px solid #e5e7eb; }
+
+.detail-info { background: #f9fafb; border-radius: 6px; padding: 16px; margin-bottom: 20px; }
+.detail-row { display: flex; gap: 12px; padding: 4px 0; }
+.detail-label { font-size: 13px; color: #6b7280; min-width: 100px; }
+.detail-value { font-size: 13px; color: #1f2937; }
+
+.diff-section { margin-bottom: 20px; }
+.diff-title { font-size: 14px; font-weight: 600; color: #374151; margin: 0 0 12px; }
+
+.diff-table {
+  width: 100%; border-collapse: collapse;
+  th, td { padding: 8px 12px; text-align: left; border: 1px solid #e5e7eb; font-size: 13px; }
+  th { background: #f9fafb; font-weight: 600; }
+}
+.diff-field { font-weight: 500; color: #374151; min-width: 100px; }
+.diff-old { background: #fef2f2; }
+.diff-new { background: #dcfce7; }
+.diff-value { margin: 0; font-family: monospace; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+
+.raw-section { margin-top: 16px; }
+.raw-json {
+  background: #1f2937; color: #e5e7eb; padding: 12px 16px; border-radius: 6px;
+  font-size: 12px; font-family: monospace; overflow-x: auto; white-space: pre-wrap; word-break: break-all;
+}
+
+.btn {
+  padding: 8px 16px; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer;
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+.btn-secondary { background: #f3f4f6; color: #374151; border: 1px solid #d0d5dd; &:hover { background: #e5e7eb; } }
+.btn-outline {
+  background: #fff; color: #1a56db; border: 1px solid #1a56db;
+  &:hover:not(:disabled) { background: #eff6ff; }
+}

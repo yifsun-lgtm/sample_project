@@ -1,0 +1,13 @@
+<div class="toast-container">
+  <div
+    *ngFor="let msg of messages"
+    class="toast"
+    [ngClass]="'toast-' + msg.type"
+  >
+    <span class="toast-icon" [innerHTML]="getIcon(msg.type)"></span>
+    <span class="toast-message">{{ msg.message }}</span>
+    <button class="toast-close" (click)="onDismiss(msg.id)" aria-label="閉じる">
+      &times;
+    </button>
+  </div>
+</div>

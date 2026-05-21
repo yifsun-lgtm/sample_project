@@ -1,0 +1,163 @@
+<!-- 監査ログ画面 -->
+<div class="audit-log">
+  <app-page-header
+    title="監査ログ"
+    subtitle="システム操作の履歴を閲覧します">
+  </app-page-header>
+
+  <!-- フィルター -->
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="filter-label">開始日</label>
+        <input type="date" class="filter-input" [(ngModel)]="filterStartDate" (ngModelChange)="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">終了日</label>
+        <input type="date" class="filter-input" [(ngModel)]="filterEndDate" (ngModelChange)="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">ユーザー</label>
+        <input type="text" class="filter-input" placeholder="ユーザー名" [(ngModel)]="filterUser" (ngModelChange)="applyFilters()">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">操作</label>
+        <select class="filter-select" [(ngModel)]="filterAction" (ngModelChange)="applyFilters()">
+          <option *ngFor="let opt of actionOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">エンティティ</label>
+        <select class="filter-select" [(ngModel)]="filterEntityType" (ngModelChange)="applyFilters()">
+          <option *ngFor="let opt of entityTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-outline" (click)="exportCsv()" [disabled]="isExporting || filteredLogs.length === 0">
+        {{ isExporting ? 'エクスポート中...' : 'CSV エクスポート' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <!-- ログテーブル -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th class="col-timestamp">日時</th>
+          <th class="col-user">ユーザー</th>
+          <th class="col-action">操作</th>
+          <th class="col-entity">エンティティ</th>
+          <th class="col-details">詳細</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="filteredLogs.length === 0">
+          <td colspan="5" class="empty-row">該当するログがありません</td>
+        </tr>
+        <tr *ngFor="let log of filteredLogs"
+            class="log-row"
+            (click)="openDetailModal(log)">
+          <td class="col-timestamp">{{ log.timestamp | japaneseDate:true }}</td>
+          <td class="col-user">{{ log.username }}</td>
+          <td class="col-action">
+            <span class="action-badge" [ngClass]="getActionClass(log.action)">
+              {{ getActionLabel(log.action) }}
+            </span>
+          </td>
+          <td class="col-entity">
+            <span class="entity-type">{{ log.entityType }}</span>
+            <span class="entity-id" *ngIf="log.entityId">: {{ log.entityId }}</span>
+          </td>
+          <td class="col-details">
+            <span class="details-preview">{{ log.details | truncate:60 }}</span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 件数表示 -->
+    <div class="record-count">
+      表示: {{ filteredLogs.length }} 件 / 全 {{ allLogs.length }} 件
+    </div>
+  </div>
+
+  <!-- 詳細モーダル -->
+  <div class="modal-overlay" *ngIf="showDetailModal" (click)="closeDetailModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">監査ログ詳細</h2>
+        <button class="modal-close" (click)="closeDetailModal()">&times;</button>
+      </div>
+
+      <div class="modal-body" *ngIf="selectedLog">
+        <!-- 基本情報 -->
+        <div class="detail-info">
+          <div class="detail-row">
+            <span class="detail-label">日時:</span>
+            <span class="detail-value">{{ selectedLog.timestamp | japaneseDate:true }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">ユーザー:</span>
+            <span class="detail-value">{{ selectedLog.username }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">操作:</span>
+            <span class="detail-value">
+              <span class="action-badge" [ngClass]="getActionClass(selectedLog.action)">
+                {{ getActionLabel(selectedLog.action) }}
+              </span>
+            </span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">エンティティ:</span>
+            <span class="detail-value">{{ selectedLog.entityType }} {{ selectedLog.entityId ? ': ' + selectedLog.entityId : '' }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">IPアドレス:</span>
+            <span class="detail-value">{{ selectedLog.ipAddress }}</span>
+          </div>
+        </div>
+
+        <!-- 変更内容（サイドバイサイドのテキスト比較） -->
+        <div class="diff-section" *ngIf="selectedLog.parsedDetails.length > 0">
+          <h3 class="diff-title">変更内容</h3>
+          <table class="diff-table">
+            <thead>
+              <tr>
+                <th>フィールド</th>
+                <th>変更前</th>
+                <th>変更後</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let detail of selectedLog.parsedDetails">
+                <td class="diff-field">{{ detail.fieldName }}</td>
+                <td class="diff-old">
+                  <pre class="diff-value">{{ detail.oldValue }}</pre>
+                </td>
+                <td class="diff-new">
+                  <pre class="diff-value">{{ detail.newValue }}</pre>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 生データ -->
+        <div class="raw-section">
+          <h3 class="diff-title">生データ（JSON）</h3>
+          <pre class="raw-json">{{ selectedLog.details }}</pre>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDetailModal()">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>

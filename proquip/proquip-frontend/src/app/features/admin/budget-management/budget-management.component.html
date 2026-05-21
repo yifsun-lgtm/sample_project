@@ -1,0 +1,157 @@
+<div class="budget-management">
+  <div class="page-header">
+    <h1>予算管理</h1>
+    <div class="header-actions">
+      <button class="btn btn-primary" (click)="openCreateModal()">+ 新規予算作成</button>
+    </div>
+  </div>
+
+  <!-- メッセージ -->
+  <div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- フィルタ -->
+  <div class="filter-section">
+    <div class="filter-group">
+      <label>会計年度</label>
+      <select [(ngModel)]="filterFiscalYear" (ngModelChange)="onFiscalYearChange()">
+        <option *ngFor="let year of fiscalYearOptions" [ngValue]="year">{{ year }}年度</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- ローディング -->
+  <div class="loading" *ngIf="isLoading">読み込み中...</div>
+
+  <!-- 予算一覧テーブル -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="data-table" *ngIf="filteredBudgets.length > 0">
+      <thead>
+        <tr>
+          <th>部門</th>
+          <th>会計年度</th>
+          <th>予算総額</th>
+          <th>消化済み</th>
+          <th>残額</th>
+          <th>消化率</th>
+          <th>ステータス</th>
+          <th>操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let budget of filteredBudgets">
+          <td>{{ budget.departmentName || '-' }}</td>
+          <td>{{ budget.fiscalYear }}年度</td>
+          <td class="text-right">{{ formatCurrency(budget.totalAmount) }}</td>
+          <td class="text-right">{{ formatCurrency(budget.usedAmount) }}</td>
+          <td class="text-right">{{ formatCurrency(budget.remainingAmount) }}</td>
+          <td>
+            <div class="utilization-bar">
+              <div class="utilization-fill"
+                   [style.width.%]="getUtilizationRate(budget)"
+                   [ngClass]="getUtilizationClass(getUtilizationRate(budget))">
+              </div>
+              <span class="utilization-label">{{ getUtilizationRate(budget) }}%</span>
+            </div>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="getStatusClass(budget.status)">
+              {{ getStatusLabel(budget.status) }}
+            </span>
+          </td>
+          <td class="actions">
+            <button class="btn btn-sm btn-outline" (click)="showUtilization(budget)">詳細</button>
+            <button class="btn btn-sm btn-outline" (click)="openEditModal(budget)"
+                    *ngIf="budget.status === 'DRAFT' || budget.status === 'ACTIVE'">編集</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-state" *ngIf="filteredBudgets.length === 0">
+      <p>{{ filterFiscalYear }}年度の予算データがありません。</p>
+    </div>
+  </div>
+
+  <!-- 消化率詳細モーダル -->
+  <div class="modal-overlay" *ngIf="utilization" (click)="closeUtilization()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>予算消化状況</h2>
+        <button class="btn-close" (click)="closeUtilization()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="utilization-detail">
+          <div class="detail-row">
+            <span class="detail-label">会計年度</span>
+            <span class="detail-value">{{ utilization.fiscalYear }}年度</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">予算総額</span>
+            <span class="detail-value">{{ formatCurrency(utilization.totalAmount) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">消化済み</span>
+            <span class="detail-value">{{ formatCurrency(utilization.spentAmount) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">残額</span>
+            <span class="detail-value">{{ formatCurrency(utilization.remainingAmount) }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">消化率</span>
+            <span class="detail-value utilization-percentage"
+                  [ngClass]="getUtilizationClass(utilization.utilizationPercentage || 0)">
+              {{ utilization.utilizationPercentage || 0 }}%
+            </span>
+          </div>
+          <div class="utilization-bar large">
+            <div class="utilization-fill"
+                 [style.width.%]="utilization.utilizationPercentage || 0"
+                 [ngClass]="getUtilizationClass(utilization.utilizationPercentage || 0)">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeUtilization()">閉じる</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 作成/編集モーダル -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ isEditing ? '予算編集' : '新規予算作成' }}</h2>
+        <button class="btn-close" (click)="closeEditModal()">&times;</button>
+      </div>
+      <form [formGroup]="editForm" (ngSubmit)="saveBudget()">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>部門 <span class="required">*</span></label>
+            <select formControlName="departmentId" [attr.disabled]="isEditing ? '' : null">
+              <option [ngValue]="null">選択してください</option>
+              <option *ngFor="let dept of departmentOptions" [ngValue]="dept.id">{{ dept.name }}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>会計年度 <span class="required">*</span></label>
+            <select formControlName="fiscalYear">
+              <option *ngFor="let year of fiscalYearOptions" [ngValue]="year">{{ year }}年度</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>予算総額 <span class="required">*</span></label>
+            <input type="number" formControlName="totalAmount" min="0" step="10000">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">キャンセル</button>
+          <button type="submit" class="btn btn-primary" [disabled]="editForm.invalid || isSaving">
+            {{ isSaving ? '保存中...' : (isEditing ? '更新' : '作成') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

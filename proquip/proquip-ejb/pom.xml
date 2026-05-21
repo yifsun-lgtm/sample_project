@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =========================================================== -->
+    <!-- ProQuip EJBモジュール                                         -->
+    <!-- ビジネスロジック層を担当するモジュール                           -->
+    <!-- セッションBean、エンティティ、リポジトリ、サービスクラスを格納する  -->
+    <!-- =========================================================== -->
+    <parent>
+        <groupId>com.proquip</groupId>
+        <artifactId>proquip-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../proquip-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>proquip-ejb</artifactId>
+    <packaging>ejb</packaging>
+
+    <name>ProQuip :: EJBモジュール</name>
+    <description>
+        ビジネスロジック層。調達管理、在庫管理、発注管理などの
+        コアビジネスロジックをステートレスセッションBeanとして実装する。
+        JPAエンティティ、リポジトリパターンによるデータアクセスも本モジュールに含む。
+    </description>
+
+    <dependencies>
+        <!-- =============================== -->
+        <!-- プロジェクト内部依存              -->
+        <!-- =============================== -->
+        <!-- 共通モジュール（DTO、ユーティリティ） -->
+        <dependency>
+            <groupId>com.proquip</groupId>
+            <artifactId>proquip-common</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- Jakarta EE API                   -->
+        <!-- EJB、JPA、CDI、JTA等のAPI         -->
+        <!-- WildFlyが実行時に提供 (provided)  -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakarta.ee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- データベースマイグレーション       -->
+        <!-- アプリケーション起動時にFlyway      -->
+        <!-- によるマイグレーションを実行する     -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- PostgreSQL JDBCドライバ           -->
+        <!-- WildFlyのモジュールとして提供される -->
+        <!-- ため、provided スコープとする      -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- マッピング (MapStruct)            -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- ロギング                          -->
+        <!-- WildFlyが提供するJBoss Logging     -->
+        <!-- 経由でSLF4Jを利用する              -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- テスト関連                        -->
+        <!-- =============================== -->
+        <!-- JUnit 5 -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Mockito: モックオブジェクト生成 -->
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- AssertJ: 流暢なアサーション -->
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Arquillian: Jakarta EEコンテナ内統合テスト -->
+        <dependency>
+            <groupId>org.jboss.arquillian.junit5</groupId>
+            <artifactId>arquillian-junit5-container</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wildfly.arquillian</groupId>
+            <artifactId>wildfly-arquillian-container-managed</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Hibernate（WildFlyが提供するJPA実装） -->
+        <dependency>
+            <groupId>org.hibernate.orm</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Javaコンパイラ -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+
+            <!-- EJBパッケージング設定 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-ejb-plugin</artifactId>
+                <configuration>
+                    <ejbVersion>4.0</ejbVersion>
+                    <!-- クライアントJAR生成（他モジュールからのリモート呼出し用） -->
+                    <generateClient>false</generateClient>
+                    <archive>
+                        <manifest>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                        <manifestEntries>
+                            <Built-By>ProQuip Build System</Built-By>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- 単体テスト実行 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <!-- Arquillianテストは統合テストフェーズで実行するため除外 -->
+                    <excludes>
+                        <exclude>**/*IT.java</exclude>
+                        <exclude>**/*IntegrationTest.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+
+            <!-- 統合テスト実行 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/*IT.java</include>
+                        <include>**/*IntegrationTest.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

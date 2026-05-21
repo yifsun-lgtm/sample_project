@@ -1,0 +1,38 @@
+/* フォームフィールドのスタイル */
+.form-field {
+  margin-bottom: var(--spacing-md);
+
+  &.has-error {
+    .field-content {
+      input, select, textarea {
+        border-color: var(--danger-color);
+      }
+    }
+  }
+}
+
+label {
+  display: block;
+  margin-bottom: var(--spacing-xs);
+  font-weight: 600;
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+.field-content {
+  width: 100%;
+}
+
+.hint-text {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+.error-message {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--danger-color);
+  margin-top: var(--spacing-xs);
+}

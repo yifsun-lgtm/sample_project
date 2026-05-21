@@ -1,0 +1,148 @@
+<!-- サプライヤー実績レポート画面 -->
+<div class="supplier-performance">
+  <app-page-header
+    title="サプライヤー実績レポート"
+    subtitle="サプライヤーの納期・品質・価格実績を分析します">
+  </app-page-header>
+
+  <!-- フィルター -->
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="filter-label" for="startDate">開始日</label>
+        <input type="date" id="startDate" class="filter-input" [(ngModel)]="startDate">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="endDate">終了日</label>
+        <input type="date" id="endDate" class="filter-input" [(ngModel)]="endDate">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="category">カテゴリ</label>
+        <select id="category" class="filter-select" [(ngModel)]="selectedCategory">
+          <option *ngFor="let opt of categoryOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group filter-group--action">
+        <button class="btn btn-primary" (click)="applyFilters()">適用</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div *ngIf="!isLoading">
+    <!-- トップ3ランキング -->
+    <div class="ranking-section" *ngIf="topSuppliers.length > 0">
+      <h3 class="section-title">総合ランキング</h3>
+      <div class="ranking-cards">
+        <div *ngFor="let supplier of topSuppliers"
+             class="ranking-card"
+             [ngClass]="getRankClass(supplier.rank)">
+          <div class="ranking-card__rank">
+            <span class="rank-medal" [ngClass]="getRankClass(supplier.rank)">
+              {{ getRankMedal(supplier.rank) }}
+            </span>
+          </div>
+          <div class="ranking-card__name">{{ supplier.supplierName }}</div>
+          <div class="ranking-card__category">{{ supplier.category }}</div>
+          <div class="ranking-card__score">
+            <span class="score-value">{{ supplier.overallScore }}</span>
+            <span class="score-label">点</span>
+          </div>
+          <div class="ranking-card__metrics">
+            <div class="metric-item">
+              <span class="metric-label">納期遵守率</span>
+              <span class="metric-value" [ngClass]="getDeliveryRateClass(supplier.onTimeDeliveryRate)">
+                {{ supplier.onTimeDeliveryRate }}%
+              </span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">品質スコア</span>
+              <span class="metric-value" [ngClass]="getQualityClass(supplier.qualityScore)">
+                {{ supplier.qualityScore }}
+              </span>
+            </div>
+            <div class="metric-item">
+              <span class="metric-label">平均納期</span>
+              <span class="metric-value">{{ supplier.averageLeadTimeDays }}日</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 詳細テーブル -->
+    <div class="detail-section">
+      <h3 class="section-title">サプライヤー実績詳細</h3>
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th class="col-rank">順位</th>
+              <th class="col-name sortable" (click)="onSort('supplierName')">
+                サプライヤー{{ getSortIcon('supplierName') }}
+              </th>
+              <th class="col-category">カテゴリ</th>
+              <th class="col-orders sortable" (click)="onSort('orderCount')">
+                発注回数{{ getSortIcon('orderCount') }}
+              </th>
+              <th class="col-lead-time sortable" (click)="onSort('averageLeadTimeDays')">
+                平均納期{{ getSortIcon('averageLeadTimeDays') }}
+              </th>
+              <th class="col-delivery sortable" (click)="onSort('onTimeDeliveryRate')">
+                納期遵守率{{ getSortIcon('onTimeDeliveryRate') }}
+              </th>
+              <th class="col-quality sortable" (click)="onSort('qualityScore')">
+                品質スコア{{ getSortIcon('qualityScore') }}
+              </th>
+              <th class="col-amount sortable" (click)="onSort('totalAmount')">
+                合計金額{{ getSortIcon('totalAmount') }}
+              </th>
+              <th class="col-score sortable" (click)="onSort('overallScore')">
+                総合スコア{{ getSortIcon('overallScore') }}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="supplierMetrics.length === 0">
+              <td colspan="9" class="empty-row">データがありません</td>
+            </tr>
+            <tr *ngFor="let supplier of supplierMetrics">
+              <td class="col-rank">
+                <span class="rank-badge" [ngClass]="getRankClass(supplier.rank)">
+                  {{ supplier.rank }}
+                </span>
+              </td>
+              <td class="col-name">
+                <span class="supplier-name">{{ supplier.supplierName }}</span>
+              </td>
+              <td class="col-category">{{ supplier.category }}</td>
+              <td class="col-orders">{{ supplier.orderCount }} 件</td>
+              <td class="col-lead-time">{{ supplier.averageLeadTimeDays }} 日</td>
+              <td class="col-delivery">
+                <span [ngClass]="getDeliveryRateClass(supplier.onTimeDeliveryRate)">
+                  {{ supplier.onTimeDeliveryRate }}%
+                </span>
+              </td>
+              <td class="col-quality">
+                <span [ngClass]="getQualityClass(supplier.qualityScore)">
+                  {{ supplier.qualityScore }}
+                </span>
+              </td>
+              <td class="col-amount">{{ formatCurrency(supplier.totalAmount) }}</td>
+              <td class="col-score">
+                <div class="score-bar-cell">
+                  <span class="score-text">{{ supplier.overallScore }}</span>
+                  <div class="score-bar">
+                    <div class="score-bar__fill" [style.width.%]="supplier.overallScore"></div>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,192 @@
+// サプライヤー一覧画面のスタイル
+
+.supplier-list-container {
+  padding: 0 0 40px;
+}
+
+.action-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.action-bar-left {
+  flex: 1;
+  max-width: 400px;
+}
+
+.action-bar-right {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-primary {
+  padding: 8px 20px;
+  background-color: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+
+  &:hover {
+    background-color: #2563eb;
+  }
+}
+
+.btn-compare {
+  padding: 8px 16px;
+  background-color: #fff;
+  color: #7c3aed;
+  border: 1px solid #c4b5fd;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background-color: #f5f3ff;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.filter-area {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.filter-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.filter-select {
+  padding: 6px 32px 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #374151;
+  background-color: #fff;
+  appearance: auto;
+  cursor: pointer;
+  min-width: 120px;
+
+  &:focus {
+    border-color: #3b82f6;
+    outline: none;
+  }
+}
+
+.btn-reset {
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  color: #6b7280;
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    color: #374151;
+  }
+}
+
+.table-wrapper {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.supplier-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 500;
+    color: #6b7280;
+    background-color: #f9fafb;
+    border-bottom: 1px solid #e5e7eb;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #374151;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .clickable-row {
+    cursor: pointer;
+    transition: background-color 0.15s;
+
+    &:hover {
+      background-color: #f9fafb;
+    }
+  }
+}
+
+.col-check {
+  width: 50px;
+  text-align: center;
+
+  input[type="checkbox"] {
+    cursor: pointer;
+  }
+}
+
+.mono {
+  font-family: 'SFMono-Regular', 'Consolas', monospace;
+}
+
+.supplier-name {
+  font-weight: 500;
+  color: #1f2937 !important;
+}
+
+.rating-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.rating-stars {
+  color: #f59e0b;
+  font-size: 12px;
+  letter-spacing: 1px;
+}
+
+.rating-number {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.result-count {
+  margin-top: 12px;
+  text-align: right;
+  font-size: 13px;
+  color: #9ca3af;
+}

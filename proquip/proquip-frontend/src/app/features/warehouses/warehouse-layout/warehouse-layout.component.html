@@ -1,0 +1,141 @@
+<!-- 倉庫レイアウト画面 -->
+<!-- 技術的負債: レイアウト全体がHTMLにハードコードされている。本来はデータドリブンにすべき -->
+<app-page-header
+  title="倉庫レイアウト"
+  [description]="warehouse ? warehouse.name + ' — ゾーン配置図' : ''">
+  <button class="btn btn-outline" (click)="goBack()">
+    <i class="icon-arrow-left"></i>
+    倉庫詳細へ戻る
+  </button>
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+<div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+<div class="layout-content" *ngIf="!isLoading && warehouse">
+
+  <!-- 凡例 -->
+  <div class="legend">
+    <span class="legend-title">使用率凡例:</span>
+    <div class="legend-item">
+      <span class="legend-dot" style="background: #e8f5e9;"></span>
+      <span>0-49%</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background: #fffde7;"></span>
+      <span>50-74%</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background: #fff3e0;"></span>
+      <span>75-89%</span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-dot" style="background: #ffebee;"></span>
+      <span>90%以上</span>
+    </div>
+  </div>
+
+  <!-- グリッドレイアウト -->
+  <!-- 技術的負債: グリッド配置がハードコードされている -->
+  <div class="warehouse-grid"
+       [style.grid-template-rows]="'repeat(' + gridRows + ', 1fr)'"
+       [style.grid-template-columns]="'repeat(' + gridCols + ', 1fr)'">
+
+    <div
+      *ngFor="let zone of zones"
+      class="zone-cell"
+      [style.grid-row]="zone.row + ' / span ' + zone.rowSpan"
+      [style.grid-column]="zone.col + ' / span ' + zone.colSpan"
+      [style.background-color]="getOccupancyBgColor(zone.utilizationPercent)"
+      [class.selected]="selectedZone?.id === zone.id"
+      (click)="onZoneClick(zone)">
+
+      <div class="zone-cell-header">
+        <span class="zone-cell-name">{{ zone.name }}</span>
+        <span class="zone-cell-type">{{ getZoneTypeLabel(zone.type) }}</span>
+      </div>
+
+      <div class="zone-cell-body">
+        <div class="zone-occupancy-bar">
+          <div
+            class="zone-occupancy-fill"
+            [style.width.%]="zone.utilizationPercent"
+            [style.background-color]="getOccupancyColor(zone.utilizationPercent)">
+          </div>
+        </div>
+        <div class="zone-cell-stats">
+          <span class="zone-cell-percent" [style.color]="getOccupancyColor(zone.utilizationPercent)">
+            {{ zone.utilizationPercent }}%
+          </span>
+          <span class="zone-cell-count">{{ zone.itemCount }}品目</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 倉庫外エリアのラベル -->
+  <!-- 技術的負債: ハードコードされたラベル -->
+  <div class="layout-labels">
+    <div class="label-top">
+      <span class="label-arrow">↑ トラックヤード（入荷）</span>
+      <span class="label-arrow">↑ トラックヤード（出荷）</span>
+    </div>
+    <div class="label-left">
+      <span>← 事務所</span>
+    </div>
+  </div>
+
+  <!-- ゾーン詳細パネル -->
+  <div class="zone-detail-panel" *ngIf="selectedZone">
+    <div class="panel-header">
+      <h4 class="panel-title">{{ selectedZone.name }}</h4>
+      <button class="btn btn-icon" (click)="clearSelection()" title="閉じる">&times;</button>
+    </div>
+
+    <div class="panel-info">
+      <div class="panel-row">
+        <span class="panel-label">種別:</span>
+        <span>{{ getZoneTypeLabel(selectedZone.type) }}</span>
+      </div>
+      <div class="panel-row">
+        <span class="panel-label">容量:</span>
+        <span>{{ selectedZone.currentOccupancy }} / {{ selectedZone.capacity }}</span>
+      </div>
+      <div class="panel-row">
+        <span class="panel-label">使用率:</span>
+        <span [style.color]="getOccupancyColor(selectedZone.utilizationPercent)">
+          {{ selectedZone.utilizationPercent }}%
+        </span>
+      </div>
+      <div class="panel-row">
+        <span class="panel-label">品目数:</span>
+        <span>{{ selectedZone.itemCount }}</span>
+      </div>
+    </div>
+
+    <!-- ゾーン内アイテム一覧 -->
+    <div class="panel-items">
+      <h5>在庫アイテム</h5>
+      <app-loading-spinner *ngIf="isLoadingItems"></app-loading-spinner>
+      <table class="items-table" *ngIf="!isLoadingItems && selectedZoneItems.length > 0">
+        <thead>
+          <tr>
+            <th>製品名</th>
+            <th>SKU</th>
+            <th class="text-right">数量</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of selectedZoneItems">
+            <td>{{ item.productName }}</td>
+            <td class="sku-cell">{{ item.productSku }}</td>
+            <td class="text-right">{{ item.quantity }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="no-items" *ngIf="!isLoadingItems && selectedZoneItems.length === 0">
+        このゾーンにはアイテムがありません
+      </p>
+    </div>
+  </div>
+</div>

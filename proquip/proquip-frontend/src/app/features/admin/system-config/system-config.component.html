@@ -1,0 +1,115 @@
+<!-- システム設定画面 -->
+<div class="system-config">
+  <app-page-header
+    title="システム設定"
+    subtitle="各カテゴリのシステム設定値を管理します">
+  </app-page-header>
+
+  <!-- メッセージ -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span> {{ successMessage }}
+  </div>
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span> {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div *ngIf="!isLoading">
+    <!-- カテゴリタブ -->
+    <div class="category-tabs">
+      <button *ngFor="let category of categories"
+              class="tab-btn"
+              [ngClass]="{'tab-btn--active': activeCategory === category}"
+              (click)="switchCategory(category)">
+        {{ category }}
+      </button>
+    </div>
+
+    <!-- 設定一覧 -->
+    <div class="config-list">
+      <div *ngIf="displayConfigs.length === 0" class="empty-config">
+        このカテゴリの設定はありません。
+      </div>
+
+      <div *ngFor="let config of displayConfigs" class="config-item">
+        <div class="config-item__header">
+          <div class="config-item__info">
+            <span class="config-key">{{ config.key }}</span>
+            <span class="config-description">{{ config.description }}</span>
+          </div>
+          <div class="config-item__meta">
+            <span class="config-type-badge">{{ config.dataType }}</span>
+            <span class="config-updated">更新: {{ config.updatedAt | japaneseDate:true }}</span>
+          </div>
+        </div>
+
+        <div class="config-item__value">
+          <!-- ブール型: トグルスイッチ -->
+          <div *ngIf="config.dataType === 'boolean'" class="config-boolean">
+            <label class="switch">
+              <input type="checkbox"
+                     [checked]="config.value === 'true'"
+                     (change)="toggleBoolean(config)"
+                     [disabled]="config.isSaving">
+              <span class="slider"></span>
+            </label>
+            <span class="boolean-label">{{ config.value === 'true' ? '有効' : '無効' }}</span>
+          </div>
+
+          <!-- テキスト型 -->
+          <div *ngIf="config.dataType === 'text'" class="config-text">
+            <ng-container *ngIf="!config.isEditing">
+              <span class="value-display">{{ config.value }}</span>
+              <button class="btn-edit" (click)="startEditing(config)">編集</button>
+            </ng-container>
+            <div *ngIf="config.isEditing" class="edit-inline">
+              <input type="text" class="edit-input" [(ngModel)]="config.editValue">
+              <button class="btn-save" (click)="saveConfig(config)" [disabled]="config.isSaving">
+                {{ config.isSaving ? '...' : '保存' }}
+              </button>
+              <button class="btn-cancel" (click)="cancelEditing(config)">取消</button>
+            </div>
+          </div>
+
+          <!-- 数値型 -->
+          <div *ngIf="config.dataType === 'number'" class="config-number">
+            <ng-container *ngIf="!config.isEditing">
+              <span class="value-display value-display--number">{{ config.value }}</span>
+              <button class="btn-edit" (click)="startEditing(config)">編集</button>
+            </ng-container>
+            <div *ngIf="config.isEditing" class="edit-inline">
+              <input type="number" class="edit-input edit-input--number" [(ngModel)]="config.editValue">
+              <button class="btn-save" (click)="saveConfig(config)" [disabled]="config.isSaving">
+                {{ config.isSaving ? '...' : '保存' }}
+              </button>
+              <button class="btn-cancel" (click)="cancelEditing(config)">取消</button>
+            </div>
+          </div>
+
+          <!--
+            JSON型
+            技術的負債: JSONバリデーションなし
+          -->
+          <div *ngIf="config.dataType === 'json'" class="config-json">
+            <ng-container *ngIf="!config.isEditing">
+              <pre class="json-display">{{ config.value }}</pre>
+              <button class="btn-edit" (click)="startEditing(config)">編集</button>
+            </ng-container>
+            <div *ngIf="config.isEditing" class="edit-inline edit-inline--json">
+              <!-- 技術的負債: JSONバリデーションが存在しない -->
+              <textarea class="edit-textarea" [(ngModel)]="config.editValue" rows="4"></textarea>
+              <div class="edit-actions">
+                <button class="btn-save" (click)="saveConfig(config)" [disabled]="config.isSaving">
+                  {{ config.isSaving ? '...' : '保存' }}
+                </button>
+                <button class="btn-cancel" (click)="cancelEditing(config)">取消</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

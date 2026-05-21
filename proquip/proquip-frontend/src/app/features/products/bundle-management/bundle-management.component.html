@@ -1,0 +1,188 @@
+<app-page-header
+  title="バンドル管理"
+  description="製品バンドルの構成と価格管理">
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<div class="bundle-container" *ngIf="!isLoading">
+
+  <div class="success-banner" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="error-banner" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <!-- 新規作成ボタン -->
+  <div class="top-actions" *ngIf="!editMode">
+    <button class="btn-primary" (click)="startCreate()">+ 新規バンドル作成</button>
+  </div>
+
+  <!-- バンドル編集フォーム -->
+  <div class="edit-panel" *ngIf="editMode">
+    <h3 class="panel-title">
+      {{ editMode === 'create' ? 'バンドル作成' : 'バンドル編集' }}
+    </h3>
+
+    <form [formGroup]="bundleForm" (ngSubmit)="saveBundle()" class="bundle-form">
+
+      <div class="form-row two-columns">
+        <div class="form-group">
+          <label class="form-label">バンドル名 <span class="required">*</span></label>
+          <input type="text" formControlName="name" class="form-input"
+                 placeholder="バンドル名を入力">
+        </div>
+        <div class="form-group">
+          <label class="form-label">ステータス</label>
+          <select formControlName="status" class="form-select">
+            <option value="ACTIVE">有効</option>
+            <option value="INACTIVE">無効</option>
+            <option value="DRAFT">下書き</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">説明</label>
+        <textarea formControlName="description" class="form-textarea" rows="2"
+                  placeholder="バンドルの説明"></textarea>
+      </div>
+
+      <!-- 製品追加エリア -->
+      <div class="product-add-section">
+        <h4 class="subsection-title">構成製品</h4>
+
+        <!-- 製品検索 -->
+        <div class="product-search">
+          <input type="text" class="form-input" [(ngModel)]="productSearchKeyword"
+                 [ngModelOptions]="{standalone: true}"
+                 placeholder="製品名またはSKUで検索して追加..."
+                 (input)="searchProducts()">
+          <div class="search-dropdown" *ngIf="searchResults.length > 0">
+            <div class="search-result-item" *ngFor="let product of searchResults"
+                 (click)="addProductToBundle(product)">
+              <span class="result-sku">{{ product.sku }}</span>
+              <span class="result-name">{{ product.name }}</span>
+              <span class="result-price">{{ formatCurrency(product.unitPrice) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 追加済み製品リスト -->
+        <table class="items-table" *ngIf="bundleItems.length > 0">
+          <thead>
+            <tr>
+              <th>SKU</th>
+              <th>製品名</th>
+              <th>単価</th>
+              <th>数量</th>
+              <th>小計</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of bundleItems.controls; let i = index">
+              <td class="mono">{{ item.get('productSku')?.value }}</td>
+              <td>{{ item.get('productName')?.value }}</td>
+              <td class="amount">{{ formatCurrency(item.get('unitPrice')?.value) }}</td>
+              <td class="quantity-cell">
+                <input type="number" [formControl]="$any(item.get('quantity'))"
+                       class="quantity-input" min="1">
+              </td>
+              <td class="amount">{{ formatCurrency(item.get('unitPrice')?.value * item.get('quantity')?.value) }}</td>
+              <td>
+                <button type="button" class="btn-remove-item" (click)="removeProductFromBundle(i)">×</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="no-items" *ngIf="bundleItems.length === 0">
+          上の検索欄から製品を追加してください
+        </div>
+      </div>
+
+      <!-- 価格計算 -->
+      <div class="price-calculation" *ngIf="bundleItems.length > 0">
+        <div class="price-row">
+          <span class="price-label">合計（定価）</span>
+          <span class="price-value">{{ formatCurrency(calculatedTotalPrice) }}</span>
+        </div>
+        <div class="price-row discount-row">
+          <span class="price-label">
+            割引率
+            <input type="number" formControlName="discountPercentage"
+                   class="discount-input" min="0" max="100" step="1">
+            %
+          </span>
+          <span class="price-value discount">-{{ formatCurrency(calculatedDiscountAmount) }}</span>
+        </div>
+        <div class="price-row total-row">
+          <span class="price-label">バンドル価格</span>
+          <span class="price-value total">{{ formatCurrency(calculatedBundlePrice) }}</span>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancelEdit()">キャンセル</button>
+        <button type="submit" class="btn-save" [disabled]="isSubmitting">
+          {{ isSubmitting ? '保存中...' : '保存' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- バンドル一覧 -->
+  <div class="bundle-list" *ngIf="!editMode">
+    <div class="bundle-card" *ngFor="let bundle of bundles">
+      <div class="bundle-header">
+        <div class="bundle-title-area">
+          <h4 class="bundle-name">{{ bundle.name }}</h4>
+          <span class="bundle-status" [ngClass]="'status-' + bundle.status.toLowerCase()">
+            {{ getStatusLabel(bundle.status) }}
+          </span>
+        </div>
+        <div class="bundle-actions">
+          <button class="btn-edit" (click)="startEdit(bundle)">編集</button>
+          <button class="btn-delete" (click)="confirmDelete(bundle)">削除</button>
+        </div>
+      </div>
+
+      <p class="bundle-description" *ngIf="bundle.description">{{ bundle.description }}</p>
+
+      <div class="bundle-products">
+        <div class="product-chip" *ngFor="let item of bundle.products">
+          <span class="chip-name">{{ item.productName }}</span>
+          <span class="chip-qty">× {{ item.quantity }}</span>
+        </div>
+      </div>
+
+      <div class="bundle-pricing">
+        <div class="pricing-item">
+          <span class="pricing-label">定価合計</span>
+          <span class="pricing-value original">{{ formatCurrency(bundle.totalPrice) }}</span>
+        </div>
+        <div class="pricing-item">
+          <span class="pricing-label">割引</span>
+          <span class="pricing-value discount">{{ bundle.discountPercentage }}%</span>
+        </div>
+        <div class="pricing-item">
+          <span class="pricing-label">バンドル価格</span>
+          <span class="pricing-value bundle-price">{{ formatCurrency(bundle.bundlePrice) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <app-empty-state
+      *ngIf="bundles.length === 0"
+      message="バンドルが登録されていません">
+    </app-empty-state>
+  </div>
+</div>
+
+<app-confirm-dialog
+  *ngIf="showDeleteConfirm"
+  title="バンドルの削除"
+  [message]="'「' + (deletingBundle?.name || '') + '」を削除してもよろしいですか？'"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="deleteBundle()"
+  (cancel)="cancelDelete()">
+</app-confirm-dialog>

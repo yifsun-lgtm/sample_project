@@ -1,0 +1,35 @@
+/* 検索ボックスのスタイル */
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  width: 100%;
+  padding: 8px 32px 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-size: var(--font-size-sm);
+
+  &:focus {
+    outline: none;
+    border-color: var(--primary-light);
+    box-shadow: 0 0 0 3px rgba(41, 128, 185, 0.15);
+  }
+}
+
+.clear-btn {
+  position: absolute;
+  right: 8px;
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0 4px;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+}

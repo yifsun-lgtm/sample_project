@@ -1,0 +1,354 @@
+<app-page-header
+  title="製品詳細"
+  description="製品情報の詳細表示">
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<!-- エラーメッセージ -->
+<div class="error-banner" *ngIf="errorMessage">
+  <span>{{ errorMessage }}</span>
+  <button class="btn-back" (click)="navigateToList()">一覧に戻る</button>
+</div>
+
+<div class="detail-container" *ngIf="!isLoading && product">
+
+  <!-- ヘッダー部分 -->
+  <div class="detail-header">
+    <div class="header-info">
+      <div class="product-title-row">
+        <h2 class="product-name">{{ product.name }}</h2>
+        <app-status-badge [status]="product.status"></app-status-badge>
+      </div>
+      <div class="product-meta">
+        <span class="meta-item">SKU: {{ product.sku }}</span>
+        <span class="meta-item">カテゴリ: {{ product.categoryName }}</span>
+        <span class="meta-item">メーカー: {{ product.manufacturerName }}</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" (click)="navigateToList()">← 一覧に戻る</button>
+      <button class="btn-primary" (click)="navigateToEdit()">編集</button>
+      <button class="btn-danger" (click)="confirmDelete()">削除</button>
+    </div>
+  </div>
+
+  <!-- タブナビゲーション -->
+  <div class="tab-navigation">
+    <button *ngFor="let tab of tabs; let i = index"
+            class="tab-button"
+            [class.active]="activeTab === i"
+            (click)="switchTab(i)">
+      {{ tab.label }}
+    </button>
+  </div>
+
+  <!-- タブコンテンツ -->
+  <div class="tab-content">
+
+    <!-- 基本情報タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 0">
+      <div class="info-grid">
+        <div class="info-section">
+          <h4 class="section-subtitle">基本情報</h4>
+          <table class="info-table">
+            <tr>
+              <th>製品名</th>
+              <td>{{ product.name }}</td>
+            </tr>
+            <tr>
+              <th>SKU</th>
+              <td class="mono">{{ product.sku }}</td>
+            </tr>
+            <tr>
+              <th>説明</th>
+              <td>{{ product.description || '-' }}</td>
+            </tr>
+            <tr>
+              <th>カテゴリ</th>
+              <td>{{ product.categoryName }}</td>
+            </tr>
+            <tr>
+              <th>メーカー</th>
+              <td>{{ product.manufacturerName }}</td>
+            </tr>
+            <tr>
+              <th>ステータス</th>
+              <td>
+                <span class="status-tag" [ngClass]="getStatusClass(product.status)">
+                  {{ getStatusLabel(product.status) }}
+                </span>
+              </td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="info-section">
+          <h4 class="section-subtitle">価格・数量</h4>
+          <table class="info-table">
+            <tr>
+              <th>単価</th>
+              <td class="amount">{{ formatCurrency(product.unitPrice) }}</td>
+            </tr>
+            <tr>
+              <th>単位</th>
+              <td>{{ product.unit || '-' }}</td>
+            </tr>
+            <tr>
+              <th>最低発注数</th>
+              <td>{{ product.minimumOrderQuantity }}</td>
+            </tr>
+            <tr>
+              <th>リードタイム</th>
+              <td>{{ product.leadTimeDays }} 日</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="info-section">
+          <h4 class="section-subtitle">物理情報</h4>
+          <table class="info-table">
+            <tr>
+              <th>重量</th>
+              <td>{{ product.weight ? product.weight + ' kg' : '-' }}</td>
+            </tr>
+            <tr>
+              <th>寸法</th>
+              <td>{{ product.dimensions || '-' }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="info-section">
+          <h4 class="section-subtitle">在庫状況</h4>
+          <div class="stock-summary">
+            <div class="stock-item">
+              <span class="stock-label">合計在庫</span>
+              <span class="stock-value">{{ totalStock }}</span>
+            </div>
+            <div class="stock-item">
+              <span class="stock-label">予約済み</span>
+              <span class="stock-value reserved">{{ totalReserved }}</span>
+            </div>
+            <div class="stock-item">
+              <span class="stock-label">利用可能</span>
+              <span class="stock-value available">{{ totalAvailable }}</span>
+            </div>
+          </div>
+          <table class="data-table" *ngIf="inventoryItems.length > 0">
+            <thead>
+              <tr>
+                <th>倉庫</th>
+                <th>在庫数</th>
+                <th>予約</th>
+                <th>利用可能</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inv of inventoryItems">
+                <td>{{ inv.warehouseName }}</td>
+                <td>{{ inv.quantity }}</td>
+                <td>{{ inv.reservedQuantity }}</td>
+                <td>{{ inv.availableQuantity }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="info-section full-width">
+          <h4 class="section-subtitle">管理情報</h4>
+          <table class="info-table">
+            <tr>
+              <th>登録日</th>
+              <td>{{ formatDateTime(product.createdAt) }}</td>
+            </tr>
+            <tr>
+              <th>最終更新日</th>
+              <td>{{ formatDateTime(product.updatedAt) }}</td>
+            </tr>
+            <tr>
+              <th>備考</th>
+              <td>{{ product.notes || '-' }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 仕様タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 1">
+      <table class="spec-table" *ngIf="specifications.length > 0">
+        <thead>
+          <tr>
+            <th>項目</th>
+            <th>値</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let spec of specifications">
+            <td class="spec-key">{{ spec.key }}</td>
+            <td>{{ spec.value }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <app-empty-state
+        *ngIf="specifications.length === 0"
+        message="仕様情報は登録されていません">
+      </app-empty-state>
+    </div>
+
+    <!-- 画像タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 2">
+      <div class="image-grid" *ngIf="productImages.length > 0">
+        <div class="image-card" *ngFor="let img of productImages"
+             [class.primary]="img.isPrimary">
+          <div class="image-wrapper">
+            <img [src]="img.url" [alt]="img.altText" class="product-image"
+                 onerror="this.src='/assets/images/no-image.png'">
+            <span class="primary-badge" *ngIf="img.isPrimary">メイン</span>
+          </div>
+          <p class="image-alt">{{ img.altText }}</p>
+        </div>
+      </div>
+      <app-empty-state
+        *ngIf="productImages.length === 0"
+        message="画像は登録されていません">
+      </app-empty-state>
+    </div>
+
+    <!-- 代替品タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 3">
+      <table class="data-table" *ngIf="alternativeProducts.length > 0">
+        <thead>
+          <tr>
+            <th>SKU</th>
+            <th>製品名</th>
+            <th>メーカー</th>
+            <th>単価</th>
+            <th>ステータス</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let alt of alternativeProducts">
+            <td class="mono">{{ alt.sku }}</td>
+            <td>{{ alt.name }}</td>
+            <td>{{ alt.manufacturerName }}</td>
+            <td class="amount">{{ formatCurrency(alt.unitPrice) }}</td>
+            <td>
+              <span class="status-tag" [ngClass]="getStatusClass(alt.status)">
+                {{ getStatusLabel(alt.status) }}
+              </span>
+            </td>
+            <td>
+              <button class="btn-link" (click)="navigateToAlternative(alt.id)">詳細</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <app-empty-state
+        *ngIf="alternativeProducts.length === 0"
+        message="代替品は登録されていません">
+      </app-empty-state>
+    </div>
+
+    <!-- サプライヤータブ -->
+    <div class="tab-panel" *ngIf="activeTab === 4">
+      <table class="data-table" *ngIf="productSuppliers.length > 0">
+        <thead>
+          <tr>
+            <th>サプライヤー名</th>
+            <th>サプライヤーSKU</th>
+            <th>単価</th>
+            <th>リードタイム</th>
+            <th>優先</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let sup of productSuppliers" [class.preferred]="sup.isPreferred">
+            <td>{{ sup.supplierName }}</td>
+            <td class="mono">{{ sup.supplierSku }}</td>
+            <td class="amount">{{ formatCurrency(sup.unitPrice) }}</td>
+            <td>{{ sup.leadTimeDays }} 日</td>
+            <td>
+              <span class="preferred-badge" *ngIf="sup.isPreferred">優先</span>
+            </td>
+            <td>
+              <button class="btn-link" (click)="navigateToSupplier(sup.supplierId)">詳細</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <app-empty-state
+        *ngIf="productSuppliers.length === 0"
+        message="サプライヤー情報は登録されていません">
+      </app-empty-state>
+    </div>
+
+    <!-- ドキュメントタブ -->
+    <div class="tab-panel" *ngIf="activeTab === 5">
+      <div class="document-list" *ngIf="documents.length > 0">
+        <div class="document-item" *ngFor="let doc of documents">
+          <div class="document-icon">
+            <span class="file-type-icon">{{ doc.fileType.includes('pdf') ? 'PDF' : 'DOC' }}</span>
+          </div>
+          <div class="document-info">
+            <span class="document-name">{{ doc.fileName }}</span>
+            <span class="document-meta">
+              {{ formatFileSize(doc.fileSize) }} | {{ doc.uploadedBy }} | {{ formatDate(doc.uploadedAt) }}
+            </span>
+          </div>
+          <div class="document-actions">
+            <button class="btn-link" (click)="downloadDocument(doc)">ダウンロード</button>
+          </div>
+        </div>
+      </div>
+      <app-empty-state
+        *ngIf="documents.length === 0"
+        message="ドキュメントは登録されていません">
+      </app-empty-state>
+    </div>
+
+    <!-- 変更履歴タブ -->
+    <div class="tab-panel" *ngIf="activeTab === 6">
+      <div class="changelog" *ngIf="changeLog.length > 0">
+        <div class="changelog-entry" *ngFor="let entry of changeLog">
+          <div class="changelog-timeline">
+            <div class="timeline-dot"></div>
+            <div class="timeline-line"></div>
+          </div>
+          <div class="changelog-content">
+            <div class="changelog-header">
+              <span class="changelog-field">{{ entry.field }}</span>
+              <span class="changelog-date">{{ formatDateTime(entry.changedAt) }}</span>
+            </div>
+            <div class="changelog-values">
+              <span class="old-value" *ngIf="entry.oldValue !== '-'">{{ entry.oldValue }}</span>
+              <span class="arrow" *ngIf="entry.oldValue !== '-'">→</span>
+              <span class="new-value">{{ entry.newValue }}</span>
+            </div>
+            <span class="changelog-user">{{ entry.changedBy }}</span>
+          </div>
+        </div>
+      </div>
+      <app-empty-state
+        *ngIf="changeLog.length === 0"
+        message="変更履歴はありません">
+      </app-empty-state>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- 削除確認ダイアログ -->
+<app-confirm-dialog
+  *ngIf="showDeleteConfirm"
+  title="製品の削除"
+  message="この製品を削除してもよろしいですか？この操作は取り消せません。"
+  confirmLabel="削除する"
+  cancelLabel="キャンセル"
+  (confirm)="deleteProduct()"
+  (cancel)="cancelDelete()">
+</app-confirm-dialog>

@@ -1,0 +1,134 @@
+<!-- 在庫移動作成画面 -->
+<app-page-header
+  title="在庫移動作成"
+  description="倉庫間の在庫移動を作成します">
+  <button class="btn btn-outline" (click)="onCancel()">
+    戻る
+  </button>
+</app-page-header>
+
+<div class="error-banner" *ngIf="errorMessage">
+  <i class="icon-alert"></i>{{ errorMessage }}
+</div>
+
+<form [formGroup]="transferForm" (ngSubmit)="onSubmit()" class="transfer-form">
+  <section class="form-section">
+    <h3 class="section-title">移動情報</h3>
+
+    <div class="warehouse-selection">
+      <!-- 移動元倉庫 -->
+      <div class="warehouse-col">
+        <app-form-field label="移動元倉庫" [required]="true" [hasError]="isFieldInvalid('sourceWarehouseId')">
+          <select
+            formControlName="sourceWarehouseId"
+            class="form-select"
+            (change)="onSourceWarehouseChange()">
+            <option [ngValue]="null">倉庫を選択</option>
+            <option *ngFor="let wh of warehouses" [ngValue]="wh.id">
+              {{ wh.name }} ({{ wh.code }})
+            </option>
+          </select>
+          <span class="error-text" *ngIf="isFieldInvalid('sourceWarehouseId')">移動元倉庫を選択してください</span>
+        </app-form-field>
+      </div>
+
+      <div class="arrow-col">
+        <i class="icon-arrow-right"></i>
+      </div>
+
+      <!-- 移動先倉庫 -->
+      <div class="warehouse-col">
+        <app-form-field label="移動先倉庫" [required]="true" [hasError]="isFieldInvalid('destinationWarehouseId')">
+          <select
+            formControlName="destinationWarehouseId"
+            class="form-select"
+            (change)="onDestinationWarehouseChange()">
+            <option [ngValue]="null">倉庫を選択</option>
+            <option *ngFor="let wh of getDestinationWarehouses()" [ngValue]="wh.id">
+              {{ wh.name }} ({{ wh.code }})
+            </option>
+          </select>
+          <span class="error-text" *ngIf="isFieldInvalid('destinationWarehouseId')">移動先倉庫を選択してください</span>
+        </app-form-field>
+      </div>
+    </div>
+
+    <!-- 製品選択 -->
+    <div class="product-selection">
+      <app-form-field label="製品" [required]="true" [hasError]="isFieldInvalid('productId')">
+        <div class="autocomplete-wrapper">
+          <input
+            type="text"
+            class="form-control"
+            [value]="productSearchKeyword"
+            (input)="onProductSearch($any($event.target).value)"
+            (focus)="onProductSearch(productSearchKeyword)"
+            (blur)="hideProductDropdown()"
+            placeholder="製品名またはSKUで検索"
+            autocomplete="off" />
+          <div class="dropdown-list" *ngIf="showProductDropdown && productSearchResults.length > 0">
+            <div
+              class="dropdown-item"
+              *ngFor="let product of productSearchResults"
+              (mousedown)="selectProduct(product)">
+              <span class="product-name">{{ product.name }}</span>
+              <span class="product-sku">{{ product.sku }}</span>
+            </div>
+          </div>
+        </div>
+        <span class="error-text" *ngIf="isFieldInvalid('productId')">製品を選択してください</span>
+      </app-form-field>
+
+      <!-- 在庫数量表示 -->
+      <div class="available-quantity-info" *ngIf="availableQuantity !== null">
+        <span class="avail-label">移動元の有効在庫:</span>
+        <span class="avail-value" [class.low-stock]="availableQuantity < 10">
+          {{ availableQuantity }}
+        </span>
+      </div>
+    </div>
+
+    <!-- 数量 -->
+    <div class="quantity-section">
+      <app-form-field label="移動数量" [required]="true" [hasError]="isFieldInvalid('quantity')">
+        <input
+          formControlName="quantity"
+          type="number"
+          class="form-control quantity-input"
+          min="1"
+          [max]="availableQuantity || 99999" />
+        <span class="error-text" *ngIf="isFieldInvalid('quantity')">
+          1以上{{ availableQuantity || 99999 }}以下の数量を入力してください
+        </span>
+        <span class="error-text" *ngIf="availableQuantity !== null && transferForm.get('quantity')?.value > availableQuantity">
+          有効在庫数を超えています
+        </span>
+      </app-form-field>
+    </div>
+
+    <!-- 理由 -->
+    <div class="notes-section">
+      <app-form-field label="移動理由">
+        <textarea
+          formControlName="notes"
+          class="form-control textarea"
+          rows="3"
+          placeholder="在庫移動の理由を入力してください"></textarea>
+        <span class="char-count">
+          {{ transferForm.get('notes')?.value?.length || 0 }} / 500
+        </span>
+      </app-form-field>
+    </div>
+  </section>
+
+  <!-- アクション -->
+  <div class="form-actions">
+    <button type="button" class="btn btn-outline" (click)="onCancel()" [disabled]="isSubmitting">
+      キャンセル
+    </button>
+    <button type="submit" class="btn btn-primary" [disabled]="!isFormValid() || isSubmitting">
+      <app-loading-spinner *ngIf="isSubmitting" [inline]="true"></app-loading-spinner>
+      在庫移動を作成
+    </button>
+  </div>
+</form>

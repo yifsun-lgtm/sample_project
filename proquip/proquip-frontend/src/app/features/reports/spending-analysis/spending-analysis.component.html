@@ -1,0 +1,159 @@
+<!-- 支出分析レポート画面 -->
+<div class="spending-analysis">
+  <app-page-header
+    title="支出分析レポート"
+    subtitle="期間別の調達支出を分析します">
+  </app-page-header>
+
+  <!-- フィルターセクション -->
+  <div class="filter-section">
+    <div class="filter-row">
+      <div class="filter-group">
+        <label class="filter-label" for="startDate">開始日</label>
+        <input type="date" id="startDate" class="filter-input" [(ngModel)]="startDate">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="endDate">終了日</label>
+        <input type="date" id="endDate" class="filter-input" [(ngModel)]="endDate">
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="department">部門</label>
+        <select id="department" class="filter-select" [(ngModel)]="selectedDepartment">
+          <option *ngFor="let opt of departmentOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="category">カテゴリ</label>
+        <select id="category" class="filter-select" [(ngModel)]="selectedCategory">
+          <option *ngFor="let opt of categoryOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label" for="supplier">サプライヤー</label>
+        <select id="supplier" class="filter-select" [(ngModel)]="selectedSupplier">
+          <option *ngFor="let opt of supplierOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn btn-secondary" (click)="resetFilters()">リセット</button>
+      <button class="btn btn-primary" (click)="applyFilters()">適用</button>
+    </div>
+  </div>
+
+  <!-- エラーメッセージ -->
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <!-- サマリーカード -->
+  <div class="summary-cards" *ngIf="summary && !isLoading">
+    <div class="summary-card">
+      <div class="summary-card__label">合計支出</div>
+      <div class="summary-card__value">{{ formatCurrency(summary.totalSpending) }}</div>
+      <div class="summary-card__period">{{ summary.periodLabel }}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-card__label">発注回数</div>
+      <div class="summary-card__value">{{ formatNumber(summary.orderCount) }} <span class="unit">件</span></div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-card__label">平均発注額</div>
+      <div class="summary-card__value">{{ formatCurrency(summary.averageOrderValue) }}</div>
+    </div>
+    <div class="summary-card">
+      <div class="summary-card__label">最多カテゴリ</div>
+      <div class="summary-card__value summary-card__value--text">{{ summary.topCategory }}</div>
+      <div class="summary-card__sub">{{ formatCurrency(summary.topCategorySpending) }}</div>
+    </div>
+  </div>
+
+  <!-- 月次トレンドチャート（CSSベース） -->
+  <div class="chart-section" *ngIf="monthlyTrends.length > 0 && !isLoading">
+    <h3 class="section-title">月次支出トレンド</h3>
+    <div class="bar-chart">
+      <div class="bar-chart__bars">
+        <div *ngFor="let trend of monthlyTrends" class="bar-chart__bar-group">
+          <div class="bar-chart__value">{{ formatCurrency(trend.amount) }}</div>
+          <div class="bar-chart__bar" [style.height.%]="trend.percentage">
+            <div class="bar-chart__bar-fill"></div>
+          </div>
+          <div class="bar-chart__label">{{ trend.label }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 内訳テーブルセクション -->
+  <div class="breakdown-section" *ngIf="!isLoading">
+    <div class="breakdown-header">
+      <h3 class="section-title">支出内訳</h3>
+      <div class="breakdown-controls">
+        <div class="group-by-selector">
+          <label class="filter-label">グループ:</label>
+          <select class="filter-select" [(ngModel)]="breakdownGroupBy" (ngModelChange)="onGroupByChange()">
+            <option value="category">カテゴリ別</option>
+            <option value="supplier">サプライヤー別</option>
+            <option value="department">部門別</option>
+          </select>
+        </div>
+        <button class="btn btn-outline" (click)="exportCsv()" [disabled]="isExporting">
+          {{ isExporting ? 'エクスポート中...' : 'CSV エクスポート' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-name sortable" (click)="onSort('name')">
+              {{ breakdownGroupBy === 'category' ? 'カテゴリ' : breakdownGroupBy === 'supplier' ? 'サプライヤー' : '部門' }}{{ getSortIcon('name') }}
+            </th>
+            <th class="col-order-count sortable" (click)="onSort('orderCount')">
+              発注回数{{ getSortIcon('orderCount') }}
+            </th>
+            <th class="col-amount sortable" (click)="onSort('totalAmount')">
+              合計金額{{ getSortIcon('totalAmount') }}
+            </th>
+            <th class="col-percentage sortable" (click)="onSort('percentage')">
+              構成比{{ getSortIcon('percentage') }}
+            </th>
+            <th class="col-bar">構成比（グラフ）</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="breakdownItems.length === 0">
+            <td colspan="5" class="empty-row">データがありません</td>
+          </tr>
+          <tr *ngFor="let item of breakdownItems">
+            <td class="col-name">
+              <span class="item-name">{{ item.name }}</span>
+            </td>
+            <td class="col-order-count">{{ formatNumber(item.orderCount) }} 件</td>
+            <td class="col-amount">{{ formatCurrency(item.totalAmount) }}</td>
+            <td class="col-percentage">{{ item.percentage }}%</td>
+            <td class="col-bar">
+              <div class="percentage-bar">
+                <div class="percentage-bar__fill" [style.width.%]="item.percentage"></div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot>
+          <tr class="total-row">
+            <td><strong>合計</strong></td>
+            <td><strong>{{ formatNumber(summary?.orderCount || 0) }} 件</strong></td>
+            <td><strong>{{ formatCurrency(summary?.totalSpending || 0) }}</strong></td>
+            <td><strong>100.0%</strong></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>

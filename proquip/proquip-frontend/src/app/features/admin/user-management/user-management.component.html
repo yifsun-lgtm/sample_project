@@ -1,0 +1,172 @@
+<!-- ユーザー管理画面 -->
+<div class="user-management">
+  <app-page-header
+    title="ユーザー管理"
+    subtitle="ユーザーのロール・部門・ステータスを管理します。ユーザー作成はKeycloakで行ってください。">
+  </app-page-header>
+
+  <!-- フィルターバー -->
+  <div class="filter-bar">
+    <div class="filter-bar__left">
+      <app-search-box
+        placeholder="ユーザー名・表示名・メールで検索..."
+        (searchChange)="onSearchChange($event)">
+      </app-search-box>
+      <div class="filter-group">
+        <label class="filter-label">ロール:</label>
+        <select class="filter-select" [(ngModel)]="filterRole" (ngModelChange)="applyFilters()">
+          <option value="">すべて</option>
+          <option *ngFor="let role of availableRoles" [value]="role.name">{{ role.name }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">部門:</label>
+        <select class="filter-select" [(ngModel)]="filterDepartment" (ngModelChange)="applyFilters()">
+          <option *ngFor="let opt of departmentOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label class="filter-label">ステータス:</label>
+        <select class="filter-select" [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()">
+          <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- メッセージ -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    {{ successMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <!-- ユーザーテーブル -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ユーザー名</th>
+          <th>表示名</th>
+          <th>メール</th>
+          <th>部門</th>
+          <th>ロール</th>
+          <th>ステータス</th>
+          <th class="col-actions">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="filteredUsers.length === 0">
+          <td colspan="7" class="empty-row">
+            <app-empty-state></app-empty-state>
+          </td>
+        </tr>
+        <tr *ngFor="let user of filteredUsers" [ngClass]="{'row-disabled': !user.enabled}">
+          <td>
+            <span class="username">{{ user.username }}</span>
+          </td>
+          <td>{{ getDisplayName(user) }}</td>
+          <td>
+            <a class="email-link" [href]="'mailto:' + user.email">{{ user.email }}</a>
+          </td>
+          <td>{{ user.department }}</td>
+          <td>
+            <div class="role-tags">
+              <span *ngFor="let role of user.roles" class="role-tag">{{ role.name }}</span>
+            </div>
+          </td>
+          <td>
+            <app-status-badge [status]="user.enabled ? 'ACTIVE' : 'INACTIVE'"></app-status-badge>
+          </td>
+          <td class="col-actions">
+            <button class="btn btn-sm" (click)="openEditModal(user)">編集</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- 件数表示 -->
+    <div class="record-count">
+      表示: {{ filteredUsers.length }} 件 / 全 {{ users.length }} 件
+    </div>
+  </div>
+
+  <!-- 編集モーダル -->
+  <div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">ユーザー編集</h2>
+        <button class="modal-close" (click)="closeEditModal()">&times;</button>
+      </div>
+
+      <div class="modal-body" *ngIf="editingUser">
+        <div class="user-info-section">
+          <div class="user-info-row">
+            <span class="info-label">ユーザー名:</span>
+            <span class="info-value">{{ editingUser.username }}</span>
+          </div>
+          <div class="user-info-row">
+            <span class="info-label">表示名:</span>
+            <span class="info-value">{{ getDisplayName(editingUser) }}</span>
+          </div>
+          <div class="user-info-row">
+            <span class="info-label">メール:</span>
+            <span class="info-value">{{ editingUser.email }}</span>
+          </div>
+        </div>
+
+        <!-- エラーメッセージ -->
+        <div class="alert alert-error" *ngIf="errorMessage">
+          {{ errorMessage }}
+        </div>
+
+        <form [formGroup]="editForm">
+          <div class="form-group">
+            <label class="form-label" for="editDepartment">部門</label>
+            <select id="editDepartment" class="form-select" formControlName="department">
+              <ng-container *ngFor="let opt of departmentOptions">
+                <option *ngIf="opt.value" [value]="opt.value">
+                  {{ opt.label }}
+                </option>
+              </ng-container>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ロール</label>
+            <!-- 技術的負債: ロールをstring配列で管理 -->
+            <div class="role-checkboxes">
+              <label *ngFor="let role of availableRoles" class="role-checkbox">
+                <input type="checkbox"
+                       [checked]="isRoleSelected(role.name)"
+                       (change)="toggleRole(role.name)">
+                <span class="role-checkbox__name">{{ role.name }}</span>
+                <span class="role-checkbox__desc">{{ role.description }}</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">ステータス</label>
+            <div class="toggle-switch">
+              <label class="switch">
+                <input type="checkbox" formControlName="enabled">
+                <span class="slider"></span>
+              </label>
+              <span class="toggle-label">{{ editForm.get('enabled')?.value ? '有効' : '無効' }}</span>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeEditModal()">キャンセル</button>
+        <button class="btn btn-primary" (click)="onSave()" [disabled]="isSaving">
+          {{ isSaving ? '保存中...' : '保存' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

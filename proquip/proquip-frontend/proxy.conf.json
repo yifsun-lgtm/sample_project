@@ -1,0 +1,12 @@
+{
+  "/api": {
+    "target": "http://localhost:8080/proquip",
+    "secure": false,
+    "changeOrigin": true
+  },
+  "/auth": {
+    "target": "http://localhost:8180",
+    "secure": false,
+    "changeOrigin": true
+  }
+}

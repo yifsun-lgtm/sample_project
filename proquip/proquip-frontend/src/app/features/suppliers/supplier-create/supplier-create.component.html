@@ -1,0 +1,177 @@
+<app-page-header
+  title="サプライヤー登録"
+  description="新しいサプライヤーを登録します">
+</app-page-header>
+
+<div class="create-container">
+
+  <div class="success-banner" *ngIf="successMessage">{{ successMessage }}</div>
+  <div class="error-banner" *ngIf="errorMessage">{{ errorMessage }}</div>
+
+  <form [formGroup]="supplierForm" (ngSubmit)="submit()" class="create-form">
+
+    <!-- 基本情報セクション -->
+    <div class="form-section">
+      <h3 class="section-title">基本情報</h3>
+
+      <div class="form-row two-columns">
+        <app-form-field label="サプライヤーコード" [required]="true"
+                        [errorMessage]="getCodeErrorMessage()">
+          <input type="text" formControlName="code" class="form-input"
+                 placeholder="例: SUP-001">
+        </app-form-field>
+
+        <app-form-field label="ステータス" [required]="true">
+          <select formControlName="status" class="form-select">
+            <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="会社名" [required]="true"
+                        [errorMessage]="supplierForm.get('name')?.touched && supplierForm.get('name')?.errors ? '会社名は必須です' : ''">
+          <input type="text" formControlName="name" class="form-input"
+                 placeholder="例: 株式会社サンプル電子">
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="会社名（カナ）">
+          <input type="text" formControlName="nameKana" class="form-input"
+                 placeholder="例: カブシキガイシャ サンプルデンシ">
+        </app-form-field>
+      </div>
+    </div>
+
+    <!-- 連絡先情報セクション -->
+    <div class="form-section">
+      <h3 class="section-title">連絡先情報</h3>
+
+      <div class="form-row two-columns">
+        <app-form-field label="メールアドレス"
+                        [errorMessage]="supplierForm.get('email')?.touched && supplierForm.get('email')?.errors ? 'メールアドレス形式が不正です' : ''">
+          <input type="email" formControlName="email" class="form-input"
+                 placeholder="info@example.co.jp">
+        </app-form-field>
+
+        <app-form-field label="電話番号"
+                        [errorMessage]="supplierForm.get('phone')?.touched && supplierForm.get('phone')?.errors ? '電話番号形式が不正です' : ''">
+          <input type="tel" formControlName="phone" class="form-input"
+                 placeholder="03-1234-5678">
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="ウェブサイト">
+          <input type="url" formControlName="website" class="form-input"
+                 placeholder="https://www.example.co.jp">
+        </app-form-field>
+      </div>
+    </div>
+
+    <!-- 住所セクション -->
+    <div class="form-section">
+      <h3 class="section-title">住所</h3>
+
+      <div class="form-row">
+        <app-form-field label="住所">
+          <textarea formControlName="address" class="form-textarea" rows="2"
+                    placeholder="〒100-0001 東京都千代田区千代田1-1-1"></textarea>
+        </app-form-field>
+      </div>
+    </div>
+
+    <!-- 取引条件セクション -->
+    <div class="form-section">
+      <h3 class="section-title">取引条件</h3>
+
+      <div class="form-row">
+        <app-form-field label="支払条件">
+          <select formControlName="paymentTerms" class="form-select narrow">
+            <option *ngFor="let opt of paymentTermsOptions" [value]="opt.value">{{ opt.label }}</option>
+          </select>
+        </app-form-field>
+      </div>
+
+      <div class="form-row">
+        <app-form-field label="備考">
+          <textarea formControlName="notes" class="form-textarea" rows="3"
+                    placeholder="取引に関する特記事項"></textarea>
+        </app-form-field>
+      </div>
+    </div>
+
+    <!-- 担当者セクション -->
+    <div class="form-section">
+      <div class="section-header">
+        <h3 class="section-title">担当者</h3>
+        <button type="button" class="btn-add-contact" (click)="addContact()">
+          + 担当者を追加
+        </button>
+      </div>
+
+      <div class="contacts-list" formArrayName="contacts">
+        <div class="contact-form-card" *ngFor="let contact of contactsArray.controls; let i = index"
+             [formGroupName]="i">
+          <div class="contact-form-header">
+            <span class="contact-number">担当者 {{ i + 1 }}</span>
+            <div class="contact-form-actions">
+              <label class="primary-label">
+                <input type="radio" name="primaryContact"
+                       [checked]="contact.get('isPrimary')?.value"
+                       (change)="setPrimaryContact(i)">
+                主担当
+              </label>
+              <button type="button" class="btn-remove-contact" (click)="removeContact(i)"
+                      [disabled]="contactsArray.length <= 1">
+                削除
+              </button>
+            </div>
+          </div>
+
+          <div class="contact-form-body">
+            <div class="form-row two-columns">
+              <app-form-field label="氏名" [required]="true"
+                              [errorMessage]="contact.get('name')?.touched && contact.get('name')?.errors ? '氏名は必須です' : ''">
+                <input type="text" formControlName="name" class="form-input"
+                       placeholder="山田 太郎">
+              </app-form-field>
+
+              <app-form-field label="部署">
+                <input type="text" formControlName="department" class="form-input"
+                       placeholder="営業部">
+              </app-form-field>
+            </div>
+
+            <div class="form-row three-columns">
+              <app-form-field label="役職">
+                <input type="text" formControlName="position" class="form-input"
+                       placeholder="部長">
+              </app-form-field>
+
+              <app-form-field label="電話番号">
+                <input type="tel" formControlName="phone" class="form-input"
+                       placeholder="03-1234-5678">
+              </app-form-field>
+
+              <app-form-field label="メールアドレス">
+                <input type="email" formControlName="email" class="form-input"
+                       placeholder="yamada@example.co.jp">
+              </app-form-field>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- アクションボタン -->
+    <div class="form-actions">
+      <button type="button" class="btn-cancel" (click)="cancel()">キャンセル</button>
+      <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+        {{ isSubmitting ? '登録中...' : '登録する' }}
+      </button>
+    </div>
+
+  </form>
+</div>

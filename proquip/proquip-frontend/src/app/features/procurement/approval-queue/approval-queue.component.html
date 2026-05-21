@@ -1,0 +1,124 @@
+<!-- 承認待ちキュー画面 -->
+<app-page-header
+  title="承認待ちキュー"
+  description="承認が必要なアイテムの一覧です">
+</app-page-header>
+
+<!-- タブ -->
+<div class="tabs">
+  <button
+    class="tab-btn"
+    [class.active]="activeTab === 'all'"
+    (click)="switchTab('all')">
+    すべて
+    <span class="tab-badge" *ngIf="tabCounts.all > 0">{{ tabCounts.all }}</span>
+  </button>
+  <button
+    class="tab-btn"
+    [class.active]="activeTab === 'requisition'"
+    (click)="switchTab('requisition')">
+    購買依頼
+    <span class="tab-badge" *ngIf="tabCounts.requisition > 0">{{ tabCounts.requisition }}</span>
+  </button>
+  <button
+    class="tab-btn"
+    [class.active]="activeTab === 'order'"
+    (click)="switchTab('order')">
+    発注書
+    <span class="tab-badge" *ngIf="tabCounts.order > 0">{{ tabCounts.order }}</span>
+  </button>
+</div>
+
+<!-- 読み込み中 -->
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<!-- 承認待ちリスト -->
+<div class="queue-list" *ngIf="!isLoading">
+  <div
+    *ngFor="let item of filteredItems"
+    class="queue-card"
+    (click)="navigateToDetail(item)">
+
+    <div class="card-header">
+      <div class="card-type">
+        <span class="type-badge" [class.type-requisition]="item.type === 'requisition'" [class.type-order]="item.type === 'order'">
+          {{ getTypeLabel(item.type) }}
+        </span>
+        <span class="card-number">{{ item.number }}</span>
+      </div>
+      <span class="card-date">{{ item.createdAt | japaneseDate }}</span>
+    </div>
+
+    <div class="card-body">
+      <div class="card-info">
+        <div class="info-row">
+          <span class="info-label">依頼者:</span>
+          <span class="info-value">{{ item.requestedBy }}</span>
+        </div>
+        <div class="info-row" *ngIf="item.department">
+          <span class="info-label">部門:</span>
+          <span class="info-value">{{ item.department }}</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">金額:</span>
+          <span class="info-value amount">{{ item.totalAmount | currencyJp }}</span>
+        </div>
+      </div>
+
+      <div class="card-actions">
+        <button
+          class="btn btn-success btn-sm"
+          (click)="openApproveModal(item, $event)"
+          [disabled]="isProcessing"
+          title="承認">
+          承認
+        </button>
+        <button
+          class="btn btn-danger btn-sm"
+          (click)="openRejectModal(item, $event)"
+          [disabled]="isProcessing"
+          title="却下">
+          却下
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- データなし -->
+  <app-empty-state
+    *ngIf="filteredItems.length === 0"
+    message="承認待ちのアイテムはありません">
+  </app-empty-state>
+</div>
+
+<!-- コメントモーダル -->
+<div class="modal-overlay" *ngIf="showCommentModal" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h4 class="modal-title">
+      {{ modalAction === 'approve' ? '承認' : '却下' }}
+      - {{ modalTarget?.number }}
+    </h4>
+    <div class="modal-body">
+      <label for="actionComment">
+        {{ modalAction === 'approve' ? 'コメント（任意）' : '却下理由（必須）' }}
+      </label>
+      <textarea
+        id="actionComment"
+        [(ngModel)]="commentText"
+        class="form-control textarea"
+        rows="3"
+        [placeholder]="modalAction === 'approve' ? '承認コメント' : '却下理由を入力してください'"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="closeModal()">キャンセル</button>
+      <button
+        class="btn"
+        [class.btn-success]="modalAction === 'approve'"
+        [class.btn-danger]="modalAction === 'reject'"
+        (click)="executeAction()"
+        [disabled]="isProcessing || (modalAction === 'reject' && !commentText)">
+        {{ modalAction === 'approve' ? '承認する' : '却下する' }}
+      </button>
+    </div>
+  </div>
+</div>

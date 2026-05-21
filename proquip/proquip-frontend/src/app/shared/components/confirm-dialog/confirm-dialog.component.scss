@@ -1,0 +1,27 @@
+/* 確認ダイアログのスタイル */
+.confirm-dialog {
+  min-width: 380px;
+  max-width: 480px;
+}
+
+.dialog-header {
+  margin-bottom: var(--spacing-md);
+}
+
+.dialog-title {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.dialog-body {
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}

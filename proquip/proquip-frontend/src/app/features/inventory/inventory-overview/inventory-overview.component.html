@@ -1,0 +1,137 @@
+<!-- 在庫一覧画面 -->
+<app-page-header
+  title="在庫管理"
+  description="在庫状況の確認と管理を行います">
+  <div class="header-actions">
+    <button class="btn btn-outline" (click)="exportInventory()">
+      <i class="icon-download"></i>
+      エクスポート
+    </button>
+    <button class="btn btn-primary" routerLink="/inventory/transfer/new">
+      <i class="icon-shuffle"></i>
+      在庫移動
+    </button>
+  </div>
+</app-page-header>
+
+<!-- サマリーカード -->
+<div class="summary-cards">
+  <div
+    *ngFor="let card of summaryCards"
+    class="summary-card"
+    [style.border-left-color]="card.color">
+    <div class="card-icon" [style.color]="card.color">
+      <i [class]="card.icon"></i>
+    </div>
+    <div class="card-content">
+      <span class="card-label">{{ card.label }}</span>
+      <span class="card-value">
+        <ng-container *ngIf="card.unit === '円'">
+          {{ card.value | currencyJp }}
+        </ng-container>
+        <ng-container *ngIf="card.unit !== '円'">
+          {{ card.value | number }}
+          <span class="card-unit">{{ card.unit }}</span>
+        </ng-container>
+      </span>
+    </div>
+  </div>
+</div>
+
+<!-- フィルタセクション -->
+<div class="filter-section">
+  <div class="filter-row">
+    <div class="filter-item">
+      <label for="warehouseFilter">倉庫</label>
+      <select
+        id="warehouseFilter"
+        [(ngModel)]="filterWarehouseId"
+        (ngModelChange)="onFilterChange()"
+        class="form-select">
+        <option [ngValue]="null">すべて</option>
+        <option *ngFor="let wh of warehouses" [ngValue]="wh.id">
+          {{ wh.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-item">
+      <label for="categoryFilter">カテゴリ</label>
+      <select
+        id="categoryFilter"
+        [(ngModel)]="filterCategory"
+        (ngModelChange)="onFilterChange()"
+        class="form-select">
+        <option *ngFor="let opt of categoryOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-item">
+      <label for="stockStatusFilter">在庫ステータス</label>
+      <select
+        id="stockStatusFilter"
+        [(ngModel)]="filterStockStatus"
+        (ngModelChange)="onFilterChange()"
+        class="form-select">
+        <option *ngFor="let opt of stockStatusOptions" [value]="opt.value">
+          {{ opt.label }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button class="btn btn-outline" (click)="clearFilters()">
+        フィルタクリア
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- データテーブル -->
+<div class="table-container">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-data-table
+    *ngIf="!isLoading"
+    [columns]="columns"
+    [data]="inventoryItems"
+    [totalCount]="totalCount"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    [sortColumn]="sortColumn"
+    [sortDirection]="sortDirection"
+    (pageChange)="onPageChange($event)"
+    (sortChange)="onSortChange($event)"
+    (rowClick)="onRowClick($event)">
+
+    <ng-template #cellTemplate let-row let-column="column">
+      <ng-container [ngSwitch]="column.key">
+        <!-- 有効在庫（色付き） -->
+        <span *ngSwitchCase="'availableQuantity'"
+              [style.color]="getStockStatusColor(row)"
+              [style.font-weight]="'600'">
+          {{ row.availableQuantity }}
+        </span>
+
+        <!-- ステータス列 -->
+        <span *ngSwitchCase="'stockStatus'">
+          <span
+            class="stock-status-badge"
+            [style.background-color]="getStockStatusBgColor(row)"
+            [style.color]="getStockStatusColor(row)">
+            {{ getStockStatusLabel(row) }}
+          </span>
+        </span>
+
+        <span *ngSwitchDefault>{{ row[column.key] }}</span>
+      </ng-container>
+    </ng-template>
+  </app-data-table>
+
+  <app-empty-state
+    *ngIf="!isLoading && inventoryItems.length === 0"
+    message="在庫データがありません">
+  </app-empty-state>
+</div>

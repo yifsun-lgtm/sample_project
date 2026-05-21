@@ -1,0 +1,146 @@
+<!-- 返品管理画面 -->
+<app-page-header
+  title="返品管理"
+  description="サプライヤーへの返品処理を管理します">
+  <button class="btn btn-primary" (click)="toggleCreateForm()">
+    <i class="icon-plus"></i>
+    {{ showCreateForm ? '一覧表示' : '新規返品' }}
+  </button>
+</app-page-header>
+
+<!-- アラート -->
+<div class="alert alert-error" *ngIf="errorMessage">{{ errorMessage }}</div>
+<div class="alert alert-success" *ngIf="successMessage">{{ successMessage }}</div>
+
+<!-- 返品作成フォーム -->
+<div class="create-form" *ngIf="showCreateForm">
+  <section class="form-section">
+    <h3 class="section-title">返品元の発注書を選択</h3>
+    <div class="order-search">
+      <div class="autocomplete-wrapper">
+        <input
+          type="text"
+          class="form-control"
+          [value]="orderSearchKeyword"
+          (input)="onOrderSearch($any($event.target).value)"
+          (focus)="onOrderSearch(orderSearchKeyword)"
+          (blur)="hideOrderDropdown()"
+          placeholder="発注番号またはサプライヤー名"
+          autocomplete="off" />
+        <div class="dropdown-list" *ngIf="showOrderDropdown && orderCandidates.length > 0">
+          <div
+            class="dropdown-item"
+            *ngFor="let order of orderCandidates"
+            (mousedown)="selectOrderForReturn(order)">
+            <span class="order-num">{{ order.orderNumber }}</span>
+            <span class="order-supplier">{{ order.supplierName }}</span>
+            <span class="order-amount">{{ order.totalAmount | currencyJp }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 返品明細 -->
+  <section class="form-section" *ngIf="selectedOrder">
+    <h3 class="section-title">返品品目の選択</h3>
+
+    <div class="return-reason-row">
+      <label for="returnReason">返品理由:</label>
+      <select id="returnReason" [(ngModel)]="returnReason" class="form-select">
+        <option value="">選択してください</option>
+        <option *ngFor="let opt of reasonOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+    </div>
+
+    <table class="return-table">
+      <thead>
+        <tr>
+          <th class="col-select">選択</th>
+          <th>製品名</th>
+          <th>SKU</th>
+          <th class="text-right">入荷済み数量</th>
+          <th class="text-right">返品数量</th>
+          <th class="text-right">金額</th>
+          <th>個別理由</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let ri of newReturnItems">
+          <td class="col-select">
+            <input type="checkbox" [(ngModel)]="ri.selected" />
+          </td>
+          <td>{{ ri.item.productName }}</td>
+          <td class="sku-cell">{{ ri.item.productSku }}</td>
+          <td class="text-right">{{ ri.item.receivedQuantity }}</td>
+          <td class="text-right">
+            <input
+              type="number"
+              class="form-control quantity-input"
+              [(ngModel)]="ri.returnQuantity"
+              [min]="0"
+              [max]="ri.item.receivedQuantity"
+              [disabled]="!ri.selected" />
+          </td>
+          <td class="text-right">
+            {{ (ri.returnQuantity * ri.item.unitPrice) | currencyJp }}
+          </td>
+          <td>
+            <input
+              type="text"
+              class="form-control"
+              [(ngModel)]="ri.reason"
+              placeholder="個別理由"
+              [disabled]="!ri.selected" />
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="return-total">
+      <span class="total-label">返品合計金額:</span>
+      <span class="total-value">{{ getReturnTotal() | currencyJp }}</span>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn btn-outline" (click)="toggleCreateForm()">キャンセル</button>
+      <button
+        class="btn btn-primary"
+        (click)="submitReturn()"
+        [disabled]="!isReturnValid() || isCreating">
+        返品を作成
+      </button>
+    </div>
+  </section>
+</div>
+
+<!-- 返品一覧 -->
+<div class="list-section" *ngIf="!showCreateForm">
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <app-data-table
+    *ngIf="!isLoading"
+    [columns]="columns"
+    [data]="returns"
+    [totalCount]="totalCount"
+    [currentPage]="currentPage"
+    [pageSize]="pageSize"
+    (pageChange)="onPageChange($event)">
+
+    <ng-template #cellTemplate let-row let-column="column">
+      <ng-container [ngSwitch]="column.key">
+        <span *ngSwitchCase="'status'">
+          <app-status-badge [status]="row.status"></app-status-badge>
+        </span>
+        <span *ngSwitchCase="'totalAmount'">{{ row.totalAmount | currencyJp }}</span>
+        <span *ngSwitchCase="'createdAt'">{{ row.createdAt | japaneseDate }}</span>
+        <span *ngSwitchDefault>{{ row[column.key] }}</span>
+      </ng-container>
+    </ng-template>
+  </app-data-table>
+
+  <app-empty-state
+    *ngIf="!isLoading && returns.length === 0"
+    message="返品データがありません">
+  </app-empty-state>
+</div>

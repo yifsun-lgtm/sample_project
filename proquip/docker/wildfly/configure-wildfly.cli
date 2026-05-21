@@ -1,0 +1,155 @@
+# ============================================================
+# ProQuip WildFly 設定スクリプト (JBoss CLI)
+# standalone-full.xml をベースに ProQuip 固有の設定を追加する
+# ============================================================
+
+embed-server --std-out=echo --server-config=standalone-full.xml
+
+# -------------------------------------------------
+# PostgreSQL JDBCドライバーの登録
+# -------------------------------------------------
+batch
+
+/subsystem=datasources/jdbc-driver=postgresql:add( \
+    driver-name=postgresql, \
+    driver-module-name=org.postgresql, \
+    driver-class-name=org.postgresql.Driver, \
+    driver-xa-datasource-class-name=org.postgresql.xa.PGXADataSource \
+)
+
+run-batch
+
+# -------------------------------------------------
+# ProQuip データソースの追加
+# -------------------------------------------------
+batch
+
+data-source add \
+    --name=ProQuipDS \
+    --jndi-name=java:jboss/datasources/ProQuipDS \
+    --driver-name=postgresql \
+    --connection-url=jdbc:postgresql://${env.DB_HOST,env.DB_HOST:localhost}:${env.DB_PORT,env.DB_PORT:5432}/${env.DB_NAME,env.DB_NAME:proquip} \
+    --user-name=${env.DB_USER,env.DB_USER:proquip} \
+    --password=${env.DB_PASSWORD,env.DB_PASSWORD:proquip} \
+    --min-pool-size=5 \
+    --initial-pool-size=5 \
+    --max-pool-size=50 \
+    --valid-connection-checker-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker \
+    --exception-sorter-class-name=org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter \
+    --validate-on-match=true \
+    --statistics-enabled=true \
+    --enabled=true
+
+run-batch
+
+# -------------------------------------------------
+# デフォルトデータソースをProQuipDSに変更
+# -------------------------------------------------
+batch
+
+/subsystem=ee/service=default-bindings:write-attribute( \
+    name=datasource, \
+    value=java:jboss/datasources/ProQuipDS \
+)
+
+run-batch
+
+# -------------------------------------------------
+# システムプロパティの設定
+# -------------------------------------------------
+batch
+
+/system-property=proquip.db.host:add(value=${env.DB_HOST:localhost})
+/system-property=proquip.db.port:add(value=${env.DB_PORT:5432})
+/system-property=proquip.db.name:add(value=${env.DB_NAME:proquip})
+/system-property=proquip.db.user:add(value=${env.DB_USER:proquip})
+/system-property=proquip.db.password:add(value=${env.DB_PASSWORD:proquip})
+/system-property=proquip.keycloak.url:add(value=${env.KEYCLOAK_URL:http://localhost:8180})
+/system-property=proquip.keycloak.realm:add(value=${env.KEYCLOAK_REALM:proquip})
+/system-property=proquip.keycloak.client-id:add(value=${env.KEYCLOAK_CLIENT_ID:proquip-api})
+/system-property=proquip.batch.size:add(value=100)
+/system-property=proquip.upload.max-size:add(value=10485760)
+/system-property=proquip.mail.enabled:add(value=${env.MAIL_ENABLED:false})
+/system-property=proquip.mail.host:add(value=${env.MAIL_HOST:localhost})
+/system-property=proquip.mail.port:add(value=${env.MAIL_PORT:25})
+
+run-batch
+
+# -------------------------------------------------
+# ロギング設定
+# -------------------------------------------------
+batch
+
+/subsystem=logging/periodic-rotating-file-handler=PROQUIP_LOG:add( \
+    file={path=proquip.log, relative-to=jboss.server.log.dir}, \
+    suffix=.yyyy-MM-dd, \
+    append=true, \
+    autoflush=true \
+)
+/subsystem=logging/periodic-rotating-file-handler=PROQUIP_LOG:write-attribute( \
+    name=formatter, \
+    value="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c] (%t) %s%e%n" \
+)
+
+/subsystem=logging/logger=com.proquip:add( \
+    level=DEBUG, \
+    use-parent-handlers=false, \
+    handlers=[CONSOLE,PROQUIP_LOG] \
+)
+
+/subsystem=logging/logger=org.hibernate.SQL:add(level=DEBUG)
+
+run-batch
+
+# -------------------------------------------------
+# Undertow（HTTP）の追加設定
+# -------------------------------------------------
+batch
+
+/subsystem=undertow/server=default-server/http-listener=default:write-attribute( \
+    name=max-post-size, \
+    value=10485760 \
+)
+
+run-batch
+
+# -------------------------------------------------
+# CORS設定（開発用）
+# -------------------------------------------------
+batch
+
+/subsystem=undertow/configuration=filter/response-header=cors-allow-origin:add( \
+    header-name=Access-Control-Allow-Origin, \
+    header-value="*" \
+)
+/subsystem=undertow/configuration=filter/response-header=cors-allow-methods:add( \
+    header-name=Access-Control-Allow-Methods, \
+    header-value="GET, POST, PUT, DELETE, PATCH, OPTIONS" \
+)
+/subsystem=undertow/configuration=filter/response-header=cors-allow-headers:add( \
+    header-name=Access-Control-Allow-Headers, \
+    header-value="accept, authorization, content-type, x-requested-with" \
+)
+
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=cors-allow-origin:add
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=cors-allow-methods:add
+/subsystem=undertow/server=default-server/host=default-host/filter-ref=cors-allow-headers:add
+
+run-batch
+
+# -------------------------------------------------
+# Elytron OIDC クライアント（Keycloak連携）
+# -------------------------------------------------
+batch
+
+/subsystem=elytron-oidc-client/secure-deployment=proquip.ear:add( \
+    provider-url="${proquip.keycloak.url}/realms/${proquip.keycloak.realm}", \
+    ssl-required=EXTERNAL, \
+    bearer-only=true, \
+    resource="${proquip.keycloak.client-id}" \
+)
+
+run-batch
+
+# 設定を保存して終了
+stop-embedded-server

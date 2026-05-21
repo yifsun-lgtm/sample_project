@@ -1,0 +1,147 @@
+<app-page-header
+  title="サプライヤー比較"
+  description="サプライヤーを並べて比較評価します">
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<div class="error-banner" *ngIf="errorMessage">
+  <span>{{ errorMessage }}</span>
+  <button class="btn-back" (click)="navigateToList()">一覧に戻る</button>
+</div>
+
+<div class="compare-container" *ngIf="!isLoading">
+
+  <!-- ヘッダーアクション -->
+  <div class="compare-header">
+    <button class="btn-secondary" (click)="navigateToList()">← 一覧に戻る</button>
+
+    <!-- サプライヤー追加 -->
+    <div class="add-supplier" *ngIf="metrics.length < 3">
+      <div class="search-wrapper">
+        <input type="text" class="search-input"
+               [(ngModel)]="addSearchKeyword"
+               placeholder="サプライヤーを追加（会社名またはコード）"
+               (input)="searchSuppliers()">
+        <div class="search-dropdown" *ngIf="searchResults.length > 0">
+          <div class="search-item" *ngFor="let s of searchResults"
+               (click)="addSupplier(s)">
+            <span class="search-code">{{ s.code }}</span>
+            <span class="search-name">{{ s.name }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 比較テーブル -->
+  <div class="compare-table-wrapper" *ngIf="metrics.length >= 2">
+
+    <!-- サプライヤーヘッダー行 -->
+    <div class="compare-row header-row">
+      <div class="row-label header-label">サプライヤー</div>
+      <div class="row-value supplier-header" *ngFor="let m of metrics; let i = index">
+        <div class="supplier-card">
+          <button class="btn-remove" *ngIf="metrics.length > 2"
+                  (click)="removeSupplier(i)" title="比較から除去">×</button>
+          <h4 class="supplier-name" (click)="navigateToSupplier(m.supplier.id)">
+            {{ m.supplier.name }}
+          </h4>
+          <span class="supplier-code">{{ m.supplier.code }}</span>
+          <span class="supplier-status">{{ getStatusLabel(m.supplier.status) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 総合評価行（特別表示） -->
+    <div class="compare-row highlight-row">
+      <div class="row-label">総合評価</div>
+      <div class="row-value" *ngFor="let m of metrics; let i = index"
+           [class.best-value]="isBestValue(comparisonCriteria[0], i)">
+        <div class="overall-rating">
+          <span class="rating-value">{{ m.averageRating.toFixed(1) }}</span>
+          <span class="rating-stars">{{ getRatingStars(m.averageRating) }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 評価カテゴリ詳細 -->
+    <div class="compare-section-header">評価詳細</div>
+
+    <div class="compare-row" *ngFor="let criteria of comparisonCriteria.slice(1, 5)">
+      <div class="row-label">{{ criteria.label }}</div>
+      <div class="row-value" *ngFor="let m of metrics; let i = index"
+           [class.best-value]="isBestValue(criteria, i)">
+        <div class="rating-bar-wrapper" *ngIf="criteria.type === 'rating'">
+          <span class="metric-number">{{ formatMetricValue(getMetricValue(m, criteria.key), criteria.type) }}</span>
+          <div class="metric-bar">
+            <div class="metric-bar-fill"
+                 [style.width.%]="getRatingBarWidth(getMetricValue(m, criteria.key))">
+            </div>
+          </div>
+        </div>
+        <span *ngIf="criteria.type !== 'rating'" class="metric-text">
+          {{ formatMetricValue(getMetricValue(m, criteria.key), criteria.type) }}
+        </span>
+      </div>
+    </div>
+
+    <!-- パフォーマンス指標 -->
+    <div class="compare-section-header">パフォーマンス</div>
+
+    <div class="compare-row" *ngFor="let criteria of comparisonCriteria.slice(5)">
+      <div class="row-label">{{ criteria.label }}</div>
+      <div class="row-value" *ngFor="let m of metrics; let i = index"
+           [class.best-value]="isBestValue(criteria, i)">
+        <span class="metric-text" [ngClass]="{
+          'metric-currency': criteria.type === 'currency',
+          'metric-percentage': criteria.type === 'percentage'
+        }">
+          {{ formatMetricValue(getMetricValue(m, criteria.key), criteria.type) }}
+        </span>
+
+        <!-- パーセンテージのバー表示 -->
+        <div class="metric-bar small" *ngIf="criteria.type === 'percentage'">
+          <div class="metric-bar-fill"
+               [style.width.%]="getMetricValue(m, criteria.key)"
+               [class.bar-good]="criteria.higherIsBetter ? getMetricValue(m, criteria.key) >= 90 : getMetricValue(m, criteria.key) <= 2"
+               [class.bar-warning]="criteria.higherIsBetter ? (getMetricValue(m, criteria.key) >= 80 && getMetricValue(m, criteria.key) < 90) : (getMetricValue(m, criteria.key) > 2 && getMetricValue(m, criteria.key) <= 5)"
+               [class.bar-danger]="criteria.higherIsBetter ? getMetricValue(m, criteria.key) < 80 : getMetricValue(m, criteria.key) > 5">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 連絡先情報 -->
+    <div class="compare-section-header">連絡先</div>
+
+    <div class="compare-row">
+      <div class="row-label">メールアドレス</div>
+      <div class="row-value" *ngFor="let m of metrics">
+        <span class="contact-info">{{ m.supplier.email || '-' }}</span>
+      </div>
+    </div>
+
+    <div class="compare-row">
+      <div class="row-label">電話番号</div>
+      <div class="row-value" *ngFor="let m of metrics">
+        <span class="contact-info">{{ m.supplier.phone || '-' }}</span>
+      </div>
+    </div>
+
+    <div class="compare-row">
+      <div class="row-label">支払条件</div>
+      <div class="row-value" *ngFor="let m of metrics">
+        <span class="contact-info">{{ m.supplier.paymentTerms || '-' }}</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 比較対象が不足 -->
+  <app-empty-state
+    *ngIf="metrics.length < 2 && !errorMessage"
+    message="比較するには2社以上のサプライヤーを選択してください">
+  </app-empty-state>
+
+</div>

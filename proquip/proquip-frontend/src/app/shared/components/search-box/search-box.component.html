@@ -1,0 +1,18 @@
+<div class="search-box">
+  <input
+    type="text"
+    class="search-input"
+    [(ngModel)]="searchTerm"
+    (ngModelChange)="onInputChange()"
+    [placeholder]="placeholder"
+    aria-label="検索"
+  />
+  <button
+    class="clear-btn"
+    *ngIf="searchTerm"
+    (click)="onClear()"
+    aria-label="クリア"
+  >
+    &times;
+  </button>
+</div>

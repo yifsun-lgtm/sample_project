@@ -1,0 +1,136 @@
+<!-- 在庫評価レポート画面 -->
+<div class="inventory-valuation">
+  <app-page-header
+    title="在庫評価レポート"
+    subtitle="倉庫ごとの在庫金額と構成比を表示します">
+  </app-page-header>
+
+  <!-- フィルターバー -->
+  <div class="filter-bar">
+    <div class="filter-bar__left">
+      <div class="filter-group">
+        <label class="filter-label" for="warehouse">倉庫</label>
+        <select id="warehouse" class="filter-select" [(ngModel)]="selectedWarehouseId" (ngModelChange)="onWarehouseChange()">
+          <option [ngValue]="null">すべての倉庫</option>
+          <option *ngFor="let wh of warehouses" [ngValue]="wh.id">{{ wh.name }}</option>
+        </select>
+      </div>
+      <app-search-box
+        placeholder="製品名・SKU・カテゴリで検索..."
+        (searchChange)="onSearchChange($event)">
+      </app-search-box>
+      <label class="checkbox-option">
+        <input type="checkbox" [(ngModel)]="showHighValueOnly" (ngModelChange)="applyFilters()">
+        高額アイテムのみ表示
+      </label>
+    </div>
+    <div class="filter-bar__right">
+      <button class="btn btn-outline" (click)="exportCsv()" [disabled]="isExporting">
+        {{ isExporting ? 'エクスポート中...' : 'CSV エクスポート' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- エラーメッセージ -->
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">!</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- ローディング -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div *ngIf="!isLoading">
+    <!-- サマリーカード -->
+    <div class="summary-cards" *ngIf="summary">
+      <div class="summary-card">
+        <div class="summary-card__label">在庫アイテム数</div>
+        <div class="summary-card__value">{{ formatNumber(summary.totalItems) }} <span class="unit">件</span></div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__label">在庫総額</div>
+        <div class="summary-card__value">{{ formatCurrency(summary.totalValue) }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__label">平均在庫金額</div>
+        <div class="summary-card__value">{{ formatCurrency(summary.averageValuePerItem) }}</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card__label">高額アイテム数</div>
+        <div class="summary-card__value">{{ formatNumber(summary.highValueItemCount) }} <span class="unit">件</span></div>
+      </div>
+    </div>
+
+    <!-- データテーブル -->
+    <div class="table-container">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th class="col-product sortable" (click)="onSort('productName')">
+              製品{{ getSortIcon('productName') }}
+            </th>
+            <th class="col-sku sortable" (click)="onSort('sku')">
+              SKU{{ getSortIcon('sku') }}
+            </th>
+            <th class="col-category sortable" (click)="onSort('categoryName')">
+              カテゴリ{{ getSortIcon('categoryName') }}
+            </th>
+            <th class="col-quantity sortable" (click)="onSort('quantity')">
+              数量{{ getSortIcon('quantity') }}
+            </th>
+            <th class="col-unit-price sortable" (click)="onSort('unitPrice')">
+              単価{{ getSortIcon('unitPrice') }}
+            </th>
+            <th class="col-total-value sortable" (click)="onSort('totalValue')">
+              在庫金額{{ getSortIcon('totalValue') }}
+            </th>
+            <th class="col-percentage sortable" (click)="onSort('percentage')">
+              構成比(%){{ getSortIcon('percentage') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="filteredItems.length === 0">
+            <td colspan="7" class="empty-row">該当するデータがありません</td>
+          </tr>
+          <tr *ngFor="let item of filteredItems"
+              [ngClass]="{'row-high-value': item.isHighValue}">
+            <td class="col-product">
+              <span class="product-name">{{ item.productName }}</span>
+              <span class="high-value-badge" *ngIf="item.isHighValue">高額</span>
+            </td>
+            <td class="col-sku">
+              <span class="sku-code">{{ item.sku }}</span>
+            </td>
+            <td class="col-category">{{ item.categoryName }}</td>
+            <td class="col-quantity">{{ formatNumber(item.quantity) }}</td>
+            <td class="col-unit-price">{{ item.unitPrice | currencyJp }}</td>
+            <td class="col-total-value">
+              <strong>{{ formatCurrency(item.totalValue) }}</strong>
+            </td>
+            <td class="col-percentage">
+              <div class="percentage-cell">
+                <span class="percentage-value">{{ item.percentage }}%</span>
+                <div class="percentage-bar">
+                  <div class="percentage-bar__fill" [style.width.%]="item.percentage * 3"></div>
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+        <tfoot *ngIf="filteredItems.length > 0">
+          <tr class="total-row">
+            <td colspan="5"><strong>合計</strong></td>
+            <td class="col-total-value"><strong>{{ formatCurrency(summary?.totalValue || 0) }}</strong></td>
+            <td class="col-percentage"><strong>100.0%</strong></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+
+    <!-- レコード件数 -->
+    <div class="record-count" *ngIf="filteredItems.length > 0">
+      表示: {{ filteredItems.length }} 件 / 全 {{ valuationItems.length }} 件
+    </div>
+  </div>
+</div>

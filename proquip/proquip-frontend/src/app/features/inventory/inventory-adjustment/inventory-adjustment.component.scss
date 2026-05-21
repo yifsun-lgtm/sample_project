@@ -1,0 +1,35 @@
+.page-container {
+  padding: 24px;
+}
+
+.page-header h2 {
+  margin-bottom: 16px;
+}
+
+.filter-section {
+  margin-bottom: 16px;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th, td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #e0e0e0;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+  }
+}
+
+.input-sm {
+  width: 100px;
+}
+
+.actions {
+  margin-top: 16px;
+}

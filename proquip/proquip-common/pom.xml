@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =========================================================== -->
+    <!-- ProQuip 共通モジュール                                        -->
+    <!-- DTOクラス、ユーティリティ、定数定義など全モジュール共通のコードを   -->
+    <!-- 格納するライブラリモジュール                                    -->
+    <!-- =========================================================== -->
+    <parent>
+        <groupId>com.proquip</groupId>
+        <artifactId>proquip-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+        <relativePath>../proquip-parent/pom.xml</relativePath>
+    </parent>
+
+    <artifactId>proquip-common</artifactId>
+    <packaging>jar</packaging>
+
+    <name>ProQuip :: 共通モジュール</name>
+    <description>DTO、ユーティリティクラス、共通定数・列挙型などを格納する共通ライブラリ</description>
+
+    <dependencies>
+        <!-- =============================== -->
+        <!-- Jakarta EE API                   -->
+        <!-- WildFlyが実行時に提供するため      -->
+        <!-- コンパイル時のみ使用 (provided)    -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>jakarta.platform</groupId>
+            <artifactId>jakarta.jakartaee-api</artifactId>
+            <version>${jakarta.ee.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- JSON処理 (Jackson)               -->
+        <!-- DTOのシリアライズ用アノテーション   -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- Apache Commonsユーティリティ      -->
+        <!-- 文字列操作、バリデーション等        -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- マッピング (MapStruct)            -->
+        <!-- Entity ⇔ DTO 変換に使用          -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.mapstruct</groupId>
+            <artifactId>mapstruct</artifactId>
+        </dependency>
+
+        <!-- =============================== -->
+        <!-- テスト関連                        -->
+        <!-- =============================== -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Title>${project.name}</Implementation-Title>
+                            <Implementation-Version>${project.version}</Implementation-Version>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -1,0 +1,93 @@
+<app-page-header
+  title="製品カタログ"
+  description="製品の一覧表示と管理">
+</app-page-header>
+
+<div class="product-list-container">
+
+  <!-- アクションバー -->
+  <div class="action-bar">
+    <div class="action-bar-left">
+      <app-search-box
+        placeholder="SKU、製品名で検索..."
+        (searchChange)="onSearch($event)">
+      </app-search-box>
+    </div>
+    <div class="action-bar-right">
+      <button class="btn-secondary" (click)="navigateToCategories()">
+        カテゴリ管理
+      </button>
+      <button class="btn-secondary" (click)="navigateToBundles()">
+        バンドル管理
+      </button>
+      <button class="btn-export" (click)="exportCsv()" [disabled]="isExporting">
+        {{ isExporting ? '出力中...' : 'CSV出力' }}
+      </button>
+      <button class="btn-primary" (click)="navigateToCreate()">
+        + 新規登録
+      </button>
+    </div>
+  </div>
+
+  <!-- フィルターエリア -->
+  <div class="filter-area">
+    <div class="filter-group">
+      <label class="filter-label">カテゴリ</label>
+      <select class="filter-select" aria-label="カテゴリ" [(ngModel)]="selectedCategoryId" (ngModelChange)="onFilterChange()">
+        <option value="">すべて</option>
+        <option *ngFor="let cat of categories" [value]="cat.id">{{ cat.name }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">メーカー</label>
+      <select class="filter-select" [(ngModel)]="selectedManufacturer" (ngModelChange)="onFilterChange()">
+        <option value="">すべて</option>
+        <option *ngFor="let mfr of manufacturers" [value]="mfr.value">{{ mfr.label }}</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label class="filter-label">ステータス</label>
+      <select class="filter-select" [(ngModel)]="selectedStatus" (ngModelChange)="onFilterChange()">
+        <option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</option>
+      </select>
+    </div>
+
+    <button class="btn-reset" (click)="resetFilters()"
+            *ngIf="searchKeyword || selectedCategoryId || selectedManufacturer || selectedStatus">
+      フィルターをリセット
+    </button>
+  </div>
+
+  <!-- データテーブル -->
+  <app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <app-data-table
+      [columns]="columns"
+      [data]="products"
+      [totalCount]="totalCount"
+      [currentPage]="currentPage"
+      [pageSize]="pageSize"
+      [sortColumn]="sortColumn"
+      [sortDirection]="sortDirection"
+      (pageChange)="onPageChange($event)"
+      (sortChange)="onSortChange($event)"
+      (rowClick)="onRowClick($event)">
+    </app-data-table>
+
+    <app-empty-state
+      *ngIf="products.length === 0"
+      message="製品が見つかりませんでした"
+      [actionLabel]="searchKeyword || selectedCategoryId || selectedManufacturer || selectedStatus ? 'フィルターをリセット' : ''"
+      (action)="resetFilters()">
+    </app-empty-state>
+  </div>
+
+  <!-- 件数表示 -->
+  <div class="result-count" *ngIf="!isLoading && products.length > 0">
+    全 {{ totalCount }} 件中 {{ (currentPage - 1) * pageSize + 1 }} - {{ currentPage * pageSize > totalCount ? totalCount : currentPage * pageSize }} 件を表示
+  </div>
+
+</div>

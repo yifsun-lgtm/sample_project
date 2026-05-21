@@ -1,0 +1,188 @@
+<!-- 入荷検収画面 -->
+<app-page-header
+  title="入荷検収"
+  description="発注書に対する入荷処理を行います">
+  <button class="btn btn-outline" (click)="goBack()">
+    戻る
+  </button>
+</app-page-header>
+
+<!-- アラートメッセージ -->
+<div class="alert alert-error" *ngIf="errorMessage">
+  <i class="icon-alert"></i>{{ errorMessage }}
+</div>
+<div class="alert alert-success" *ngIf="successMessage">
+  <i class="icon-check"></i>{{ successMessage }}
+</div>
+
+<!-- 発注書選択セクション -->
+<section class="form-section">
+  <h3 class="section-title">発注書選択</h3>
+
+  <div class="order-search-wrapper">
+    <div class="autocomplete-wrapper">
+      <input
+        type="text"
+        class="form-control"
+        [value]="orderSearchKeyword"
+        (input)="onOrderSearch($any($event.target).value)"
+        (focus)="onOrderSearch(orderSearchKeyword)"
+        (blur)="hideOrderResults()"
+        placeholder="発注番号またはサプライヤー名で検索"
+        autocomplete="off" />
+      <div class="search-results" *ngIf="showOrderResults && filteredOrders.length > 0">
+        <div
+          class="result-item"
+          *ngFor="let order of filteredOrders"
+          (mousedown)="selectOrder(order)">
+          <span class="result-number">{{ order.orderNumber }}</span>
+          <span class="result-supplier">{{ order.supplierName }}</span>
+          <span class="result-amount">{{ order.totalAmount | currencyJp }}</span>
+          <app-status-badge [status]="order.status"></app-status-badge>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 選択済み発注書情報 -->
+  <div class="order-info" *ngIf="selectedOrder">
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">発注番号</span>
+        <span class="info-value link" (click)="navigateToOrderDetail()">
+          {{ selectedOrder.orderNumber }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">サプライヤー</span>
+        <span class="info-value">{{ selectedOrder.supplierName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">発注日</span>
+        <span class="info-value">{{ selectedOrder.orderDate | japaneseDate }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">合計金額</span>
+        <span class="info-value">{{ selectedOrder.totalAmount | currencyJp }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 入荷明細セクション -->
+<section class="form-section" *ngIf="selectedOrder && receiptLines.length > 0">
+  <div class="section-header">
+    <h3 class="section-title">入荷明細</h3>
+    <div class="section-actions">
+      <button type="button" class="btn btn-outline btn-sm" (click)="fillAllQuantities()">
+        全量入荷
+      </button>
+      <button type="button" class="btn btn-outline btn-sm" (click)="clearAllQuantities()">
+        クリア
+      </button>
+    </div>
+  </div>
+
+  <div class="receipt-header-row">
+    <label for="receiptDate" class="receipt-date-label">入荷日:</label>
+    <input
+      id="receiptDate"
+      type="date"
+      [(ngModel)]="receiptDate"
+      class="form-control receipt-date-input" />
+  </div>
+
+  <table class="receipt-table">
+    <thead>
+      <tr>
+        <th>製品名</th>
+        <th>SKU</th>
+        <th class="text-right">発注数量</th>
+        <th class="text-right">入荷済み</th>
+        <th class="text-right">残数量</th>
+        <th class="text-right">今回入荷数</th>
+        <th>進捗</th>
+        <th>品質メモ</th>
+        <th>合格</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let line of receiptLines; let i = index"
+          [class.fully-received]="line.remainingQuantity === 0">
+        <td>{{ line.productName }}</td>
+        <td class="sku-cell">{{ line.productSku }}</td>
+        <td class="text-right">{{ line.orderedQuantity }}</td>
+        <td class="text-right">{{ line.previouslyReceived }}</td>
+        <td class="text-right">{{ line.remainingQuantity }}</td>
+        <td class="text-right">
+          <input
+            type="number"
+            class="form-control quantity-input"
+            [(ngModel)]="line.receivedQuantity"
+            [min]="0"
+            [max]="line.remainingQuantity"
+            [class.invalid]="!isQuantityValid(line)"
+            [disabled]="line.remainingQuantity === 0" />
+        </td>
+        <td>
+          <div class="progress-bar">
+            <div
+              class="progress-fill"
+              [style.width.%]="getReceiptProgress(line)"
+              [class.complete]="getReceiptProgress(line) >= 100"
+              [class.partial]="getReceiptProgress(line) > 0 && getReceiptProgress(line) < 100">
+            </div>
+            <span class="progress-text">{{ getReceiptProgress(line) }}%</span>
+          </div>
+        </td>
+        <td>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="line.qualityNotes"
+            placeholder="品質メモ"
+            [disabled]="line.remainingQuantity === 0" />
+        </td>
+        <td class="text-center">
+          <input
+            type="checkbox"
+            [(ngModel)]="line.isAccepted"
+            [disabled]="line.remainingQuantity === 0" />
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- 全体備考 -->
+  <div class="receipt-notes">
+    <label for="receiptNotes">入荷備考</label>
+    <textarea
+      id="receiptNotes"
+      [(ngModel)]="receiptNotes"
+      class="form-control textarea"
+      rows="3"
+      placeholder="入荷に関する備考事項"></textarea>
+  </div>
+
+  <!-- アクション -->
+  <div class="form-actions">
+    <button
+      class="btn btn-outline"
+      (click)="goBack()">
+      キャンセル
+    </button>
+    <!-- 技術的負債: isSubmittingでのdisabledが設定されていない -->
+    <button
+      class="btn btn-primary"
+      (click)="submitReceipt()"
+      [disabled]="!isFormValid()">
+      入荷確認
+    </button>
+  </div>
+</section>
+
+<!-- 発注書未選択時 -->
+<app-empty-state
+  *ngIf="!selectedOrder && !isLoading"
+  message="入荷処理を行う発注書を選択してください">
+</app-empty-state>

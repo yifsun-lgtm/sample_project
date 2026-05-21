@@ -1,0 +1,235 @@
+<!-- インポート/エクスポート画面 -->
+<div class="import-export">
+  <app-page-header
+    title="インポート/エクスポート"
+    subtitle="データのCSVインポートとエクスポートを行います">
+  </app-page-header>
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab-btn" [ngClass]="{'tab-btn--active': activeTab === 'import'}" (click)="switchTab('import')">
+      インポート
+    </button>
+    <button class="tab-btn" [ngClass]="{'tab-btn--active': activeTab === 'export'}" (click)="switchTab('export')">
+      エクスポート
+    </button>
+  </div>
+
+  <!-- ==================== インポートタブ ==================== -->
+  <div class="tab-content" *ngIf="activeTab === 'import'">
+    <!-- ステップ1: エンティティ選択 -->
+    <div class="section-card">
+      <h3 class="section-title">ステップ1: インポート対象の選択</h3>
+      <div class="form-group">
+        <label class="form-label">エンティティタイプ</label>
+        <select class="form-select" [(ngModel)]="importEntityType" (ngModelChange)="onImportEntityChange()">
+          <option *ngFor="let opt of entityTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ステップ2: ファイルアップロード -->
+    <div class="section-card" *ngIf="importEntityType">
+      <h3 class="section-title">ステップ2: CSVファイルのアップロード</h3>
+      <app-file-upload
+        accept=".csv"
+        label="CSVファイルを選択"
+        (fileSelected)="onFileSelected($event)">
+      </app-file-upload>
+      <p class="file-hint">※ CSV形式のみ対応。UTF-8エンコーディングを推奨。</p>
+    </div>
+
+    <!-- ステップ3: カラムマッピング -->
+    <div class="section-card" *ngIf="csvHeaders.length > 0">
+      <h3 class="section-title">ステップ3: カラムマッピング</h3>
+      <p class="mapping-hint">CSVのヘッダーをシステムフィールドにマッピングしてください。</p>
+
+      <div class="mapping-table-container">
+        <table class="mapping-table">
+          <thead>
+            <tr>
+              <th>CSVヘッダー</th>
+              <th>マッピング先</th>
+              <th>必須</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let mapping of columnMappings">
+              <td class="csv-header-cell">{{ mapping.csvHeader }}</td>
+              <td>
+                <select class="mapping-select" [(ngModel)]="mapping.systemField">
+                  <option *ngFor="let field of getSystemFields()" [value]="field.key">
+                    {{ field.label }}
+                  </option>
+                </select>
+              </td>
+              <td class="required-cell">
+                <span *ngIf="mapping.required" class="required-mark">*</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ステップ4: プレビュー -->
+    <div class="section-card" *ngIf="csvPreviewData.length > 0">
+      <h3 class="section-title">ステップ4: プレビュー（先頭5行）</h3>
+      <div class="preview-table-container">
+        <table class="preview-table">
+          <thead>
+            <tr>
+              <th *ngFor="let header of csvHeaders">{{ header }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let row of csvPreviewData">
+              <td *ngFor="let cell of row">{{ cell }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- インポートメッセージ -->
+      <div class="alert alert-success" *ngIf="importSuccessMessage">
+        <span class="alert-icon">✓</span> {{ importSuccessMessage }}
+      </div>
+      <div class="alert alert-error" *ngIf="importErrorMessage">
+        <span class="alert-icon">!</span> {{ importErrorMessage }}
+      </div>
+
+      <!-- インポート進捗 -->
+      <div class="import-progress" *ngIf="isImporting">
+        <div class="progress-bar">
+          <div class="progress-bar__fill" [style.width.%]="importProgress"></div>
+        </div>
+        <span class="progress-text">{{ importProgress | number:'1.0-0' }}%</span>
+      </div>
+
+      <!-- インポート実行ボタン -->
+      <div class="import-actions">
+        <button class="btn btn-primary btn-lg" (click)="executeImport()" [disabled]="isImporting">
+          {{ isImporting ? 'インポート中...' : 'インポート実行' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- インポートジョブ履歴 -->
+    <div class="section-card">
+      <h3 class="section-title">インポート履歴</h3>
+      <div class="job-table-container">
+        <table class="job-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>タイプ</th>
+              <th>ファイル名</th>
+              <th>ステータス</th>
+              <th>結果</th>
+              <th>実行日時</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngIf="importJobs.length === 0">
+              <td colspan="7" class="empty-row">インポート履歴がありません</td>
+            </tr>
+            <tr *ngFor="let job of importJobs">
+              <td class="job-id">{{ job.id }}</td>
+              <td>{{ getEntityLabel(job.entityType) }}</td>
+              <td>{{ job.fileName }}</td>
+              <td>
+                <span class="job-status" [ngClass]="getJobStatusClass(job.status)">
+                  {{ getJobStatusLabel(job.status) }}
+                </span>
+              </td>
+              <td>
+                <span class="job-result">
+                  成功: {{ job.successCount }}
+                  <span *ngIf="job.errorCount > 0" class="error-count">
+                    / エラー: {{ job.errorCount }}
+                  </span>
+                </span>
+              </td>
+              <td>{{ job.startedAt | japaneseDate:true }}</td>
+              <td>
+                <button *ngIf="job.errorReportUrl"
+                        class="btn btn-sm btn-link"
+                        (click)="downloadErrorReport(job)">
+                  エラーレポート
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== エクスポートタブ ==================== -->
+  <div class="tab-content" *ngIf="activeTab === 'export'">
+    <div class="section-card">
+      <h3 class="section-title">エクスポート設定</h3>
+
+      <!-- エンティティタイプ選択 -->
+      <div class="form-group">
+        <label class="form-label">エンティティタイプ</label>
+        <select class="form-select" [(ngModel)]="exportEntityType" (ngModelChange)="onExportEntityChange()">
+          <option *ngFor="let opt of entityTypeOptions" [value]="opt.value">{{ opt.label }}</option>
+        </select>
+      </div>
+
+      <!-- フィルター -->
+      <div class="form-row" *ngIf="exportEntityType">
+        <div class="form-group form-group--half">
+          <label class="form-label">ステータス（フィルター）</label>
+          <select class="form-select" [(ngModel)]="exportFilterStatus">
+            <option value="">すべて</option>
+            <option value="ACTIVE">有効</option>
+            <option value="INACTIVE">無効</option>
+          </select>
+        </div>
+        <div class="form-group form-group--half">
+          <label class="form-label">フォーマット</label>
+          <select class="form-select" [(ngModel)]="exportFormat">
+            <option value="csv">CSV</option>
+            <option value="xlsx" disabled>Excel（近日対応予定）</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- フィールド選択 -->
+      <div class="field-selector" *ngIf="exportFields.length > 0">
+        <div class="field-selector__header">
+          <label class="form-label">エクスポートフィールド（{{ selectedFieldCount }} / {{ exportFields.length }}）</label>
+          <div class="field-selector__actions">
+            <button class="btn btn-link-sm" (click)="toggleAllExportFields(true)">全選択</button>
+            <button class="btn btn-link-sm" (click)="toggleAllExportFields(false)">全解除</button>
+          </div>
+        </div>
+        <div class="field-checkboxes">
+          <label *ngFor="let field of exportFields" class="field-checkbox">
+            <input type="checkbox" [(ngModel)]="field.selected">
+            <span class="field-checkbox__label">{{ field.label }}</span>
+            <span class="field-checkbox__key">{{ field.key }}</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- エクスポートメッセージ -->
+      <div class="alert alert-success" *ngIf="exportSuccessMessage">
+        <span class="alert-icon">✓</span> {{ exportSuccessMessage }}
+      </div>
+      <div class="alert alert-error" *ngIf="exportErrorMessage">
+        <span class="alert-icon">!</span> {{ exportErrorMessage }}
+      </div>
+
+      <!-- エクスポートボタン -->
+      <div class="export-actions" *ngIf="exportEntityType">
+        <button class="btn btn-primary btn-lg" (click)="executeExport()" [disabled]="isExporting || selectedFieldCount === 0">
+          {{ isExporting ? 'エクスポート中...' : 'エクスポート実行' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

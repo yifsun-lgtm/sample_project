@@ -1,0 +1,327 @@
+<!-- 発注書詳細画面 -->
+<app-page-header
+  title="発注書詳細"
+  [description]="order ? order.orderNumber : ''">
+  <button class="btn btn-outline" (click)="goBack()">
+    <i class="icon-arrow-left"></i>
+    一覧へ戻る
+  </button>
+</app-page-header>
+
+<app-loading-spinner *ngIf="isLoading"></app-loading-spinner>
+
+<!-- アラートメッセージ -->
+<div class="alert alert-error" *ngIf="errorMessage">
+  <i class="icon-alert"></i>{{ errorMessage }}
+</div>
+<div class="alert alert-success" *ngIf="successMessage">
+  <i class="icon-check"></i>{{ successMessage }}
+</div>
+
+<div class="detail-content" *ngIf="order && !isLoading">
+
+  <!-- ヘッダー情報 -->
+  <section class="detail-section">
+    <h3 class="section-title">発注書情報</h3>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">発注番号</span>
+        <span class="info-value">{{ order.orderNumber }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">サプライヤー</span>
+        <span class="info-value">{{ order.supplierName }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">ステータス</span>
+        <!-- 技術的負債: ステータス色がハードコード -->
+        <span
+          class="status-badge-inline"
+          [style.background-color]="getStatusColor(order.status)">
+          {{ getStatusLabel(order.status) }}
+        </span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">作成者</span>
+        <span class="info-value">{{ order.createdBy }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">発注日</span>
+        <span class="info-value">{{ order.orderDate | japaneseDate }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">納品予定日</span>
+        <span class="info-value" [class.overdue]="isOverdue()">
+          {{ order.expectedDeliveryDate | japaneseDate }}
+          <span class="overdue-badge" *ngIf="isOverdue()">期限超過</span>
+        </span>
+      </div>
+      <!-- 技術的負債: ngIfでステータス文字列を直接チェック -->
+      <div class="info-item" *ngIf="order.actualDeliveryDate">
+        <span class="info-label">実際の納品日</span>
+        <span class="info-value">{{ order.actualDeliveryDate | japaneseDate }}</span>
+      </div>
+      <!-- 技術的負債: ngIfでステータス文字列を直接チェック -->
+      <div class="info-item" *ngIf="order.approvedBy">
+        <span class="info-label">承認者</span>
+        <span class="info-value">{{ order.approvedBy }}</span>
+      </div>
+      <!-- 技術的負債: ngIfでステータス文字列を直接チェック -->
+      <div class="info-item" *ngIf="order.approvedAt">
+        <span class="info-label">承認日</span>
+        <span class="info-value">{{ order.approvedAt | japaneseDate }}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">合計金額</span>
+        <span class="info-value amount-highlight">{{ order.totalAmount | currencyJp }}</span>
+      </div>
+    </div>
+
+    <!-- 備考 -->
+    <div class="notes-block" *ngIf="order.notes">
+      <span class="info-label">備考</span>
+      <p class="notes-text">{{ order.notes }}</p>
+    </div>
+  </section>
+
+  <!-- 承認ワークフロー（プログレスバー） -->
+  <section class="detail-section">
+    <h3 class="section-title">承認ワークフロー</h3>
+    <div class="workflow-progress">
+      <div
+        *ngFor="let step of approvalWorkflowSteps; let i = index; let last = last"
+        class="workflow-step"
+        [class.completed]="getStepStatus(step.status) === 'completed'"
+        [class.current]="getStepStatus(step.status) === 'current'"
+        [class.pending]="getStepStatus(step.status) === 'pending'"
+        [class.cancelled]="order.status === 'CANCELLED'">
+        <div class="step-circle">
+          <span *ngIf="getStepStatus(step.status) === 'completed'" class="step-check">✓</span>
+          <span *ngIf="getStepStatus(step.status) !== 'completed'">{{ i + 1 }}</span>
+        </div>
+        <span class="step-label">{{ step.label }}</span>
+        <div class="step-connector" *ngIf="!last"></div>
+      </div>
+    </div>
+
+    <!-- キャンセル表示 -->
+    <!-- 技術的負債: ngIfでステータス文字列を直接チェック -->
+    <div class="cancelled-notice" *ngIf="order.status === 'CANCELLED'">
+      <i class="icon-alert"></i>
+      この発注書はキャンセルされました
+    </div>
+  </section>
+
+  <!-- 明細テーブル -->
+  <section class="detail-section">
+    <h3 class="section-title">発注明細</h3>
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th class="col-num">#</th>
+          <th>製品名</th>
+          <th>SKU</th>
+          <th class="col-qty text-right">数量</th>
+          <th class="col-unit">単位</th>
+          <th class="col-price text-right">単価</th>
+          <th class="col-subtotal text-right">小計</th>
+          <!-- 技術的負債: ngIfでステータス文字列を直接チェック -->
+          <th class="col-received text-right"
+              *ngIf="order.status === 'ORDERED' || order.status === 'PARTIALLY_RECEIVED' || order.status === 'RECEIVED'">
+            入荷数
+          </th>
+          <th>備考</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let item of order.items; let i = index">
+          <td class="col-num">{{ i + 1 }}</td>
+          <td>{{ item.productName }}</td>
+          <td class="sku-cell">{{ item.productSku }}</td>
+          <td class="col-qty text-right">{{ item.quantity }}</td>
+          <td class="col-unit">{{ item.unit }}</td>
+          <td class="col-price text-right">{{ item.unitPrice | currencyJp }}</td>
+          <td class="col-subtotal text-right">{{ getItemSubtotal(item) | currencyJp }}</td>
+          <!-- 技術的負債: ngIfでステータス文字列を直接チェック -->
+          <td class="col-received text-right"
+              *ngIf="order.status === 'ORDERED' || order.status === 'PARTIALLY_RECEIVED' || order.status === 'RECEIVED'">
+            <span [class.partial]="item.receivedQuantity > 0 && item.receivedQuantity < item.quantity"
+                  [class.complete]="item.receivedQuantity >= item.quantity">
+              {{ item.receivedQuantity }} / {{ item.quantity }}
+              <span class="receipt-rate">({{ getReceiptRate(item) }}%)</span>
+            </span>
+          </td>
+          <td>{{ item.notes }}</td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr class="total-row">
+          <td [attr.colspan]="canProcessReceipt() ? 6 : 5" class="text-right total-label">合計金額</td>
+          <td class="text-right total-amount">{{ order.totalAmount | currencyJp }}</td>
+          <td *ngIf="canProcessReceipt()"></td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </section>
+
+  <!-- ステータス履歴タイムライン -->
+  <section class="detail-section" *ngIf="statusHistory.length > 0">
+    <h3 class="section-title">ステータス履歴</h3>
+    <div class="timeline">
+      <div class="timeline-item" *ngFor="let entry of statusHistory">
+        <div class="timeline-dot" [style.background-color]="getStatusColor(entry.status)"></div>
+        <div class="timeline-content">
+          <div class="timeline-header">
+            <span
+              class="timeline-status"
+              [style.color]="getStatusColor(entry.status)">
+              {{ getStatusLabel(entry.status) }}
+            </span>
+            <span class="timeline-date">{{ entry.date | japaneseDate }}</span>
+          </div>
+          <div class="timeline-body">
+            <span class="timeline-user" *ngIf="entry.user">{{ entry.user }}</span>
+            <span class="timeline-comment">{{ entry.comment }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 承認ステップ詳細 -->
+  <!-- 技術的負債: ngIfでステータス文字列を直接チェック -->
+  <section class="detail-section" *ngIf="order.approvalSteps && order.approvalSteps.length > 0">
+    <h3 class="section-title">承認ステップ</h3>
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th>順序</th>
+          <th>承認者ロール</th>
+          <th>承認者</th>
+          <th>ステータス</th>
+          <th>コメント</th>
+          <th>日時</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let step of order.approvalSteps">
+          <td>{{ step.stepOrder }}</td>
+          <td>{{ step.approverRole }}</td>
+          <td>{{ step.approverName || '-' }}</td>
+          <td>
+            <span class="step-status-badge"
+                  [style.background-color]="getStatusColor(step.status)">
+              {{ getStatusLabel(step.status) }}
+            </span>
+          </td>
+          <td>{{ step.comment || '-' }}</td>
+          <td>{{ step.actionDate ? (step.actionDate | japaneseDate) : '-' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- アクションボタン -->
+  <section class="action-section">
+    <!-- 技術的負債: 各ボタンでステータス文字列を直接チェック -->
+    <button
+      *ngIf="canSubmit()"
+      class="btn btn-primary"
+      (click)="submitForApproval()"
+      [disabled]="isProcessing">
+      承認申請
+    </button>
+    <button
+      *ngIf="canApprove()"
+      class="btn btn-success"
+      (click)="openApprovalModal()"
+      [disabled]="isProcessing">
+      承認
+    </button>
+    <button
+      *ngIf="canReject()"
+      class="btn btn-warning"
+      (click)="openRejectModal()"
+      [disabled]="isProcessing">
+      却下
+    </button>
+    <button
+      *ngIf="canCancel()"
+      class="btn btn-danger"
+      (click)="openCancelModal()"
+      [disabled]="isProcessing">
+      キャンセル
+    </button>
+    <button
+      *ngIf="canProcessReceipt()"
+      class="btn btn-primary"
+      (click)="navigateToGoodsReceipt()"
+      [disabled]="isProcessing">
+      入荷処理
+    </button>
+  </section>
+</div>
+
+<!-- 承認モーダル -->
+<div class="modal-overlay" *ngIf="showApprovalModal" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h4 class="modal-title">発注書の承認</h4>
+    <div class="modal-body">
+      <label for="approvalComment">コメント（任意）</label>
+      <textarea
+        id="approvalComment"
+        [(ngModel)]="approvalComment"
+        class="form-control textarea"
+        rows="3"
+        placeholder="承認に関するコメント"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="closeModals()">キャンセル</button>
+      <button class="btn btn-success" (click)="approveOrder()" [disabled]="isProcessing">承認する</button>
+    </div>
+  </div>
+</div>
+
+<!-- 却下モーダル -->
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h4 class="modal-title">発注書の却下</h4>
+    <div class="modal-body">
+      <label for="rejectReason">却下理由（必須）</label>
+      <textarea
+        id="rejectReason"
+        [(ngModel)]="rejectReason"
+        class="form-control textarea"
+        rows="3"
+        placeholder="却下理由を入力してください"
+        required></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="closeModals()">キャンセル</button>
+      <button class="btn btn-warning" (click)="rejectOrder()" [disabled]="isProcessing || !rejectReason">却下する</button>
+    </div>
+  </div>
+</div>
+
+<!-- キャンセルモーダル -->
+<div class="modal-overlay" *ngIf="showCancelModal" (click)="closeModals()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <h4 class="modal-title">発注書のキャンセル</h4>
+    <div class="modal-body">
+      <p class="modal-warning">この操作は取り消せません。本当にキャンセルしますか？</p>
+      <label for="cancelReason">キャンセル理由（必須）</label>
+      <textarea
+        id="cancelReason"
+        [(ngModel)]="cancelReason"
+        class="form-control textarea"
+        rows="3"
+        placeholder="キャンセル理由を入力してください"
+        required></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" (click)="closeModals()">閉じる</button>
+      <button class="btn btn-danger" (click)="cancelOrder()" [disabled]="isProcessing || !cancelReason">キャンセルする</button>
+    </div>
+  </div>
+</div>
