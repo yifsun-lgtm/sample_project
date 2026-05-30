@@ -64,9 +64,9 @@ jobs:
           docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-nginx:latest
 
       - name: Build & Push Keycloak
-        working-directory: proquip
+        working-directory: proquip/docker/keycloak
         run: |
-          docker build -f docker/keycloak/Dockerfile \
+          docker build \
             -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-keycloak:${{ steps.tag.outputs.tag }} \
             -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-keycloak:latest .
           docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-keycloak:${{ steps.tag.outputs.tag }}
