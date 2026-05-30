@@ -9,9 +9,9 @@ Total pipeline build time tracking. Each task records start time, end time, and 
 | Phase 1: AWS / OpenShift 基盤準備 | 1.1–1.4 | 24m 44s | Complete |
 | Phase 2: GitHub Actions CI/CD | 2.1–2.6 | 30m 33s | Complete |
 | Phase 3: コンテナイメージ対応 | 3.1–3.5 | 14m 47s | Complete |
-| Phase 4: OpenShift マニフェスト | 4.1–4.8 | — | Not started |
-| Phase 5: デプロイ検証 | 5.1–5.4 | — | Not started |
-| **Total** | **22** | **—** | |
+| Phase 4: OpenShift マニフェスト | 4.1–4.8 | 69m 9s | Complete |
+| Phase 5: デプロイ検証 | 5.1–5.4 | 4m 2s | Complete |
+| **Total** | **20** | **~2h 23m** | **Complete** |
 
 ## Detail
 
@@ -33,15 +33,15 @@ Total pipeline build time tracking. Each task records start time, end time, and 
 | 3.3 | Keycloak prod mode | 2026-05-30T13:28:39Z | 2026-05-30T13:32:46Z | 4m 7s | Multi-stage build, start --optimized, kc.db=postgres, health enabled |
 | 3.4 | nginx OpenShift | 2026-05-30T13:33:07Z | 2026-05-30T13:36:11Z | 3m 4s | listen 8080, USER 1001, pid to /tmp, verified health.json |
 | 3.5 | Build-push script | 2026-05-30T13:36:35Z | 2026-05-30T13:40:45Z | 4m 10s | scripts/build-push.sh, verified 3 images pushed with ocp-v1 tag |
-| 4.1 | Namespace | — | — | — | |
-| 4.2 | ECR pull secret | — | — | — | |
-| 4.3 | ConfigMap / Secret | — | — | — | |
-| 4.4 | Flyway Job | — | — | — | |
-| 4.5 | WildFly Deployment | — | — | — | |
-| 4.6 | Keycloak Deployment | — | — | — | |
-| 4.7 | nginx Deployment + Route | — | — | — | |
-| 4.8 | Keycloak realm import | — | — | — | |
-| 5.1 | Full deploy | — | — | — | |
-| 5.2 | Smoke test | — | — | — | |
-| 5.3 | CI/CD E2E test | — | — | — | |
-| 5.4 | Documentation update | — | — | — | |
+| 4.1 | Namespace | 2026-05-30T13:42:38Z | 2026-05-30T13:42:50Z | 0m 12s | Already created in Task 1.3 |
+| 4.2 | Pull secret | 2026-05-30T13:42:50Z | 2026-05-30T13:43:00Z | 0m 10s | Not needed — internal registry SA has access |
+| 4.3 | ConfigMap / Secret | 2026-05-30T13:43:00Z | 2026-05-30T13:44:00Z | 1m 0s | ConfigMap applied, Secret via oc create |
+| 4.4 | Flyway Job | 2026-05-30T13:44:00Z | 2026-05-30T13:50:00Z | 6m 0s | Custom Flyway image (amd64), 22 migrations applied |
+| 4.5 | WildFly Deployment | 2026-05-30T13:50:00Z | 2026-05-30T14:51:47Z | 61m 47s | Manifest + CD rebuild (fixed non-root + arm64→amd64) |
+| 4.6 | Keycloak Deployment | — | — | 0s | Included in 4.5 batch |
+| 4.7 | nginx Deployment + Route | — | — | 0s | Included in 4.5 batch (fixed upstream names) |
+| 4.8 | Keycloak realm import | — | — | 0s | Realm auto-imported by Keycloak on first start |
+| 5.1 | Full deploy | — | — | 0s | Verified via CD: 3 pods Running, Route HTTP 200 |
+| 5.2 | Smoke test | 2026-05-30T14:53:58Z | 2026-05-30T14:57:36Z | 3m 38s | Frontend 200, health 200, Keycloak OIDC 200, all 5 users login OK |
+| 5.3 | CI/CD E2E test | — | — | 0s | Proven by PR #3 merge → CD rebuild → auto deploy |
+| 5.4 | Documentation update | 2026-05-30T14:57:36Z | 2026-05-30T14:58:00Z | 0m 24s | Phase 4-5 tutorial written |
