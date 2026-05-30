@@ -1,0 +1,35 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: proquip-flyway-migrate
+  namespace: proquip-dev
+  labels:
+    app.kubernetes.io/part-of: proquip
+    app.kubernetes.io/component: migration
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: flyway
+          image: image-registry.openshift-image-registry.svc:5000/proquip-dev/proquip-flyway:latest
+          args: ["migrate"]
+          envFrom:
+            - configMapRef:
+                name: proquip-config
+            - secretRef:
+                name: proquip-secrets
+          env:
+            - name: FLYWAY_URL
+              value: "jdbc:postgresql://$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: proquip-secrets
+                  key: DB_USER
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: proquip-secrets
+                  key: DB_PASSWORD

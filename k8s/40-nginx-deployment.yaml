@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proquip-nginx
+  namespace: proquip-dev
+  labels:
+    app: proquip-nginx
+    app.kubernetes.io/part-of: proquip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proquip-nginx
+  template:
+    metadata:
+      labels:
+        app: proquip-nginx
+    spec:
+      containers:
+        - name: nginx
+          image: image-registry.openshift-image-registry.svc:5000/proquip-dev/proquip-nginx:83027e3
+          ports:
+            - containerPort: 8080
+          readinessProbe:
+            httpGet:
+              path: /health.json
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proquip-nginx
+  namespace: proquip-dev
+  labels:
+    app: proquip-nginx
+    app.kubernetes.io/part-of: proquip
+spec:
+  selector:
+    app: proquip-nginx
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: proquip
+  namespace: proquip-dev
+  labels:
+    app: proquip-nginx
+    app.kubernetes.io/part-of: proquip
+spec:
+  to:
+    kind: Service
+    name: proquip-nginx
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
