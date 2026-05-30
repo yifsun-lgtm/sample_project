@@ -1,4 +1,4 @@
-# ProQuip ROSA Deployment — Time Report
+# ProQuip OpenShift Deployment — Time Report
 
 Total pipeline build time tracking. Each task records start time, end time, and duration.
 
@@ -21,7 +21,6 @@ Total pipeline build time tracking. Each task records start time, end time, and 
 | 1.2 | OpenShift cluster login | 2026-05-30T11:56:38Z | 2026-05-30T11:57:55Z | 1m 17s | oc login with token + CA cert |
 | 1.3 | Registry setup | 2026-05-30T12:00:15Z | 2026-05-30T12:08:32Z | 8m 17s | OpenShift internal registry — exposed default route, verified push/pull |
 | 1.4 | RDS PostgreSQL | 2026-05-30T12:10:28Z | 2026-05-30T12:24:15Z | 13m 47s | RDS 15.18, db.t3.medium, proquip + keycloak DBs created |
-| 1.5 | RDS PostgreSQL | — | — | — | |
 | 2.1 | GitHub Secrets | 2026-05-30T12:29:59Z | 2026-05-30T12:39:20Z | 9m 21s | gh CLI install + 6 secrets set (OpenShift + RDS) |
 | 2.2 | CI: backend | 2026-05-30T12:41:35Z | 2026-05-30T12:46:45Z | 5m 10s | ci.yml created, 1st run failed (intentional test debt), fixed, 2nd run green |
 | 2.3 | CI: frontend | — | — | 0s | Included in 2.2 (same ci.yml, parallel job) |
@@ -45,3 +44,4 @@ Total pipeline build time tracking. Each task records start time, end time, and 
 | 5.2 | Smoke test | 2026-05-30T14:53:58Z | 2026-05-30T14:57:36Z | 3m 38s | Frontend 200, health 200, Keycloak OIDC 200, all 5 users login OK |
 | 5.3 | CI/CD E2E test | — | — | 0s | Proven by PR #3 merge → CD rebuild → auto deploy |
 | 5.4 | Documentation update | 2026-05-30T14:57:36Z | 2026-05-30T14:58:00Z | 0m 24s | Phase 4-5 tutorial written |
+| 5.5 | Keycloak redirect_uri fix | 2026-05-31 | 2026-05-31 | ~3m | Added OpenShift Route URL to Keycloak client redirectUris + webOrigins |
