@@ -1,2 +1,8 @@
 .playwright-mcp
-docs
+
+# Harness plugin local files
+bin/
+out/
+hooks/
+.claude-plugin/
+harness.toml
