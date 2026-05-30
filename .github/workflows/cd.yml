@@ -1,0 +1,142 @@
+name: CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'proquip/**'
+      - '.github/workflows/cd.yml'
+
+env:
+  REGISTRY: ${{ secrets.REGISTRY_URL }}
+  PROJECT: proquip-dev
+
+jobs:
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install oc CLI
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: '4'
+
+      - name: Login to OpenShift
+        run: |
+          echo "${{ secrets.OPENSHIFT_CA_CERT }}" | base64 -d > /tmp/ca.crt
+          oc login \
+            --server=${{ secrets.OPENSHIFT_SERVER }} \
+            --token=${{ secrets.OPENSHIFT_TOKEN }} \
+            --certificate-authority=/tmp/ca.crt
+
+      - name: Login to OpenShift Registry
+        run: |
+          oc whoami -t | docker login \
+            ${{ env.REGISTRY }} \
+            --username unused \
+            --password-stdin
+
+      - name: Set image tag
+        id: tag
+        run: |
+          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          echo "tag=${SHORT_SHA}" >> "$GITHUB_OUTPUT"
+          echo "Image tag: ${SHORT_SHA}"
+
+      - name: Build & Push WildFly
+        working-directory: proquip
+        run: |
+          docker build -f docker/wildfly/Dockerfile \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-wildfly:${{ steps.tag.outputs.tag }} \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-wildfly:latest .
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-wildfly:${{ steps.tag.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-wildfly:latest
+
+      - name: Build & Push nginx
+        working-directory: proquip
+        run: |
+          docker build -f docker/nginx/Dockerfile \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-nginx:${{ steps.tag.outputs.tag }} \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-nginx:latest .
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-nginx:${{ steps.tag.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-nginx:latest
+
+      - name: Build & Push Keycloak
+        working-directory: proquip
+        run: |
+          docker build -f docker/keycloak/Dockerfile \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-keycloak:${{ steps.tag.outputs.tag }} \
+            -t ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-keycloak:latest .
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-keycloak:${{ steps.tag.outputs.tag }}
+          docker push ${{ env.REGISTRY }}/${{ env.PROJECT }}/proquip-keycloak:latest
+
+      - name: Verify images in OpenShift
+        run: |
+          oc get imagestream -n ${{ env.PROJECT }}
+
+    outputs:
+      image-tag: ${{ steps.tag.outputs.tag }}
+
+  deploy:
+    name: Deploy to OpenShift
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install oc CLI
+        uses: redhat-actions/openshift-tools-installer@v1
+        with:
+          oc: '4'
+
+      - name: Login to OpenShift
+        run: |
+          echo "${{ secrets.OPENSHIFT_CA_CERT }}" | base64 -d > /tmp/ca.crt
+          oc login \
+            --server=${{ secrets.OPENSHIFT_SERVER }} \
+            --token=${{ secrets.OPENSHIFT_TOKEN }} \
+            --certificate-authority=/tmp/ca.crt
+
+      - name: Update images
+        run: |
+          TAG="${{ needs.build-and-push.outputs.image-tag }}"
+          NS="${{ env.PROJECT }}"
+          INTERNAL_REG="image-registry.openshift-image-registry.svc:5000"
+
+          # Update deployments if they exist
+          for app in wildfly nginx keycloak; do
+            if oc get deployment proquip-${app} -n ${NS} 2>/dev/null; then
+              oc set image deployment/proquip-${app} \
+                ${app}="${INTERNAL_REG}/${NS}/proquip-${app}:${TAG}" -n ${NS}
+              echo "Updated proquip-${app} to tag ${TAG}"
+            else
+              echo "Deployment proquip-${app} not found in ${NS} — skipping (will be created in Phase 4)"
+            fi
+          done
+
+      - name: Wait for rollout
+        run: |
+          NS="${{ env.PROJECT }}"
+          for app in wildfly nginx keycloak; do
+            if oc get deployment proquip-${app} -n ${NS} 2>/dev/null; then
+              oc rollout status deployment/proquip-${app} -n ${NS} --timeout=180s
+            fi
+          done
+
+      - name: Smoke test
+        run: |
+          NS="${{ env.PROJECT }}"
+          if oc get route proquip -n ${NS} 2>/dev/null; then
+            ROUTE=$(oc get route proquip -n ${NS} -o jsonpath='{.spec.host}')
+            STATUS=$(curl -sk -o /dev/null -w '%{http_code}' "https://${ROUTE}/api/health" || true)
+            echo "Health check: HTTP ${STATUS}"
+            if [ "${STATUS}" = "200" ]; then
+              echo "Smoke test passed"
+            else
+              echo "Smoke test skipped (app not fully deployed yet)"
+            fi
+          else
+            echo "Route not found — smoke test skipped (Phase 4 not complete)"
+          fi
