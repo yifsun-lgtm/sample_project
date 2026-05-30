@@ -1,0 +1,23 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: proquip-keycloak-realm-import
+  namespace: proquip-dev
+  labels:
+    app.kubernetes.io/part-of: proquip
+    app.kubernetes.io/component: keycloak-import
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: import
+          image: image-registry.openshift-image-registry.svc:5000/proquip-dev/proquip-keycloak:83027e3
+          command: ["/opt/keycloak/bin/kc.sh"]
+          args: ["import", "--file=/opt/keycloak/data/import/proquip-realm.json", "--override=true"]
+          envFrom:
+            - configMapRef:
+                name: proquip-config
+            - secretRef:
+                name: proquip-secrets

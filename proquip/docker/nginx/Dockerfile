@@ -29,6 +29,13 @@ COPY --from=frontend-builder /app/dist/proquip/browser /usr/share/nginx/html/pro
 
 RUN echo '{"status":"ok"}' > /usr/share/nginx/html/proquip/health.json
 
-EXPOSE 80
+RUN chgrp -R 0 /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html && \
+    chmod -R g=u /var/cache/nginx /var/run /var/log/nginx /usr/share/nginx/html && \
+    sed -i '/^user  nginx;/d' /etc/nginx/nginx.conf && \
+    sed -i 's|/var/run/nginx.pid|/tmp/nginx.pid|' /etc/nginx/nginx.conf
+
+EXPOSE 8080
+
+USER 1001
 
 CMD ["nginx", "-g", "daemon off;"]

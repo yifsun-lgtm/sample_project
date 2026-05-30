@@ -54,6 +54,11 @@ COPY --from=builder --chown=jboss:root \
     /build/proquip-ear/target/proquip.ear \
     /opt/jboss/wildfly/standalone/deployments/proquip.ear
 
+USER root
+RUN chgrp -R 0 /opt/jboss/wildfly && \
+    chmod -R g=u /opt/jboss/wildfly
+USER 1001
+
 EXPOSE 8080 9990
 
 CMD ["/opt/jboss/wildfly/bin/standalone.sh", \

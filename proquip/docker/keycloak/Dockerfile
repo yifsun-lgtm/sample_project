@@ -1,15 +1,23 @@
 # ============================================================
 # ProQuip Keycloak 認証サーバー
-# 開発環境用：レルム設定を自動インポートして起動
-#
-# TODO: 本番環境では開発モードを使わないこと
+# Stage 1: ビルドステージ (--optimized 用)
+# Stage 2: 本番用ランタイム
 # ============================================================
+
+# ----- Stage 1: Build -----
+FROM quay.io/keycloak/keycloak:22.0.5 AS builder
+
+ENV KC_DB=postgres
+ENV KC_HEALTH_ENABLED=true
+
+RUN /opt/keycloak/bin/kc.sh build
+
+# ----- Stage 2: Runtime -----
 FROM quay.io/keycloak/keycloak:22.0.5
 
-# レルム設定ファイルをインポートディレクトリにコピー
+COPY --from=builder /opt/keycloak/ /opt/keycloak/
+
 COPY proquip-realm.json /opt/keycloak/data/import/proquip-realm.json
 
-# 開発モードで起動し、レルム設定をインポート
-# FIXME: --optimized フラグを使ったプロダクションビルドに切り替えるべき
 ENTRYPOINT ["/opt/keycloak/bin/kc.sh"]
-CMD ["start-dev", "--import-realm"]
+CMD ["start", "--optimized", "--hostname-strict=false", "--http-enabled=true", "--proxy=edge"]

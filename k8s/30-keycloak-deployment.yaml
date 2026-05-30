@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proquip-keycloak
+  namespace: proquip-dev
+  labels:
+    app: proquip-keycloak
+    app.kubernetes.io/part-of: proquip
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proquip-keycloak
+  template:
+    metadata:
+      labels:
+        app: proquip-keycloak
+    spec:
+      containers:
+        - name: keycloak
+          image: image-registry.openshift-image-registry.svc:5000/proquip-dev/proquip-keycloak:83027e3
+          ports:
+            - containerPort: 8080
+              name: http
+          envFrom:
+            - configMapRef:
+                name: proquip-config
+            - secretRef:
+                name: proquip-secrets
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: proquip-keycloak
+  namespace: proquip-dev
+  labels:
+    app: proquip-keycloak
+    app.kubernetes.io/part-of: proquip
+spec:
+  selector:
+    app: proquip-keycloak
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080

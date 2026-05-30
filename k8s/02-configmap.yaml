@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: proquip-config
+  namespace: proquip-dev
+  labels:
+    app.kubernetes.io/part-of: proquip
+data:
+  DB_HOST: "proquip-dev-db.cmwtrrewidlo.ap-southeast-1.rds.amazonaws.com"
+  DB_PORT: "5432"
+  DB_NAME: "proquip"
+  KEYCLOAK_URL: "http://proquip-keycloak:8080"
+  KEYCLOAK_REALM: "proquip"
+  KEYCLOAK_CLIENT_ID: "proquip-api"
+  KC_DB: "postgres"
+  KC_DB_URL: "jdbc:postgresql://proquip-dev-db.cmwtrrewidlo.ap-southeast-1.rds.amazonaws.com:5432/keycloak"
+  KC_HOSTNAME_STRICT: "false"
+  KC_PROXY: "edge"
+  KC_HTTP_ENABLED: "true"
