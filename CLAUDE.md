@@ -282,3 +282,7 @@ When creating new migrations:
 10. Import/Export (2 screens)
 
 See `proquip/README.md` for complete technical debt catalog and detailed system documentation.
+
+
+## /make-slide
+When the user types "/make-slide", read `.claude/skills/make-slide/SKILL.md` and follow the presentation creation workflow. Browse themes at https://make-slide.vercel.app
