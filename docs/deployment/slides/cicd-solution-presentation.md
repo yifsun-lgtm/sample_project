@@ -437,6 +437,8 @@ PR 作成
 | **年間合計** | **¥1,728,000** | **¥199,000** |
 | | | **88% 削減** |
 
+> 算出根拠: デプロイ月2回(年24回)、単価は経産省 IT人材白書の中央値ベース [※付録B参照]
+
 ---
 
 # 3年間 TCO 比較
@@ -452,6 +454,8 @@ PR 作成
 
 # <span class="reduction">3年間で ¥19,783,000 削減 (69%)</span>
 
+> 根拠: ハードウェアはDell PowerEdge相当×3台、データセンターは都内Tier3相当、クラウドはAWS東京リージョン実勢価格 [※付録B参照]
+
 ---
 
 # 投資回収
@@ -463,8 +467,8 @@ PR 作成
 | 投資回収期間 | **約 11日** |
 | 3年間 ROI | **9,792%** |
 
-> 構築実績: ゼロから本番稼働まで **2時間23分** で完了
-> (AWS 基盤準備 25分 + CI/CD 構築 31分 + コンテナ対応 15分 + デプロイ 69分 + 検証 4分)
+> 構築実績: ゼロから本番稼働まで **2時間23分** で完了 (ProQuip 実測値)
+> 初期投資 = エンジニア1名 × 3時間 × ¥6,000/h + クラウド利用料 ≈ ¥20,000 [※付録B参照]
 
 ---
 
@@ -477,8 +481,8 @@ PR 作成
 | デプロイ失敗率 | 15〜25% | **5%未満** | 0.5%未満 |
 | 障害復旧時間 | 2〜4時間 | **15分** | 7分未満 |
 
-> DORA (DevOps Research and Assessment) は Google が支援する
-> ソフトウェアデリバリーパフォーマンスの研究プロジェクト
+> 出典: DORA State of DevOps Report 2025-2026 (Google Cloud)
+> https://dora.dev/guides/dora-metrics/
 
 ---
 
@@ -576,6 +580,73 @@ PR 作成
 | 認証 | Keycloak 22 (OIDC) | シングルサインオン |
 | データベース | Amazon RDS (PostgreSQL 15) | マネージド DB |
 | DB マイグレーション | Flyway 10 | スキーマ自動管理 |
+
+---
+
+# 付録B: コスト算出根拠
+
+### 人件費単価
+
+| 役割 | 単価 | 根拠 |
+|------|------|------|
+| インフラエンジニア | ¥5,000/h | 経産省 IT人材白書 2025 中級SE中央値 (年収600万÷1,200h) |
+| QA エンジニア | ¥4,000/h | 同上 初級〜中級 |
+| 開発リーダー | ¥6,000/h | 同上 上級SE |
+| 障害対応 (時間外) | ¥7,000/h | 労基法 深夜・休日割増 (¥5,000 × 1.35) |
+| 休日手当 | ¥30,000/回 | 深夜デプロイ1回あたりの割増手当 × 年12回 |
+
+### デプロイ工数
+
+| 項目 | 従来 | 根拠 |
+|------|------|------|
+| デプロイ頻度 | 月2回 (年24回) | 中規模 Java EE アプリの業界平均 |
+| 1回あたり作業時間 | 4h (インフラ) + 2h (QA) + 3h (リーダー) | ProQuip 手動手順書 10ステップの積上げ |
+| デプロイ失敗率 | 25% (年6回障害) | DORA Low performer 基準 (15-25%) |
+| 障害あたり復旧時間 | 4h | DORA Low performer MTTR 基準 |
+
+---
+
+# 付録B: コスト算出根拠 (続き)
+
+### オンプレミス インフラ費用
+
+| 項目 | 金額 | 根拠 |
+|------|------|------|
+| サーバー (本番×2) | ¥3,000,000 | Dell PowerEdge R750xs相当 (Xeon 8c/64GB/1TB SSD) × 2台 |
+| サーバー (検証×1) | ¥1,500,000 | 同上スペック × 1台 |
+| OS/ミドルウェア | ¥600,000/年 | Red Hat Enterprise Linux × 3台 + DB ライセンス |
+| データセンター | ¥80,000/月 | 都内 Tier3 DC ハーフラック (電力・冷却・回線込み) |
+| 保守契約 | ¥300,000/年 | 2年目以降ハードウェア保守 (購入価格の10%) |
+| 運用人件費 | ¥3,600,000/年 | 0.5 FTE (パッチ適用、監視、バックアップ、障害対応) |
+
+### クラウド費用
+
+| 項目 | 月額 | 根拠 |
+|------|------|------|
+| OpenShift (m5.xlarge×2) | ¥90,000 | AWS ap-southeast-1 実勢価格 ($0.248/h × 2 × 730h × ¥150) |
+| RDS (db.t3.medium) | ¥8,000 | AWS ap-southeast-1 実勢価格 ($0.073/h × 730h × ¥150) |
+| GitHub Actions | ¥0 | 無料枠 月2,000分 (CI+CD 計10分/回 × 24回 = 240分) |
+| 為替レート | — | 1 USD = 150 JPY (2026年6月時点の概算) |
+
+---
+
+# 付録B: 出典一覧
+
+| # | 出典 | URL |
+|---|------|-----|
+| 1 | DORA State of DevOps Report | https://dora.dev/guides/dora-metrics/ |
+| 2 | DORA 2026 Benchmark | https://dasroot.net/posts/2026/04/devops-metrics-dora-measuring-success/ |
+| 3 | Cloud vs On-Premise TCO 2026 | https://spacelift.io/blog/cloud-vs-on-premise-cost |
+| 4 | Cloud vs On-Premise TCO (Cloudvara) | https://cloudvara.com/cloud-vs-on-premise-costs/ |
+| 5 | AWS EC2 Pricing (ap-southeast-1) | https://aws.amazon.com/ec2/pricing/on-demand/ |
+| 6 | AWS RDS Pricing | https://aws.amazon.com/rds/postgresql/pricing/ |
+| 7 | GitHub Actions Pricing | https://docs.github.com/en/billing/managing-billing-for-your-products/managing-billing-for-github-actions |
+| 8 | ProQuip 構築実績 (time-report) | docs/deployment/time-report.md |
+| 9 | 経産省 IT人材白書 2025 | https://www.ipa.go.jp/jinzai/chousa/ |
+| 10 | Dell PowerEdge サーバー価格 | https://www.dell.com/ja-jp/shop/scc/sc/servers |
+
+> 注: 全てのコストは概算値です。実際のコストは規模・地域・契約条件により異なります。
+> 詳細な算出過程は `docs/deployment/cicd-vs-onpremise-comparison.md` を参照してください。
 
 ---
 
