@@ -34,7 +34,7 @@ services:
   keycloak:
     build:
       context: ./docker/keycloak
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: proquip-keycloak
     ports:
       - "8180:8080"
@@ -52,7 +52,9 @@ services:
       postgres:
         condition: service_healthy
     networks:
-      - proquip-net
+      proquip-net:
+        aliases:
+          - proquip-keycloak
     healthcheck:
       test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080"]
       interval: 10s
@@ -116,7 +118,9 @@ services:
       migration:
         condition: service_completed_successfully
     networks:
-      - proquip-net
+      proquip-net:
+        aliases:
+          - proquip-wildfly
     healthcheck:
       test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/8080"]
       interval: 10s
@@ -134,7 +138,7 @@ services:
       dockerfile: docker/nginx/Dockerfile
     container_name: proquip-nginx
     ports:
-      - "4200:80"
+      - "4200:8080"
     volumes:
       - ./docker/static-files:/usr/share/nginx/html/static-files:ro
     depends_on:
