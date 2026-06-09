@@ -140,3 +140,4 @@ jobs:
           else
             echo "Route not found — smoke test skipped (Phase 4 not complete)"
           fi
+# rebuild 20260609T001740
